@@ -10,7 +10,5 @@
         value: 3.13.1
       - key: SECRET_KEY
         generateValue: true
-      - key: DATABASE_URL
-        value: REPLACE_WITH_SUPABASE_DATABASE_URL
       - key: FLASK_ENV
         value: production
