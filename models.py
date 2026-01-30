@@ -47,12 +47,23 @@ class Faction(db.Model):
     # Relationships
     units = db.relationship('Unit', backref='faction_obj', lazy=True, foreign_keys='Unit.faction_id')
     army_lists = db.relationship('ArmyList', backref='faction_obj', lazy=True, foreign_keys='ArmyList.faction_id')
+    ratings = db.relationship('FactionRating', backref='faction', lazy=True, cascade='all, delete-orphan')
     
     def get_playstyle_tags(self):
         """Get list of playstyle tags for this faction"""
         if not self.playstyle_tags:
             return []
         return json.loads(self.playstyle_tags)
+    
+    def get_average_rating(self):
+        """Get average rating for this faction"""
+        if not self.ratings:
+            return 0
+        return round(sum(r.score for r in self.ratings) / len(self.ratings), 1)
+    
+    def get_rating_count(self):
+        """Get total number of ratings"""
+        return len(self.ratings)
     
     def __repr__(self):
         return f'<Faction {self.name}>'
@@ -238,3 +249,21 @@ class ArmyList(db.Model):
     
     def __repr__(self):
         return f'<ArmyList {self.name}>'
+
+class FactionRating(db.Model):
+    """User ratings for public factions"""
+    id = db.Column(db.Integer, primary_key=True)
+    faction_id = db.Column(db.Integer, db.ForeignKey('faction.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    score = db.Column(db.Integer, nullable=False)  # 1-5 stars
+    comment = db.Column(db.Text)  # Optional review comment
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Unique constraint: one rating per user per faction
+    __table_args__ = (db.UniqueConstraint('faction_id', 'user_id', name='unique_faction_rating'),)
+    
+    user = db.relationship('User', backref='faction_ratings')
+    
+    def __repr__(self):
+        return f'<FactionRating {self.faction_id} by {self.user_id}>'

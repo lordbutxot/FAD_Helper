@@ -56,7 +56,6 @@
                         <tr>
                             <th>ID</th>
                             <th>Username</th>
-                            <th>Email</th>
                             <th>Admin</th>
                             <th>Status</th>
                             <th>Failed Logins</th>
@@ -75,7 +74,6 @@
                                 <span class="badge bg-info">You</span>
                                 {% endif %}
                             </td>
-                            <td>{{ user.email or '-' }}</td>
                             <td>
                                 {% if user.is_admin %}
                                 <span class="badge bg-warning text-dark">

@@ -7,7 +7,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from extensions import db
-from models import User, ArmyList, Unit, Weapon, Armour, Trait, Faction
+from models import User, ArmyList, Unit, Weapon, Armour, Trait, Faction, FactionRating
 from datetime import datetime, timedelta
 from functools import wraps
 import json
@@ -382,7 +382,62 @@ def init_routes(app):
         units = Unit.query.filter_by(faction_id=faction_id).all()
         lists = ArmyList.query.filter_by(faction_id=faction_id).all()
         
-        return render_template('view_faction.html', faction=faction, units=units, lists=lists, playstyle_tags=PLAYSTYLE_TAGS)
+        # Get user's rating if authenticated
+        user_rating = None
+        if current_user.is_authenticated:
+            user_rating = FactionRating.query.filter_by(faction_id=faction_id, user_id=current_user.id).first()
+        
+        return render_template('view_faction.html', faction=faction, units=units, lists=lists, playstyle_tags=PLAYSTYLE_TAGS, user_rating=user_rating)
+    
+    @app.route('/faction/<int:faction_id>/rate', methods=['POST'])
+    @login_required
+    def rate_faction(faction_id):
+        try:
+            faction = Faction.query.get_or_404(faction_id)
+            
+            # Only public factions can be rated
+            if not faction.is_public:
+                return jsonify({'success': False, 'error': 'Cannot rate private factions'}), 403
+            
+            # Get the rating score (1-5)
+            score = request.json.get('score')
+            comment = request.json.get('comment', '').strip()
+            
+            # Validate score
+            if not score or int(score) < 1 or int(score) > 5:
+                return jsonify({'success': False, 'error': 'Rating must be between 1 and 5'}), 400
+            
+            score = int(score)
+            
+            # Check if user already rated this faction
+            existing_rating = FactionRating.query.filter_by(faction_id=faction_id, user_id=current_user.id).first()
+            
+            if existing_rating:
+                # Update existing rating
+                existing_rating.score = score
+                existing_rating.comment = comment if comment else None
+                existing_rating.updated_at = datetime.utcnow()
+            else:
+                # Create new rating
+                new_rating = FactionRating(
+                    faction_id=faction_id,
+                    user_id=current_user.id,
+                    score=score,
+                    comment=comment if comment else None
+                )
+                db.session.add(new_rating)
+            
+            db.session.commit()
+            
+            # Return updated faction stats
+            return jsonify({
+                'success': True,
+                'average_rating': faction.get_average_rating(),
+                'rating_count': faction.get_rating_count()
+            })
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': str(e)}), 500
     
     @app.route('/faction/<int:faction_id>/delete', methods=['POST'])
     @login_required
