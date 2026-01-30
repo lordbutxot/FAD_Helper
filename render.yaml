@@ -20,4 +20,5 @@
 databases:
   - name: fad-db
     databaseName: fad_lists
-    user: fad_user    ipAllowList: []  # Allow all IPs from app
+    user: fad_user
+    ipAllowList: []

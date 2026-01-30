@@ -1,5 +1,6 @@
 """
 Production-ready configuration for F.A.D. Helper
+Supports both SQLite (local development) and PostgreSQL (production/Render)
 """
 import os
 from datetime import timedelta
@@ -7,14 +8,19 @@ from datetime import timedelta
 class Config:
     """Base configuration"""
     # Security
-    SECRET_KEY = os.environ.get('SECRET_KEY') or os.environ.get('SECRET_KEY_FALLBACK', 'dev-key-change-in-production')
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
-    # Database
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///fad_lists.db'
-    
-    # Fix for Render.com PostgreSQL URL (uses postgres:// instead of postgresql://)
-    if SQLALCHEMY_DATABASE_URI and SQLALCHEMY_DATABASE_URI.startswith('postgres://'):
-        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace('postgres://', 'postgresql://', 1)
+    # Database - Support both local dev and production
+    db_url = os.environ.get('DATABASE_URL')
+    if db_url:
+        # Production: PostgreSQL on Render
+        # Convert postgres:// to postgresql:// (SQLAlchemy 1.4+ requires this)
+        if db_url.startswith('postgres://'):
+            db_url = db_url.replace('postgres://', 'postgresql://', 1)
+        SQLALCHEMY_DATABASE_URI = db_url
+    else:
+        # Local development: SQLite
+        SQLALCHEMY_DATABASE_URI = 'sqlite:///fad_lists.db'
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
@@ -23,10 +29,11 @@ class Config:
     }
     
     # Session configuration
-    SESSION_COOKIE_SECURE = True  # Only send cookies over HTTPS
+    # Note: SESSION_COOKIE_SECURE = True requires HTTPS - set to False if getting cookie issues
+    SESSION_COOKIE_SECURE = os.environ.get('FLASK_ENV') == 'production'  # True in production, False in dev
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
-    PERMANENT_SESSION_LIFETIME = timedelta(hours=1)
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=12)  # Extended to 12 hours for better UX
     
     # CSRF Protection
     WTF_CSRF_ENABLED = True
