@@ -1250,7 +1250,8 @@ def init_routes(app):
     def list_builder():
         my_units = Unit.query.filter_by(user_id=current_user.id).order_by(Unit.faction_id, Unit.name).all()
         public_units = Unit.query.filter_by(is_public=True).order_by(Unit.faction_id, Unit.name).all()
-        return render_template('list_builder.html', my_units=my_units, public_units=public_units)
+        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
+        return render_template('list_builder.html', my_units=my_units, public_units=public_units, my_factions=my_factions)
     
     @app.route('/list/save', methods=['POST'])
     @login_required
@@ -1279,7 +1280,7 @@ def init_routes(app):
                 army_list = ArmyList(user_id=current_user.id)  # type: ignore
             
             army_list.name = data['name']
-            army_list.faction = data.get('faction', '')
+            army_list.faction_id = data.get('faction_id') or None
             army_list.description = data.get('description', '')
             army_list.units_json = json.dumps(units_data)
             army_list.total_points = total_points

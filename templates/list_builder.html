@@ -19,7 +19,19 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Faction</label>
-                            <input type="text" class="form-control" id="listFaction">
+                            <select class="form-select" id="listFaction">
+                                <option value="">No Faction</option>
+                                {% for faction in my_factions %}
+                                <option value="{{ faction.id }}">
+                                    <i class="bi bi-{{ faction.icon }}"></i> {{ faction.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">
+                                <a href="{{ url_for('faction_creator') }}" target="_blank" class="text-decoration-none">
+                                    Create a new faction
+                                </a>
+                            </small>
                         </div>
                     </div>
                     <div class="mb-3">
@@ -239,7 +251,7 @@ async function saveList() {
     
     const data = {
         name: name,
-        faction: document.getElementById('listFaction').value,
+        faction_id: document.getElementById('listFaction').value || null,
         description: document.getElementById('listDescription').value,
         units: listUnits.map(u => ({unit_id: u.unit_id, quantity: u.quantity})),
         is_public: document.getElementById('isPublic').checked
