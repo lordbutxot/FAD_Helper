@@ -11,14 +11,6 @@
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        fromDatabase:
-          name: fad-db
-          property: connectionString
+        value: REPLACE_WITH_SUPABASE_DATABASE_URL
       - key: FLASK_ENV
         value: production
-
-databases:
-  - name: fad-db
-    databaseName: fad_lists
-    user: fad_user
-    ipAllowList: []
