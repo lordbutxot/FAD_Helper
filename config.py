@@ -17,6 +17,11 @@ class Config:
         # Convert postgres:// to postgresql:// (SQLAlchemy 1.4+ requires this)
         if db_url.startswith('postgres://'):
             db_url = db_url.replace('postgres://', 'postgresql://', 1)
+        
+        # Supabase requires SSL. Append to URL if needed.
+        if 'supabase.co' in db_url and '?sslmode=' not in db_url:
+            db_url = db_url + '?sslmode=require'
+        
         SQLALCHEMY_DATABASE_URI = db_url
     else:
         # Local development: SQLite
@@ -27,9 +32,6 @@ class Config:
         'pool_pre_ping': True,  # Verify connections before using
         'pool_recycle': 300,    # Recycle connections after 5 minutes
     }
-    # Supabase requires SSL. Append to URL if needed.
-    if db_url and 'supabase.co' in db_url and '?sslmode=' not in db_url:
-        SQLALCHEMY_DATABASE_URI = db_url + '?sslmode=require'
     
     # Session configuration
     # Note: SESSION_COOKIE_SECURE = True requires HTTPS - set to False if getting cookie issues
