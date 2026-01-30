@@ -3,11 +3,11 @@
 {% block title %}Character Builder - F.A.D. List Builder{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container-fluid mt-4">
     <div class="row">
         <div class="col-lg-8">
             <h2>Character Builder</h2>
-            <p class="text-muted">Build a unique character with leadership abilities and specialization.</p>
+            <p class="text-muted">Build a unique character with leadership abilities and specialization. Configure your character and see a live preview on the right.</p>
             
             <form id="characterForm" method="POST" action="{{ url_for('character_builder') }}">
                 <!-- Basic Info -->
@@ -17,13 +17,33 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label for="name" class="form-label">Character Name *</label>
+                            <label for="name" class="form-label">
+                                Character Name *
+                                <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Give your character a unique name"></i>
+                            </label>
                             <input type="text" class="form-control" id="name" name="name" required>
                         </div>
                         
                         <div class="mb-3">
-                            <label for="faction" class="form-label">Faction</label>
-                            <input type="text" class="form-control" id="faction" name="faction" placeholder="Optional">
+                            <label for="faction_id" class="form-label">
+                                Faction 
+                                <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Select a faction to organize your units. You can create factions in the Faction Creator."></i>
+                            </label>
+                            <select class="form-select" id="faction_id" name="faction_id">
+                                <option value="">No Faction</option>
+                                {% for faction in my_factions %}
+                                <option value="{{ faction.id }}" data-color="{{ faction.color }}">
+                                    <i class="bi bi-{{ faction.icon }}"></i> {{ faction.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% if my_factions|length == 0 %}
+                            <small class="text-muted">
+                                <a href="{{ url_for('faction_creator') }}" class="text-decoration-none">
+                                    <i class="bi bi-plus-circle"></i> Create your first faction
+                                </a>
+                            </small>
+                            {% endif %}
                         </div>
                         
                         <div class="mb-3">
@@ -45,7 +65,10 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label for="quality" class="form-label">Quality *</label>
+                            <label for="quality" class="form-label">
+                                Quality *
+                                <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Character's skill level. Higher quality = better rolls but more points"></i>
+                            </label>
                             <select class="form-select" id="quality" name="quality" required>
                                 <option value="">Select Quality...</option>
                                 <option value="Conscript">Conscript (4+)</option>
@@ -56,7 +79,10 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="resolve" class="form-label">Resolve *</label>
+                            <label for="resolve" class="form-label">
+                                Resolve *
+                                <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Character's morale and willpower under stress"></i>
+                            </label>
                             <select class="form-select" id="resolve" name="resolve" required>
                                 <option value="">Select Resolve...</option>
                                 <option value="Uncertain">Uncertain</option>
@@ -74,7 +100,10 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label for="leadership_rating" class="form-label">Leadership Rating *</label>
+                            <label for="leadership_rating" class="form-label">
+                                Leadership Rating *
+                                <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Leadership bonus affects Command Response tests for nearby units"></i>
+                            </label>
                             <select class="form-select" id="leadership_rating" name="leadership_rating" required>
                                 <option value="">Select Rating...</option>
                                 <option value="Novice">Novice (0 bonus, +0 pts)</option>
@@ -105,21 +134,37 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label for="armour_id" class="form-label">Armour</label>
+                            <label for="armour_id" class="form-label">
+                                Armour
+                                <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Protective equipment that increases defense but adds to points cost"></i>
+                            </label>
                             <select class="form-select" id="armour_id" name="armour_id">
                                 <option value="">No Armour</option>
                                 {% for armour in armours %}
-                                <option value="{{ armour.id }}">{{ armour.name }} (+{{ armour.points }} pts)</option>
+                                <option value="{{ armour.id }}"
+                                        data-bs-toggle="tooltip" 
+                                        data-bs-placement="right"
+                                        title="Rating: {{ armour.rating }} | Points: +{{ armour.points }}{% if armour.special_rules %} | {{ armour.special_rules }}{% endif %}">
+                                    {{ armour.name }} (Rating: {{ armour.rating }}, +{{ armour.points }} pts)
+                                </option>
                                 {% endfor %}
                             </select>
                         </div>
                         
                         <div class="mb-3">
-                            <label for="basic_weapon_id" class="form-label">Weapon *</label>
+                            <label for="basic_weapon_id" class="form-label">
+                                Weapon *
+                                <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Primary weapon for the character"></i>
+                            </label>
                             <select class="form-select" id="basic_weapon_id" name="basic_weapon_id" required>
                                 <option value="">Select Weapon...</option>
                                 {% for weapon in weapons %}
-                                <option value="{{ weapon.id }}">{{ weapon.name }} ({{ weapon.range }}, FE:{{ weapon.fire_effect }}, +{{ weapon.points }} pts)</option>
+                                <option value="{{ weapon.id }}"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="right"
+                                        title="Range: {{ weapon.range_multiplier }}× | Damage: {{ weapon.damage }} | Fire Effect: {{ weapon.fire_effect }}{% if weapon.armor_piercing > 0 %} | AP: {{ weapon.armor_piercing }}{% endif %}{% if weapon.special_rules %} | {{ weapon.special_rules }}{% endif %}">
+                                    {{ weapon.name }} (Rng:{{ weapon.range_multiplier }}, FE:{{ weapon.fire_effect }}, +{{ weapon.points }} pts)
+                                </option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -135,12 +180,16 @@
                         <p class="text-muted">Select special traits for this character</p>
                         <div class="row">
                             {% for trait in traits %}
-                            <div class="col-md-6">
-                                <div class="form-check">
+                            <div class="col-md-6 mb-2">
+                                <div class="form-check trait-option">
                                     <input class="form-check-input" type="checkbox" name="traits" value="{{ trait.id }}" id="trait_{{ trait.id }}">
                                     <label class="form-check-label" for="trait_{{ trait.id }}">
                                         {{ trait.name }} 
-                                        <small class="text-muted">({{ trait.points_modifier }}{% if trait.points_modifier > 0 %}+{% endif %}{{ trait.points_modifier }} pts)</small>
+                                        <small class="text-muted">(×{{ trait.points_multiplier }})</small>
+                                        <i class="bi bi-info-circle info-icon" 
+                                           data-bs-toggle="tooltip" 
+                                           data-bs-placement="right"
+                                           title="{{ trait.description }} | Multiplier: ×{{ trait.points_multiplier }} | Category: {{ trait.category }}"></i>
                                     </label>
                                 </div>
                             </div>
@@ -167,37 +216,69 @@
             </form>
         </div>
 
-        <!-- Points Calculator Sidebar -->
+        <!-- Live Preview Sidebar -->
         <div class="col-lg-4">
-            <div class="card sticky-top" style="top: 20px;">
-                <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0">Points Calculator</h5>
+            <!-- Unit Preview Card -->
+            <div class="card sticky-top border-primary" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-eye"></i> Live Preview</h5>
                 </div>
                 <div class="card-body">
-                    <div class="mb-3">
-                        <strong>Base Quality:</strong>
-                        <span id="calc_base_points" class="float-end">0</span>
+                    <h4 id="preview-name" class="card-title">Unnamed Character</h4>
+                    <p class="text-muted mb-2" id="preview-faction">No Faction</p>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Type:</small>
+                            <div class="fw-bold">Character</div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Total Points:</small>
+                            <div id="preview-points" class="fw-bold text-danger fs-4">0</div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <strong>Leadership:</strong>
-                        <span id="calc_leadership" class="float-end">0</span>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Quality:</small>
+                            <div id="preview-quality" class="fw-bold">Elite (2+)</div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Resolve:</small>
+                            <div id="preview-resolve" class="fw-bold">Determined</div>
+                        </div>
                     </div>
+                    
                     <div class="mb-3">
-                        <strong>Personality:</strong>
-                        <span id="calc_personality" class="float-end">0</span>
+                        <small class="text-muted">Leadership:</small>
+                        <div id="preview-leadership">Novice</div>
                     </div>
+                    
                     <div class="mb-3">
-                        <strong>Equipment:</strong>
-                        <span id="calc_equipment" class="float-end">0</span>
+                        <small class="text-muted">Specialization:</small>
+                        <div id="preview-specialization">None</div>
                     </div>
+                    
                     <div class="mb-3">
-                        <strong>Traits:</strong>
-                        <span id="calc_traits" class="float-end">0</span>
+                        <small class="text-muted">Personality:</small>
+                        <div id="preview-personality">No</div>
                     </div>
-                    <hr>
-                    <div class="fs-4">
-                        <strong>Total Points:</strong>
-                        <span id="calc_total" class="float-end text-primary">0</span>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">Armour:</small>
+                        <div id="preview-armour">None</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">Weapon:</small>
+                        <div id="preview-weapon">None</div>
+                    </div>
+                    
+                    <div id="preview-traits-container" class="mb-3" style="display: none;">
+                        <small class="text-muted">Traits:</small>
+                        <div id="preview-traits">
+                            <span class="badge bg-secondary">None</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -227,11 +308,34 @@
 </div>
 
 <script>
-// Real-time points calculator
-const qualityPoints = {
-    'Conscript': 6,
-    'Regular': 8,
-    'Elite': 10
+// Initialize Bootstrap tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+// Live preview and points calculator
+// Official F.A.D. points system multipliers
+const qualityMultipliers = {
+    'Rabble': 0.7,
+    'Conscript': 0,
+    'Regular': 1.3,
+    'Elite': 1.6
+};
+
+const resolveMultipliers = {
+    'Reluctant': -0.5,
+    'Uncertain': -0.3,
+    'Steady': 0,
+    'Determined': 0.3
+};
+
+const qualityDisplay = {
+    'Conscript': 'Conscript (4+)',
+    'Regular': 'Regular (3+)',
+    'Elite': 'Elite (2+)'
 };
 
 const leadershipPoints = {
@@ -247,67 +351,157 @@ const weaponPoints = {
     {% endfor %}
 };
 
+const weaponNames = {
+    {% for weapon in weapons %}
+    '{{ weapon.id }}': '{{ weapon.name }} (Rng:{{ weapon.range_multiplier }}, FE:{{ weapon.fire_effect }})',
+    {% endfor %}
+};
+
 const armourPoints = {
     {% for armour in armours %}
     '{{ armour.id }}': {{ armour.points }},
     {% endfor %}
 };
 
-const traitPoints = {
-    {% for trait in traits %}
-    '{{ trait.id }}': {{ trait.points_modifier }},
+const armourNames = {
+    {% for armour in armours %}
+    '{{ armour.id }}': '{{ armour.name }} (Rating: {{ armour.rating }})',
     {% endfor %}
 };
 
+const traitPoints = {
+    {% for trait in traits %}
+    '{{ trait.id }}': {{ trait.points_multiplier }},
+    {% endfor %}
+};
+
+const traitNames = {
+    {% for trait in traits %}
+    '{{ trait.id }}': '{{ trait.name }}',
+    {% endfor %}
+};
+
+const factionNames = {
+    {% for faction in my_factions %}
+    '{{ faction.id }}': '{{ faction.name }}',
+    {% endfor %}
+};
+
+function updatePreview() {
+    // Update name
+    const name = document.getElementById('name').value || 'Unnamed Character';
+    document.getElementById('preview-name').textContent = name;
+    
+    // Update faction
+    const factionId = document.getElementById('faction_id').value;
+    document.getElementById('preview-faction').textContent = factionId ? factionNames[factionId] : 'No Faction';
+    
+    // Update quality and resolve
+    const quality = document.getElementById('quality').value;
+    const resolve = document.getElementById('resolve').value;
+    document.getElementById('preview-quality').textContent = quality ? qualityDisplay[quality] : '-';
+    document.getElementById('preview-resolve').textContent = resolve || '-';
+    
+    // Update leadership
+    const leadership = document.getElementById('leadership_rating').value;
+    document.getElementById('preview-leadership').textContent = leadership || 'None';
+    
+    // Update specialization
+    const specialization = document.getElementById('specialization').value;
+    document.getElementById('preview-specialization').textContent = specialization || 'None';
+    
+    // Update personality
+    const hasPersonality = document.getElementById('has_personality').checked;
+    document.getElementById('preview-personality').textContent = hasPersonality ? 'Yes (+5 pts)' : 'No';
+    
+    // Update armour
+    const armourId = document.getElementById('armour_id').value;
+    document.getElementById('preview-armour').textContent = armourId ? armourNames[armourId] : 'None';
+    
+    // Update weapon
+    const weaponId = document.getElementById('basic_weapon_id').value;
+    document.getElementById('preview-weapon').textContent = weaponId ? weaponNames[weaponId] : 'None';
+    
+    // Update traits
+    const selectedTraits = [];
+    document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
+        selectedTraits.push(traitNames[checkbox.value]);
+    });
+    
+    const traitsContainer = document.getElementById('preview-traits-container');
+    const traitsDiv = document.getElementById('preview-traits');
+    
+    if (selectedTraits.length > 0) {
+        traitsContainer.style.display = 'block';
+        traitsDiv.innerHTML = selectedTraits.map(trait => 
+            `<span class="badge bg-info me-1 mb-1">${trait}</span>`
+        ).join('');
+    } else {
+        traitsContainer.style.display = 'none';
+    }
+    
+    // Calculate and update points
+    calculatePoints();
+}
+
 function calculatePoints() {
     const quality = document.getElementById('quality').value;
+    const resolve = document.getElementById('resolve').value;
     const leadership = document.getElementById('leadership_rating').value;
     const hasPersonality = document.getElementById('has_personality').checked;
     const weaponId = document.getElementById('basic_weapon_id').value;
     const armourId = document.getElementById('armour_id').value;
     
-    // Base points (quality)
-    const basePoints = qualityPoints[quality] || 0;
+    // Official F.A.D. points formula:
+    // 1. Base cost: 3 points per trooper
+    let cost = 3;
     
-    // Leadership bonus
-    const leadershipPts = leadershipPoints[leadership] || 0;
-    
-    // Personality
-    const personalityPts = hasPersonality ? 5 : 0;
-    
-    // Equipment points
-    const weaponPts = weaponId ? (weaponPoints[weaponId] || 0) : 0;
+    // 2. Add armour modifier
     const armourPts = armourId ? (armourPoints[armourId] || 0) : 0;
-    const equipmentPoints = weaponPts + armourPts;
+    cost += armourPts;
     
-    // Traits
-    let traitsPoints = 0;
+    // 3. Add weapon points
+    const weaponPts = weaponId ? (weaponPoints[weaponId] || 0) : 0;
+    cost += weaponPts;
+    
+    // 4. Multiply by (1 + Quality multiplier + Resolve multiplier)
+    const qualityMult = qualityMultipliers[quality] || 0;
+    const resolveMult = resolveMultipliers[resolve] || 0;
+    cost = cost * (1 + qualityMult + resolveMult);
+    
+    // 5. Multiply by each trait's points_multiplier individually
     document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
-        traitsPoints += traitPoints[checkbox.value] || 0;
+        const traitMult = traitPoints[checkbox.value] || 1;
+        cost = cost * traitMult;
     });
     
-    const totalPoints = basePoints + leadershipPts + personalityPts + equipmentPoints + traitsPoints;
+    // Add leadership and personality bonuses (these are flat additions)
+    const leadershipPts = leadershipPoints[leadership] || 0;
+    const personalityPts = hasPersonality ? 5 : 0;
+    cost += leadershipPts + personalityPts;
     
-    // Update display
-    document.getElementById('calc_base_points').textContent = basePoints;
-    document.getElementById('calc_leadership').textContent = leadershipPts;
-    document.getElementById('calc_personality').textContent = personalityPts;
-    document.getElementById('calc_equipment').textContent = equipmentPoints;
-    document.getElementById('calc_traits').textContent = traitsPoints;
-    document.getElementById('calc_total').textContent = totalPoints;
+    // 6. Round to nearest whole number
+    const totalPoints = Math.round(cost);
+    
+    // Update preview
+    document.getElementById('preview-points').textContent = totalPoints;
 }
 
-// Attach event listeners
-document.getElementById('quality').addEventListener('change', calculatePoints);
-document.getElementById('leadership_rating').addEventListener('change', calculatePoints);
-document.getElementById('has_personality').addEventListener('change', calculatePoints);
-document.getElementById('basic_weapon_id').addEventListener('change', calculatePoints);
-document.getElementById('armour_id').addEventListener('change', calculatePoints);
+// Attach event listeners to all inputs
+document.getElementById('name').addEventListener('input', updatePreview);
+document.getElementById('faction_id').addEventListener('change', updatePreview);
+document.getElementById('quality').addEventListener('change', updatePreview);
+document.getElementById('resolve').addEventListener('change', updatePreview);
+document.getElementById('leadership_rating').addEventListener('change', updatePreview);
+document.getElementById('specialization').addEventListener('change', updatePreview);
+document.getElementById('has_personality').addEventListener('change', updatePreview);
+document.getElementById('basic_weapon_id').addEventListener('change', updatePreview);
+document.getElementById('armour_id').addEventListener('change', updatePreview);
 document.querySelectorAll('input[name="traits"]').forEach(checkbox => {
-    checkbox.addEventListener('change', calculatePoints);
+    checkbox.addEventListener('change', updatePreview);
 });
 
-// Initial calculation
-calculatePoints();
+// Initial update
+updatePreview();
 </script>
 {% endblock %}

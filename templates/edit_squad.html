@@ -108,7 +108,7 @@
                                     <input class="form-check-input" type="checkbox" name="traits" value="{{ trait.id }}" id="trait_{{ trait.id }}" {% if trait.id in unit.get_traits() %}checked{% endif %}>
                                     <label class="form-check-label" for="trait_{{ trait.id }}">
                                         {{ trait.name }} 
-                                        <small class="text-muted">({{ trait.points_modifier }}{% if trait.points_modifier > 0 %}+{% endif %}{{ trait.points_modifier }} pts)</small>
+                                        <small class="text-muted">({{ trait.points_multiplier }}{% if trait.points_multiplier > 0 %}+{% endif %}{{ trait.points_multiplier }} pts)</small>
                                     </label>
                                 </div>
                             </div>
@@ -211,7 +211,7 @@ const armourPoints = {
 
 const traitPoints = {
     {% for trait in traits %}
-    '{{ trait.id }}': {{ trait.points_modifier }},
+    '{{ trait.id }}': {{ trait.points_multiplier }},
     {% endfor %}
 };
 

@@ -188,10 +188,13 @@ def init_routes(app):
                 return render_template('register.html')
             
             # Create new user with pbkdf2:sha256 hashing
+            # Auto-promote the very first registered user to admin
+            is_first_user = User.query.count() == 0
             user = User(  # type: ignore
                 username=username,
                 email=email,
-                password_hash=generate_password_hash(password, method='pbkdf2:sha256', salt_length=16)
+                password_hash=generate_password_hash(password, method='pbkdf2:sha256', salt_length=16),
+                is_admin=is_first_user
             )
             db.session.add(user)
             db.session.commit()
@@ -583,13 +586,15 @@ def init_routes(app):
     def squad_builder():
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
-        traits = Trait.query.order_by(Trait.category, Trait.name).all()
+        # All infantry types share the same traits (per .TXT files)
+        traits = Trait.query.filter_by(category='Infantry').order_by(Trait.name).all()
+        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
         
         if request.method == 'POST':
             try:
                 # Get form data
                 name = request.form.get('name', '').strip()
-                faction = request.form.get('faction', '').strip()
+                faction_id = request.form.get('faction_id') or None
                 quality = request.form.get('quality')
                 resolve = request.form.get('resolve')
                 squad_size = int(request.form.get('squad_size', 5))
@@ -614,7 +619,7 @@ def init_routes(app):
                     user_id=current_user.id,
                     name=name,
                     unit_type='Squad',
-                    faction=faction,
+                    faction_id=int(faction_id) if faction_id else None,
                     quality=quality,
                     resolve=resolve,
                     squad_size=squad_size,
@@ -636,7 +641,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating squad: {str(e)}', 'danger')
         
-        return render_template('squad_builder.html', weapons=weapons, armours=armours, traits=traits)
+        return render_template('squad_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions)
     
     # ==================== CHARACTER BUILDER ====================
     @app.route('/unit/builder/character', methods=['GET', 'POST'])
@@ -644,12 +649,14 @@ def init_routes(app):
     def character_builder():
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
-        traits = Trait.query.order_by(Trait.category, Trait.name).all()
+        # All infantry types share the same traits (per .TXT files)
+        traits = Trait.query.filter_by(category='Infantry').order_by(Trait.name).all()
+        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
         
         if request.method == 'POST':
             try:
                 name = request.form.get('name', '').strip()
-                faction = request.form.get('faction', '').strip()
+                faction_id = request.form.get('faction_id') or None
                 quality = request.form.get('quality')
                 resolve = request.form.get('resolve')
                 has_personality = request.form.get('has_personality') == 'true'
@@ -676,7 +683,7 @@ def init_routes(app):
                     user_id=current_user.id,
                     name=name,
                     unit_type='Character',
-                    faction=faction,
+                    faction_id=int(faction_id) if faction_id else None,
                     quality=quality,
                     resolve=resolve,
                     has_personality=has_personality,
@@ -700,7 +707,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating character: {str(e)}', 'danger')
         
-        return render_template('character_builder.html', weapons=weapons, armours=armours, traits=traits)
+        return render_template('character_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions)
     
     # ==================== HEAVY WEAPONS TEAM BUILDER ====================
     @app.route('/unit/builder/heavy-weapon', methods=['GET', 'POST'])
@@ -708,12 +715,14 @@ def init_routes(app):
     def heavy_weapon_builder():
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
-        traits = Trait.query.order_by(Trait.category, Trait.name).all()
+        # Heavy weapon teams are small infantry units - Infantry traits only
+        traits = Trait.query.filter_by(category='Infantry').order_by(Trait.name).all()
+        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
         
         if request.method == 'POST':
             try:
                 name = request.form.get('name', '').strip()
-                faction = request.form.get('faction', '').strip()
+                faction_id = request.form.get('faction_id') or None
                 quality = request.form.get('quality')
                 resolve = request.form.get('resolve')
                 heavy_weapon_id = request.form.get('heavy_weapon_id') or None
@@ -735,7 +744,7 @@ def init_routes(app):
                     user_id=current_user.id,
                     name=name,
                     unit_type='HeavyWeapon',
-                    faction=faction,
+                    faction_id=int(faction_id) if faction_id else None,
                     quality=quality,
                     resolve=resolve,
                     heavy_weapon_id=int(heavy_weapon_id) if heavy_weapon_id else None,
@@ -756,7 +765,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating heavy weapons team: {str(e)}', 'danger')
         
-        return render_template('heavy_weapon_builder.html', weapons=weapons, armours=armours, traits=traits)
+        return render_template('heavy_weapon_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions)
     
     # ==================== SNIPER BUILDER ====================
     @app.route('/unit/builder/sniper', methods=['GET', 'POST'])
@@ -764,12 +773,14 @@ def init_routes(app):
     def sniper_builder():
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
-        traits = Trait.query.order_by(Trait.category, Trait.name).all()
+        # Snipers are individual infantry specialists - Infantry traits only
+        traits = Trait.query.filter_by(category='Infantry').order_by(Trait.name).all()
+        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
         
         if request.method == 'POST':
             try:
                 name = request.form.get('name', '').strip()
-                faction = request.form.get('faction', '').strip()
+                faction_id = request.form.get('faction_id') or None
                 quality = request.form.get('quality')
                 resolve = request.form.get('resolve')
                 has_personality = request.form.get('has_personality') == 'true'
@@ -793,7 +804,7 @@ def init_routes(app):
                     user_id=current_user.id,
                     name=name,
                     unit_type='Sniper',
-                    faction=faction,
+                    faction_id=int(faction_id) if faction_id else None,
                     quality=quality,
                     resolve=resolve,
                     has_personality=has_personality,
@@ -815,7 +826,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating sniper: {str(e)}', 'danger')
         
-        return render_template('sniper_builder.html', weapons=weapons, armours=armours, traits=traits)
+        return render_template('sniper_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions)
     
     # ==================== PSIONIC BUILDER ====================
     @app.route('/unit/builder/psionic', methods=['GET', 'POST'])
@@ -823,12 +834,14 @@ def init_routes(app):
     def psionic_builder():
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
-        traits = Trait.query.order_by(Trait.category, Trait.name).all()
+        # Psionics are individual infantry with special powers - Infantry traits only
+        traits = Trait.query.filter_by(category='Infantry').order_by(Trait.name).all()
+        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
         
         if request.method == 'POST':
             try:
                 name = request.form.get('name', '').strip()
-                faction = request.form.get('faction', '').strip()
+                faction_id = request.form.get('faction_id') or None
                 quality = request.form.get('quality')
                 resolve = request.form.get('resolve')
                 has_personality = request.form.get('has_personality') == 'true'
@@ -856,7 +869,7 @@ def init_routes(app):
                     user_id=current_user.id,
                     name=name,
                     unit_type='Psionic',
-                    faction=faction,
+                    faction_id=int(faction_id) if faction_id else None,
                     quality=quality,
                     resolve=resolve,
                     has_personality=has_personality,
@@ -880,7 +893,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating psionic: {str(e)}', 'danger')
         
-        return render_template('psionic_builder.html', weapons=weapons, armours=armours, traits=traits)
+        return render_template('psionic_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions)
     
     # ==================== VEHICLE BUILDER ====================
     @app.route('/unit/builder/vehicle', methods=['GET', 'POST'])
@@ -888,12 +901,14 @@ def init_routes(app):
     def vehicle_builder():
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
-        traits = Trait.query.order_by(Trait.category, Trait.name).all()
+        # Vehicles have their own specific properties/traits
+        traits = Trait.query.filter_by(category='Vehicle').order_by(Trait.name).all()
+        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
         
         if request.method == 'POST':
             try:
                 name = request.form.get('name', '').strip()
-                faction = request.form.get('faction', '').strip()
+                faction_id = request.form.get('faction_id') or None
                 vehicle_type = request.form.get('vehicle_type')
                 quality = request.form.get('quality')
                 resolve = request.form.get('resolve')
@@ -925,7 +940,7 @@ def init_routes(app):
                     user_id=current_user.id,
                     name=name,
                     unit_type='Vehicle',
-                    faction=faction,
+                    faction_id=int(faction_id) if faction_id else None,
                     vehicle_type=vehicle_type,
                     quality=quality,
                     resolve=resolve,
@@ -951,7 +966,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating vehicle: {str(e)}', 'danger')
         
-        return render_template('vehicle_builder.html', weapons=weapons, armours=armours, traits=traits)
+        return render_template('vehicle_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions)
     
     # ==================== UNIT EDIT ====================
     @app.route('/unit/<int:unit_id>/edit', methods=['GET', 'POST'])
@@ -972,7 +987,8 @@ def init_routes(app):
             try:
                 # Common fields for all unit types
                 unit.name = request.form.get('name', '').strip()
-                unit.faction = request.form.get('faction', '').strip()
+                faction_id = request.form.get('faction_id')
+                unit.faction_id = int(faction_id) if faction_id else None
                 unit.quality = request.form.get('quality')
                 unit.resolve = request.form.get('resolve')
                 unit.notes = request.form.get('notes', '').strip()
@@ -1177,8 +1193,8 @@ def init_routes(app):
     @app.route('/list/builder')
     @login_required
     def list_builder():
-        my_units = Unit.query.filter_by(user_id=current_user.id).order_by(Unit.faction, Unit.name).all()
-        public_units = Unit.query.filter_by(is_public=True).order_by(Unit.faction, Unit.name).all()
+        my_units = Unit.query.filter_by(user_id=current_user.id).order_by(Unit.faction_id, Unit.name).all()
+        public_units = Unit.query.filter_by(is_public=True).order_by(Unit.faction_id, Unit.name).all()
         return render_template('list_builder.html', my_units=my_units, public_units=public_units)
     
     @app.route('/list/save', methods=['POST'])
@@ -1251,8 +1267,8 @@ def init_routes(app):
             flash('You can only edit your own lists', 'danger')
             return redirect(url_for('dashboard'))
         
-        my_units = Unit.query.filter_by(user_id=current_user.id).order_by(Unit.faction, Unit.name).all()
-        public_units = Unit.query.filter_by(is_public=True).order_by(Unit.faction, Unit.name).all()
+        my_units = Unit.query.filter_by(user_id=current_user.id).order_by(Unit.faction_id, Unit.name).all()
+        public_units = Unit.query.filter_by(is_public=True).order_by(Unit.faction_id, Unit.name).all()
         
         return render_template('edit_list.html', army_list=army_list, my_units=my_units, public_units=public_units)
     

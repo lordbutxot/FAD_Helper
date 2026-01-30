@@ -3,11 +3,11 @@
 {% block title %}Vehicle Builder - F.A.D. List Builder{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container-fluid mt-4">
     <div class="row">
         <div class="col-lg-8">
             <h2>Vehicle Builder</h2>
-            <p class="text-muted">Build a vehicle unit. Save the vehicle first, then add multiple weapons.</p>
+            <p class="text-muted">Build a vehicle unit. Configure your vehicle and see a live preview on the right.</p>
             
             <form id="vehicleForm" method="POST" action="{{ url_for('vehicle_builder') }}">
                 <!-- Basic Info -->
@@ -17,17 +17,40 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label for="name" class="form-label">Vehicle Name *</label>
+                            <label for="name" class="form-label">
+                                Vehicle Name *
+                                <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Give your vehicle a unique name"></i>
+                            </label>
                             <input type="text" class="form-control" id="name" name="name" required placeholder="e.g., Main Battle Tank, APC">
                         </div>
                         
                         <div class="mb-3">
-                            <label for="faction" class="form-label">Faction</label>
-                            <input type="text" class="form-control" id="faction" name="faction" placeholder="Optional">
+                            <label for="faction_id" class="form-label">
+                                Faction 
+                                <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Select a faction to organize your units. You can create factions in the Faction Creator."></i>
+                            </label>
+                            <select class="form-select" id="faction_id" name="faction_id">
+                                <option value="">No Faction</option>
+                                {% for faction in my_factions %}
+                                <option value="{{ faction.id }}" data-color="{{ faction.color }}">
+                                    <i class="bi bi-{{ faction.icon }}"></i> {{ faction.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% if my_factions|length == 0 %}
+                            <small class="text-muted">
+                                <a href="{{ url_for('faction_creator') }}" class="text-decoration-none">
+                                    <i class="bi bi-plus-circle"></i> Create your first faction
+                                </a>
+                            </small>
+                            {% endif %}
                         </div>
                         
                         <div class="mb-3">
-                            <label for="vehicle_type" class="form-label">Vehicle Type *</label>
+                            <label for="vehicle_type" class="form-label">
+                                Vehicle Type *
+                                <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Classification determines base characteristics and role on battlefield"></i>
+                            </label>
                             <select class="form-select" id="vehicle_type" name="vehicle_type" required>
                                 <option value="">Select Type...</option>
                                 <option value="Light Transport">Light Transport</option>
@@ -51,7 +74,10 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="quality" class="form-label">Quality *</label>
+                                <label for="quality" class="form-label">
+                                    Quality *
+                                    <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Crew skill level. Affects shooting and maneuver tests"></i>
+                                </label>
                                 <select class="form-select" id="quality" name="quality" required>
                                     <option value="">Select Quality...</option>
                                     <option value="Conscript">Conscript (4+)</option>
@@ -61,7 +87,10 @@
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                                <label for="resolve" class="form-label">Resolve *</label>
+                                <label for="resolve" class="form-label">
+                                    Resolve *
+                                    <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Crew morale when vehicle is damaged"></i>
+                                </label>
                                 <select class="form-select" id="resolve" name="resolve" required>
                                     <option value="">Select Resolve...</option>
                                     <option value="Reluctant">Reluctant</option>
@@ -73,7 +102,10 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="movement_type" class="form-label">Movement Type *</label>
+                            <label for="movement_type" class="form-label">
+                                Movement Type *
+                                <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Determines movement speed and terrain capability. Faster = more points"></i>
+                            </label>
                             <select class="form-select" id="movement_type" name="movement_type" required>
                                 <option value="">Select Movement...</option>
                                 <option value="Fly">Fly (36" move)</option>
@@ -95,17 +127,26 @@
                         <p class="text-muted">Directional armour values (5 pts per armour point)</p>
                         <div class="row">
                             <div class="col-md-4 mb-3">
-                                <label for="vehicle_armour_front" class="form-label">Front Armour *</label>
+                                <label for="vehicle_armour_front" class="form-label">
+                                    Front Armour *
+                                    <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Front armor protection. Most vulnerable to frontal attacks"></i>
+                                </label>
                                 <input type="number" class="form-control" id="vehicle_armour_front" name="vehicle_armour_front" min="0" max="20" value="3" required>
                             </div>
                             
                             <div class="col-md-4 mb-3">
-                                <label for="vehicle_armour_side" class="form-label">Side Armour *</label>
+                                <label for="vehicle_armour_side" class="form-label">
+                                    Side Armour *
+                                    <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Side armor protection. Typically weaker than front"></i>
+                                </label>
                                 <input type="number" class="form-control" id="vehicle_armour_side" name="vehicle_armour_side" min="0" max="20" value="2" required>
                             </div>
                             
                             <div class="col-md-4 mb-3">
-                                <label for="vehicle_armour_rear" class="form-label">Rear Armour *</label>
+                                <label for="vehicle_armour_rear" class="form-label">
+                                    Rear Armour *
+                                    <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Rear armor protection. Weakest facing on most vehicles"></i>
+                                </label>
                                 <input type="number" class="form-control" id="vehicle_armour_rear" name="vehicle_armour_rear" min="0" max="20" value="1" required>
                             </div>
                         </div>
@@ -120,13 +161,19 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="crew_size" class="form-label">Crew Size *</label>
+                                <label for="crew_size" class="form-label">
+                                    Crew Size *
+                                    <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Number of crew members to operate vehicle"></i>
+                                </label>
                                 <input type="number" class="form-control" id="crew_size" name="crew_size" min="1" max="10" value="2" required>
                                 <small class="text-muted">Number of crew members</small>
                             </div>
                             
                             <div class="col-md-6 mb-3">
-                                <label for="carrying_capacity" class="form-label">Transport Capacity</label>
+                                <label for="carrying_capacity" class="form-label">
+                                    Transport Capacity
+                                    <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Infantry carrying capacity. 2 points per slot. Set to 0 if not a transport"></i>
+                                </label>
                                 <input type="number" class="form-control" id="carrying_capacity" name="carrying_capacity" min="0" max="50" value="0">
                                 <small class="text-muted">Infantry capacity (0 if not transport)</small>
                             </div>
@@ -140,10 +187,23 @@
                         <h5 class="mb-0">Vehicle Properties</h5>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted">Special vehicle properties and abilities</p>
-                        <div class="mb-3">
-                            <textarea class="form-control" id="vehicle_properties" name="vehicle_properties" rows="3" placeholder="e.g., Amphibious, Smoke Launchers, Active Protection System"></textarea>
-                            <small class="text-muted">Enter properties separated by commas</small>
+                        <p class="text-muted">Select special vehicle properties and abilities (each affects points multiplier)</p>
+                        <div class="row">
+                            {% for trait in traits %}
+                            <div class="col-md-6 mb-2">
+                                <div class="form-check trait-option">
+                                    <input class="form-check-input" type="checkbox" name="traits" value="{{ trait.id }}" id="trait_{{ trait.id }}">
+                                    <label class="form-check-label" for="trait_{{ trait.id }}">
+                                        {{ trait.name }} 
+                                        <small class="text-muted">(×{{ trait.points_multiplier }})</small>
+                                        <i class="bi bi-info-circle info-icon" 
+                                           data-bs-toggle="tooltip" 
+                                           data-bs-placement="right"
+                                           title="{{ trait.description }} | Multiplier: ×{{ trait.points_multiplier }}"></i>
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
@@ -167,43 +227,63 @@
             </form>
         </div>
 
-        <!-- Points Calculator Sidebar -->
+        <!-- Live Preview Sidebar -->
         <div class="col-lg-4">
-            <div class="card sticky-top" style="top: 20px;">
-                <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0">Points Calculator</h5>
+            <!-- Unit Preview Card -->
+            <div class="card sticky-top border-primary" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-eye"></i> Live Preview</h5>
                 </div>
                 <div class="card-body">
+                    <h4 id="preview-name" class="card-title">Unnamed Vehicle</h4>
+                    <p class="text-muted mb-2" id="preview-faction">No Faction</p>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Type:</small>
+                            <div id="preview-type" class="fw-bold">Vehicle</div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Total Points:</small>
+                            <div id="preview-points" class="fw-bold text-danger fs-4">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <small class="text-muted">Quality:</small>
+                            <div id="preview-quality" class="fw-bold">Regular (3+)</div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Resolve:</small>
+                            <div id="preview-resolve" class="fw-bold">Steady</div>
+                        </div>
+                    </div>
+                    
                     <div class="mb-3">
-                        <strong>Base Quality:</strong>
-                        <span id="calc_base_points" class="float-end">0</span>
+                        <small class="text-muted">Movement:</small>
+                        <div id="preview-movement">None</div>
                     </div>
+                    
                     <div class="mb-3">
-                        <strong>Front Armour:</strong>
-                        <span id="calc_front" class="float-end">0</span>
+                        <small class="text-muted">Armour (F/S/R):</small>
+                        <div id="preview-armour">3 / 2 / 1</div>
                     </div>
+                    
                     <div class="mb-3">
-                        <strong>Side Armour:</strong>
-                        <span id="calc_side" class="float-end">0</span>
+                        <small class="text-muted">Crew:</small>
+                        <div id="preview-crew">2</div>
                     </div>
-                    <div class="mb-3">
-                        <strong>Rear Armour:</strong>
-                        <span id="calc_rear" class="float-end">0</span>
+                    
+                    <div id="preview-capacity-container" class="mb-3" style="display: none;">
+                        <small class="text-muted">Transport Capacity:</small>
+                        <div id="preview-capacity">0</div>
                     </div>
-                    <div class="mb-3">
-                        <strong>Movement:</strong>
-                        <span id="calc_movement" class="float-end">0</span>
+                    
+                    <div id="preview-properties-container" class="mb-3" style="display: none;">
+                        <small class="text-muted">Properties:</small>
+                        <div id="preview-properties" class="small"></div>
                     </div>
-                    <div class="mb-3">
-                        <strong>Transport Cap:</strong>
-                        <span id="calc_capacity" class="float-end">0</span>
-                    </div>
-                    <hr>
-                    <div class="fs-4">
-                        <strong>Total Points:</strong>
-                        <span id="calc_total" class="float-end text-primary">0</span>
-                    </div>
-                    <small class="text-muted mt-2 d-block">Weapons will add additional points after saving</small>
                 </div>
             </div>
 
@@ -229,11 +309,50 @@
 </div>
 
 <script>
-// Real-time points calculator
-const qualityPoints = {
-    'Conscript': 6,
-    'Regular': 8,
-    'Elite': 10
+// Initialize Bootstrap tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+// Property multipliers (traits)
+const propertyMultipliers = {
+    {% for trait in traits %}
+    '{{ trait.id }}': {
+        name: '{{ trait.name }}',
+        multiplier: {{ trait.points_multiplier }}
+    },
+    {% endfor %}
+};
+
+// Live preview and points calculator
+// Official F.A.D. points system multipliers
+const qualityMultipliers = {
+    'Rabble': 0.7,
+    'Conscript': 0,
+    'Regular': 1.3,
+    'Elite': 1.6
+};
+
+const resolveMultipliers = {
+    'Reluctant': -0.5,
+    'Uncertain': -0.3,
+    'Steady': 0,
+    'Determined': 0.3
+};
+
+// Vehicle type base costs
+const vehicleBaseCosts = {
+    'Light Transport': 10,
+    'Heavy Transport': 15,
+    'Light Vehicle': 20,
+    'Medium Tank': 30,
+    'Heavy Tank': 40,
+    'Walker': 25,
+    'Aircraft': 35,
+    'Special': 20
 };
 
 const movementPoints = {
@@ -244,49 +363,159 @@ const movementPoints = {
     'Walk': 3
 };
 
+const qualityDisplay = {
+    'Conscript': 'Conscript (4+)',
+    'Regular': 'Regular (3+)',
+    'Elite': 'Elite (2+)'
+};
+
+const movementDisplay = {
+    'Fly': 'Fly (36")',
+    'Hover': 'Hover (18")',
+    'Wheeled': 'Wheeled (15")',
+    'Tracked': 'Tracked (12")',
+    'Walk': 'Walk (9")'
+};
+
+const factionNames = {
+    {% for faction in my_factions %}
+    '{{ faction.id }}': '{{ faction.name }}',
+    {% endfor %}
+};
+
+function updatePreview() {
+    // Update name
+    const name = document.getElementById('name').value || 'Unnamed Vehicle';
+    document.getElementById('preview-name').textContent = name;
+    
+    // Update faction
+    const factionId = document.getElementById('faction_id').value;
+    document.getElementById('preview-faction').textContent = factionId ? factionNames[factionId] : 'No Faction';
+    
+    // Update vehicle type
+    const vehicleType = document.getElementById('vehicle_type').value;
+    document.getElementById('preview-type').textContent = vehicleType || 'Vehicle';
+    
+    // Update quality and resolve
+    const quality = document.getElementById('quality').value;
+    const resolve = document.getElementById('resolve').value;
+    document.getElementById('preview-quality').textContent = quality ? qualityDisplay[quality] : '-';
+    document.getElementById('preview-resolve').textContent = resolve || '-';
+    
+    // Update movement
+    const movement = document.getElementById('movement_type').value;
+    document.getElementById('preview-movement').textContent = movement ? movementDisplay[movement] : 'None';
+    
+    // Update armour
+    const frontArmour = document.getElementById('vehicle_armour_front').value || '0';
+    const sideArmour = document.getElementById('vehicle_armour_side').value || '0';
+    const rearArmour = document.getElementById('vehicle_armour_rear').value || '0';
+    document.getElementById('preview-armour').textContent = `${frontArmour} / ${sideArmour} / ${rearArmour}`;
+    
+    // Update crew
+    const crew = document.getElementById('crew_size').value || '0';
+    document.getElementById('preview-crew').textContent = crew;
+    
+    // Update capacity
+    const capacity = parseInt(document.getElementById('carrying_capacity').value) || 0;
+    const capacityContainer = document.getElementById('preview-capacity-container');
+    if (capacity > 0) {
+        capacityContainer.style.display = 'block';
+        document.getElementById('preview-capacity').textContent = capacity + ' infantry';
+    } else {
+        capacityContainer.style.display = 'none';
+    }
+    
+    // Update properties
+    const selectedProperties = [];
+    const propertyCheckboxes = document.querySelectorAll('input[name="traits"]:checked');
+    propertyCheckboxes.forEach(checkbox => {
+        const propId = checkbox.value;
+        if (propertyMultipliers[propId]) {
+            selectedProperties.push(propertyMultipliers[propId].name);
+        }
+    });
+    
+    const propertiesContainer = document.getElementById('preview-properties-container');
+    if (selectedProperties.length > 0) {
+        propertiesContainer.style.display = 'block';
+        document.getElementById('preview-properties').innerHTML = selectedProperties.map(p => 
+            `<span class="badge bg-info me-1 mb-1">${p}</span>`
+        ).join('');
+    } else {
+        propertiesContainer.style.display = 'none';
+    }
+    
+    // Calculate and update points
+    calculatePoints();
+}
+
 function calculatePoints() {
     const quality = document.getElementById('quality').value;
+    const resolve = document.getElementById('resolve').value;
+    const vehicleType = document.getElementById('vehicle_type').value;
     const movementType = document.getElementById('movement_type').value;
     const frontArmour = parseInt(document.getElementById('vehicle_armour_front').value) || 0;
     const sideArmour = parseInt(document.getElementById('vehicle_armour_side').value) || 0;
     const rearArmour = parseInt(document.getElementById('vehicle_armour_rear').value) || 0;
     const capacity = parseInt(document.getElementById('carrying_capacity').value) || 0;
     
-    // Base points (quality)
-    const basePoints = qualityPoints[quality] || 0;
+    // Official F.A.D. points formula for vehicles:
+    // 1. Base cost from vehicle type
+    let cost = vehicleBaseCosts[vehicleType] || 20;
     
-    // Armour points (5 pts per armour point)
-    const frontPts = frontArmour * 5;
-    const sidePts = sideArmour * 5;
-    const rearPts = rearArmour * 5;
+    // 2. Add armour: (average armour rating × 2)
+    const avgArmour = (frontArmour + sideArmour + rearArmour) / 3;
+    cost += avgArmour * 2;
     
-    // Movement bonus
+    // 3. Add movement bonus
     const movementPts = movementPoints[movementType] || 0;
+    cost += movementPts;
     
-    // Transport capacity (2 pts per slot)
+    // 4. Add transport capacity (2 pts per slot)
     const capacityPts = capacity * 2;
+    cost += capacityPts;
     
-    const totalPoints = basePoints + frontPts + sidePts + rearPts + movementPts + capacityPts;
+    // 5. Multiply by (1 + Quality multiplier + Resolve multiplier)
+    const qualityMult = qualityMultipliers[quality] || 0;
+    const resolveMult = resolveMultipliers[resolve] || 0;
+    cost = cost * (1 + qualityMult + resolveMult);
     
-    // Update display
-    document.getElementById('calc_base_points').textContent = basePoints;
-    document.getElementById('calc_front').textContent = frontPts;
-    document.getElementById('calc_side').textContent = sidePts;
-    document.getElementById('calc_rear').textContent = rearPts;
-    document.getElementById('calc_movement').textContent = movementPts;
-    document.getElementById('calc_capacity').textContent = capacityPts;
-    document.getElementById('calc_total').textContent = totalPoints;
+    // 6. Apply property multipliers (multiply individually, not sum)
+    const propertyCheckboxes = document.querySelectorAll('input[name="traits"]:checked');
+    propertyCheckboxes.forEach(checkbox => {
+        const propId = checkbox.value;
+        if (propertyMultipliers[propId]) {
+            cost = cost * propertyMultipliers[propId].multiplier;
+        }
+    });
+    
+    // 7. Round to nearest whole number
+    const totalPoints = Math.round(cost);
+    
+    // Update preview
+    document.getElementById('preview-points').textContent = totalPoints;
 }
 
-// Attach event listeners
-document.getElementById('quality').addEventListener('change', calculatePoints);
-document.getElementById('movement_type').addEventListener('change', calculatePoints);
-document.getElementById('vehicle_armour_front').addEventListener('input', calculatePoints);
-document.getElementById('vehicle_armour_side').addEventListener('input', calculatePoints);
-document.getElementById('vehicle_armour_rear').addEventListener('input', calculatePoints);
-document.getElementById('carrying_capacity').addEventListener('input', calculatePoints);
+// Attach event listeners to all inputs
+document.getElementById('name').addEventListener('input', updatePreview);
+document.getElementById('faction_id').addEventListener('change', updatePreview);
+document.getElementById('vehicle_type').addEventListener('change', updatePreview);
+document.getElementById('quality').addEventListener('change', updatePreview);
+document.getElementById('resolve').addEventListener('change', updatePreview);
+document.getElementById('movement_type').addEventListener('change', updatePreview);
+document.getElementById('vehicle_armour_front').addEventListener('input', updatePreview);
+document.getElementById('vehicle_armour_side').addEventListener('input', updatePreview);
+document.getElementById('vehicle_armour_rear').addEventListener('input', updatePreview);
+document.getElementById('crew_size').addEventListener('input', updatePreview);
+document.getElementById('carrying_capacity').addEventListener('input', updatePreview);
 
-// Initial calculation
-calculatePoints();
+// Add event listeners to property checkboxes
+document.querySelectorAll('input[name="traits"]').forEach(checkbox => {
+    checkbox.addEventListener('change', updatePreview);
+});
+
+// Initial update
+updatePreview();
 </script>
 {% endblock %}
