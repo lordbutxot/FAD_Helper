@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}Faction Creator - F.A.D. List Builder{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <h2><i class="bi bi-shield-fill"></i> Faction Creator</h2>
+            <p class="text-muted">Create a faction to organize your units and army lists.</p>
+            
+            <form id="factionForm" method="POST" action="{{ url_for('faction_creator') }}" enctype="multipart/form-data">
+                <!-- Basic Info -->
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Basic Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Faction Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required placeholder="e.g., Imperial Guard, Xenos Alliance">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description *</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required placeholder="Brief description of your faction..."></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="color" class="form-label">Faction Color</label>
+                                <input type="color" class="form-control form-control-color" id="color" name="color" value="#0d6efd" title="Choose faction color">
+                                <small class="text-muted">Used for UI display</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="icon" class="form-label">Faction Icon</label>
+                                <select class="form-select" id="icon" name="icon">
+                                    <option value="shield">Shield</option>
+                                    <option value="star">Star</option>
+                                    <option value="lightning">Lightning</option>
+                                    <option value="fire">Fire</option>
+                                    <option value="water">Water</option>
+                                    <option value="wind">Wind</option>
+                                    <option value="mountain">Mountain</option>
+                                    <option value="tree">Tree</option>
+                                    <option value="skull">Skull</option>
+                                    <option value="heart">Heart</option>
+                                    <option value="diamond">Diamond</option>
+                                    <option value="flag">Flag</option>
+                                </select>
+                                <small class="text-muted">Icon for your faction</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="logo" class="form-label">Faction Logo</label>
+                            <input type="file" class="form-control" id="logo" name="logo" accept="image/png,image/jpeg,image/jpg,image/gif">
+                            <small class="text-muted">Optional: Upload a custom logo (PNG, JPG, GIF, max 2MB). If not uploaded, the icon will be used.</small>
+                            <div id="logoPreview" class="mt-2" style="display: none;">
+                                <img id="logoPreviewImg" src="" alt="Logo preview" style="max-width: 150px; max-height: 150px; border: 2px solid #dee2e6; border-radius: 4px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lore & Background -->
+                <div class="card mb-3">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Lore & Background</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="background" class="form-label">Faction Background</label>
+                            <textarea class="form-control" id="background" name="background" rows="5" placeholder="History, culture, and lore of your faction..."></textarea>
+                            <small class="text-muted">Optional: Add rich backstory to your faction</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- How to Play / Playstyle -->
+                <div class="card mb-3">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="bi bi-joystick"></i> How to Play</h5>
+                    </div>
+                    <div class="card-body">
+                        <label class="form-label">Tactical Playstyle Tags</label>
+                        <p class="text-muted small mb-3">Select up to 5 tags per category that describe this faction's playstyle and tactical doctrine.</p>
+                        
+                        <!-- Warfare Tactics -->
+                        <h6 class="text-primary mt-3 mb-2">
+                            <i class="bi bi-crosshair"></i> Warfare Tactics 
+                            <span class="badge bg-primary" id="warfare-count">0/5</span>
+                        </h6>
+                        <div class="row g-2 mb-3" id="warfare-tags">
+                            {% for tag_id, tag_info in playstyle_tags.items() if tag_info.category == 'warfare' %}
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input warfare-tag" type="checkbox" name="playstyle_tags" value="{{ tag_id }}" id="tag_{{ tag_id }}" data-category="warfare">
+                                    <label class="form-check-label" for="tag_{{ tag_id }}" title="{{ tag_info.description }}">
+                                        <i class="bi bi-{{ tag_info.icon }}"></i> <strong>{{ tag_info.name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ tag_info.description }}</small>
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Sci-Fi & Fantasy -->
+                        <h6 class="text-info mt-3 mb-2">
+                            <i class="bi bi-stars"></i> Sci-Fi & Fantasy Elements 
+                            <span class="badge bg-info" id="scifi-count">0/5</span>
+                        </h6>
+                        <div class="row g-2" id="scifi-tags">
+                            {% for tag_id, tag_info in playstyle_tags.items() if tag_info.category == 'scifi' %}
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input scifi-tag" type="checkbox" name="playstyle_tags" value="{{ tag_id }}" id="tag_{{ tag_id }}" data-category="scifi">
+                                    <label class="form-check-label" for="tag_{{ tag_id }}" title="{{ tag_info.description }}">
+                                        <i class="bi bi-{{ tag_info.icon }}"></i> <strong>{{ tag_info.name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ tag_info.description }}</small>
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Special Rules -->
+                <div class="card mb-3">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0">Special Rules</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="special_rules" class="form-label">Faction-Wide Special Rules</label>
+                            <textarea class="form-control" id="special_rules" name="special_rules" rows="4" placeholder="Special abilities or rules that apply to all units in this faction..."></textarea>
+                            <small class="text-muted">Optional: Define unique abilities for your faction</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visibility -->
+                <div class="card mb-3">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Visibility</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_public" name="is_public" value="true">
+                            <label class="form-check-label" for="is_public">
+                                <strong>Make faction public</strong>
+                                <br>
+                                <small class="text-muted">Allow other users to view and use this faction</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="d-grid gap-2 mb-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-shield-plus"></i> Create Faction
+                    </button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Preview Sidebar -->
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header text-white" id="preview-header" style="background-color: #0d6efd;">
+                    <h5 class="mb-0"><i class="bi bi-shield"></i> Preview</h5>
+                </div>
+                <div class="card-body text-center">
+                    <!-- Logo/Icon Display -->
+                    <div class="mb-3">
+                        <img id="preview-logo-img" src="" alt="Faction logo" style="max-width: 100px; max-height: 100px; display: none; border-radius: 8px; margin-bottom: 10px;">
+                        <div id="preview-icon" class="bi bi-shield-fill" style="font-size: 4rem; color: #0d6efd;"></div>
+                    </div>
+                    <h4 id="preview-name">Faction Name</h4>
+                    <p id="preview-description" class="text-muted">Your faction description will appear here...</p>
+                    
+                    <hr>
+                    
+                    <div class="mb-2">
+                        <small class="text-muted">Color:</small>
+                        <div id="preview-color" class="border rounded p-2 mt-1" style="background-color: #0d6efd; height: 40px;"></div>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <small class="text-muted">Icon:</small>
+                        <div class="mt-1">
+                            <i id="preview-icon" class="bi bi-shield-fill" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">What is a Faction?</h6>
+                </div>
+                <div class="card-body small">
+                    <p><strong>Factions</strong> are collections that organize your forces:</p>
+                    <ul class="mb-2">
+                        <li>Create thematic armies</li>
+                        <li>Group related units together</li>
+                        <li>Organize army lists by faction</li>
+                        <li>Define faction-wide special rules</li>
+                        <li>Share factions with the community</li>
+                    </ul>
+                    <p class="mb-0">After creating a faction, you can assign units and lists to it from their respective builders.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Real-time preview updates
+document.getElementById('name').addEventListener('input', function() {
+    document.getElementById('preview-name').textContent = this.value || 'Faction Name';
+});
+
+document.getElementById('description').addEventListener('input', function() {
+    document.getElementById('preview-description').textContent = this.value || 'Your faction description will appear here...';
+});
+
+document.getElementById('color').addEventListener('input', function() {
+    document.getElementById('preview-color').style.backgroundColor = this.value;
+    document.getElementById('preview-header').style.backgroundColor = this.value;
+});
+
+document.getElementById('icon').addEventListener('change', function() {
+    const iconClass = 'bi-' + this.value + '-fill';
+    document.getElementById('preview-icon').className = 'bi ' + iconClass;
+});
+
+// Logo upload preview
+document.getElementById('logo').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const previewDiv = document.getElementById('logoPreview');
+    const previewImg = document.getElementById('logoPreviewImg');
+    const previewIcon = document.getElementById('preview-icon');
+    
+    if (file) {
+        // Validate file size (2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('File too large! Maximum size is 2MB.');
+            this.value = '';
+            previewDiv.style.display = 'none';
+            previewIcon.style.display = 'block';
+            return;
+        }
+        
+        // Validate file type
+        const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+            alert('Invalid file type! Only PNG, JPG, JPEG, and GIF are allowed.');
+            this.value = '';
+            previewDiv.style.display = 'none';
+            previewIcon.style.display = 'block';
+            return;
+        }
+        
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            previewDiv.style.display = 'block';
+            
+            // Update preview sidebar to show logo instead of icon
+            previewIcon.style.display = 'none';
+            const logoPreviewInSidebar = document.getElementById('preview-logo-img');
+            if (logoPreviewInSidebar) {
+                logoPreviewInSidebar.src = e.target.result;
+                logoPreviewInSidebar.style.display = 'block';
+            }
+        };
+        reader.readAsDataURL(file);
+    } else {
+        previewDiv.style.display = 'none';
+        previewIcon.style.display = 'block';
+        const logoPreviewInSidebar = document.getElementById('preview-logo-img');
+        if (logoPreviewInSidebar) {
+            logoPreviewInSidebar.style.display = 'none';
+        }
+    }
+});
+
+// Playstyle tag limit enforcement (max 5 per category)
+function updateTagCounts() {
+    const warfareChecked = document.querySelectorAll('.warfare-tag:checked').length;
+    const scifiChecked = document.querySelectorAll('.scifi-tag:checked').length;
+    
+    // Update counters
+    document.getElementById('warfare-count').textContent = warfareChecked + '/5';
+    document.getElementById('scifi-count').textContent = scifiChecked + '/5';
+    
+    // Disable unchecked boxes if limit reached
+    document.querySelectorAll('.warfare-tag:not(:checked)').forEach(cb => {
+        cb.disabled = warfareChecked >= 5;
+        cb.parentElement.style.opacity = warfareChecked >= 5 ? '0.5' : '1';
+    });
+    
+    document.querySelectorAll('.scifi-tag:not(:checked)').forEach(cb => {
+        cb.disabled = scifiChecked >= 5;
+        cb.parentElement.style.opacity = scifiChecked >= 5 ? '0.5' : '1';
+    });
+}
+
+// Add event listeners to all tag checkboxes
+document.querySelectorAll('.warfare-tag, .scifi-tag').forEach(checkbox => {
+    checkbox.addEventListener('change', updateTagCounts);
+});
+
+// Initialize counts
+updateTagCounts();
+</script>
+{% endblock %}

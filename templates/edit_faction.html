@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Faction - F.A.D. List Builder{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <h2><i class="bi bi-pencil-square"></i> Edit Faction: {{ faction.name }}</h2>
+            <p class="text-muted">Modify your faction details.</p>
+            
+            <form id="factionForm" method="POST" action="{{ url_for('edit_faction', faction_id=faction.id) }}" enctype="multipart/form-data">
+                <!-- Basic Info -->
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Basic Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Faction Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required value="{{ faction.name }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description *</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required>{{ faction.description }}</textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="color" class="form-label">Faction Color</label>
+                                <input type="color" class="form-control form-control-color" id="color" name="color" value="{{ faction.color }}" title="Choose faction color">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="icon" class="form-label">Faction Icon</label>
+                                <select class="form-select" id="icon" name="icon">
+                                    <option value="shield" {% if faction.icon == 'shield' %}selected{% endif %}>Shield</option>
+                                    <option value="star" {% if faction.icon == 'star' %}selected{% endif %}>Star</option>
+                                    <option value="lightning" {% if faction.icon == 'lightning' %}selected{% endif %}>Lightning</option>
+                                    <option value="fire" {% if faction.icon == 'fire' %}selected{% endif %}>Fire</option>
+                                    <option value="water" {% if faction.icon == 'water' %}selected{% endif %}>Water</option>
+                                    <option value="wind" {% if faction.icon == 'wind' %}selected{% endif %}>Wind</option>
+                                    <option value="mountain" {% if faction.icon == 'mountain' %}selected{% endif %}>Mountain</option>
+                                    <option value="tree" {% if faction.icon == 'tree' %}selected{% endif %}>Tree</option>
+                                    <option value="skull" {% if faction.icon == 'skull' %}selected{% endif %}>Skull</option>
+                                    <option value="heart" {% if faction.icon == 'heart' %}selected{% endif %}>Heart</option>
+                                    <option value="diamond" {% if faction.icon == 'diamond' %}selected{% endif %}>Diamond</option>
+                                    <option value="flag" {% if faction.icon == 'flag' %}selected{% endif %}>Flag</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="logo" class="form-label">Faction Logo</label>
+                            {% if faction.logo_filename %}
+                            <div class="mb-2">
+                                <img src="{{ url_for('static', filename='faction_logos/' + faction.logo_filename) }}" alt="Current logo" style="max-width: 100px; border: 2px solid #dee2e6; border-radius: 4px;">
+                                <small class="text-muted d-block">Current logo</small>
+                            </div>
+                            {% endif %}
+                            <input type="file" class="form-control" id="logo" name="logo" accept="image/png,image/jpeg,image/jpg,image/gif">
+                            <small class="text-muted">Upload a new logo to replace the current one (PNG, JPG, GIF, max 2MB)</small>
+                            <div id="logoPreview" class="mt-2" style="display: none;">
+                                <img id="logoPreviewImg" src="" alt="Logo preview" style="max-width: 150px; max-height: 150px; border: 2px solid #dee2e6; border-radius: 4px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lore & Background -->
+                <div class="card mb-3">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Lore & Background</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="background" class="form-label">Faction Background</label>
+                            <textarea class="form-control" id="background" name="background" rows="5">{{ faction.background or '' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- How to Play / Playstyle -->
+                <div class="card mb-3">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="bi bi-joystick"></i> How to Play</h5>
+                    </div>
+                    <div class="card-body">
+                        <label class="form-label">Tactical Playstyle Tags</label>
+                        <p class="text-muted small mb-3">Select up to 5 tags per category that describe this faction's playstyle and tactical doctrine.</p>
+                        
+                        {% set selected_tags = faction.get_playstyle_tags() %}
+                        
+                        <!-- Warfare Tactics -->
+                        <h6 class="text-primary mt-3 mb-2">
+                            <i class="bi bi-crosshair"></i> Warfare Tactics 
+                            <span class="badge bg-primary" id="warfare-count">0/5</span>
+                        </h6>
+                        <div class="row g-2 mb-3">
+                            {% for tag_id, tag_info in playstyle_tags.items() if tag_info.category == 'warfare' %}
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input warfare-tag" type="checkbox" name="playstyle_tags" value="{{ tag_id }}" id="tag_{{ tag_id }}" data-category="warfare" {% if tag_id in selected_tags %}checked{% endif %}>
+                                    <label class="form-check-label" for="tag_{{ tag_id }}" title="{{ tag_info.description }}">
+                                        <i class="bi bi-{{ tag_info.icon }}"></i> <strong>{{ tag_info.name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ tag_info.description }}</small>
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Sci-Fi & Fantasy -->
+                        <h6 class="text-info mt-3 mb-2">
+                            <i class="bi bi-stars"></i> Sci-Fi & Fantasy Elements 
+                            <span class="badge bg-info" id="scifi-count">0/5</span>
+                        </h6>
+                        <div class="row g-2">
+                            {% for tag_id, tag_info in playstyle_tags.items() if tag_info.category == 'scifi' %}
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input scifi-tag" type="checkbox" name="playstyle_tags" value="{{ tag_id }}" id="tag_{{ tag_id }}" data-category="scifi" {% if tag_id in selected_tags %}checked{% endif %}>
+                                    <label class="form-check-label" for="tag_{{ tag_id }}" title="{{ tag_info.description }}">
+                                        <i class="bi bi-{{ tag_info.icon }}"></i> <strong>{{ tag_info.name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ tag_info.description }}</small>
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Special Rules -->
+                <div class="card mb-3">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0">Special Rules</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="special_rules" class="form-label">Faction-Wide Special Rules</label>
+                            <textarea class="form-control" id="special_rules" name="special_rules" rows="4">{{ faction.special_rules or '' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visibility -->
+                <div class="card mb-3">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Visibility</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_public" name="is_public" value="true" {% if faction.is_public %}checked{% endif %}>
+                            <label class="form-check-label" for="is_public">
+                                <strong>Make faction public</strong>
+                                <br>
+                                <small class="text-muted">Allow other users to view and use this faction</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="d-grid gap-2 mb-4">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="bi bi-check-circle"></i> Save Changes
+                    </button>
+                    <a href="{{ url_for('view_faction', faction_id=faction.id) }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Preview Sidebar -->
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header text-white" id="preview-header" style="background-color: {{ faction.color }};">
+                    <h5 class="mb-0"><i class="bi bi-shield"></i> Preview</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        {% if faction.logo_filename %}
+                        <img id="preview-logo-img" src="{{ url_for('static', filename='faction_logos/' + faction.logo_filename) }}" alt="Faction logo" style="max-width: 100px; max-height: 100px; border-radius: 8px; margin-bottom: 10px;">
+                        {% else %}
+                        <img id="preview-logo-img" src="" alt="Faction logo" style="max-width: 100px; max-height: 100px; display: none; border-radius: 8px; margin-bottom: 10px;">
+                        {% endif %}
+                        <div id="preview-icon" class="bi bi-{{ faction.icon }}-fill" style="font-size: 4rem; color: {{ faction.color }}; {% if faction.logo_filename %}display: none;{% endif %}"></div>
+                    </div>
+                    <h4 id="preview-name">{{ faction.name }}</h4>
+                    <p id="preview-description" class="text-muted">{{ faction.description }}</p>
+                    
+                    <hr>
+                    
+                    <div class="mb-2">
+                        <small class="text-muted">Color:</small>
+                        <div id="preview-color" class="border rounded p-2 mt-1" style="background-color: {{ faction.color }}; height: 40px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Real-time preview updates
+document.getElementById('name').addEventListener('input', function() {
+    document.getElementById('preview-name').textContent = this.value;
+});
+
+document.getElementById('description').addEventListener('input', function() {
+    document.getElementById('preview-description').textContent = this.value;
+});
+
+document.getElementById('color').addEventListener('input', function() {
+    document.getElementById('preview-color').style.backgroundColor = this.value;
+    document.getElementById('preview-header').style.backgroundColor = this.value;
+    document.getElementById('preview-icon').style.color = this.value;
+});
+
+document.getElementById('icon').addEventListener('change', function() {
+    const iconClass = 'bi-' + this.value + '-fill';
+    document.getElementById('preview-icon').className = 'bi ' + iconClass;
+});
+
+// Logo upload preview
+document.getElementById('logo').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const previewDiv = document.getElementById('logoPreview');
+    const previewImg = document.getElementById('logoPreviewImg');
+    const previewIcon = document.getElementById('preview-icon');
+    
+    if (file) {
+        if (file.size > 2 * 1024 * 1024) {
+            alert('File too large! Maximum size is 2MB.');
+            this.value = '';
+            previewDiv.style.display = 'none';
+            return;
+        }
+        
+        const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+            alert('Invalid file type! Only PNG, JPG, JPEG, and GIF are allowed.');
+            this.value = '';
+            previewDiv.style.display = 'none';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            previewDiv.style.display = 'block';
+            previewIcon.style.display = 'none';
+            const logoPreviewInSidebar = document.getElementById('preview-logo-img');
+            if (logoPreviewInSidebar) {
+                logoPreviewInSidebar.src = e.target.result;
+                logoPreviewInSidebar.style.display = 'block';
+            }
+        };
+        reader.readAsDataURL(file);
+    } else {
+        previewDiv.style.display = 'none';
+    }
+});
+
+// Playstyle tag limit enforcement
+function updateTagCounts() {
+    const warfareChecked = document.querySelectorAll('.warfare-tag:checked').length;
+    const scifiChecked = document.querySelectorAll('.scifi-tag:checked').length;
+    
+    document.getElementById('warfare-count').textContent = warfareChecked + '/5';
+    document.getElementById('scifi-count').textContent = scifiChecked + '/5';
+    
+    document.querySelectorAll('.warfare-tag:not(:checked)').forEach(cb => {
+        cb.disabled = warfareChecked >= 5;
+        cb.parentElement.style.opacity = warfareChecked >= 5 ? '0.5' : '1';
+    });
+    
+    document.querySelectorAll('.scifi-tag:not(:checked)').forEach(cb => {
+        cb.disabled = scifiChecked >= 5;
+        cb.parentElement.style.opacity = scifiChecked >= 5 ? '0.5' : '1';
+    });
+}
+
+document.querySelectorAll('.warfare-tag, .scifi-tag').forEach(checkbox => {
+    checkbox.addEventListener('change', updateTagCounts);
+});
+
+updateTagCounts();
+</script>
+{% endblock %}

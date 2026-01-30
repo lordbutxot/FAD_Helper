@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Vehicle - F.A.D. List Builder{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <h2>Edit Vehicle</h2>
+            <p class="text-muted">Update vehicle unit details. Weapons can be modified separately.</p>
+            
+            <form id="vehicleForm" method="POST" action="{{ url_for('edit_unit', unit_id=unit.id) }}">
+                <!-- Basic Info -->
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Basic Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Vehicle Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ unit.name }}" required placeholder="e.g., Main Battle Tank, APC">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="faction" class="form-label">Faction</label>
+                            <input type="text" class="form-control" id="faction" name="faction" value="{{ unit.faction or '' }}" placeholder="Optional">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="vehicle_type" class="form-label">Vehicle Type *</label>
+                            <select class="form-select" id="vehicle_type" name="vehicle_type" required>
+                                <option value="">Select Type...</option>
+                                <option value="Light Transport" {% if unit.vehicle_type == 'Light Transport' %}selected{% endif %}>Light Transport</option>
+                                <option value="Heavy Transport" {% if unit.vehicle_type == 'Heavy Transport' %}selected{% endif %}>Heavy Transport</option>
+                                <option value="Light Vehicle" {% if unit.vehicle_type == 'Light Vehicle' %}selected{% endif %}>Light Vehicle</option>
+                                <option value="Medium Tank" {% if unit.vehicle_type == 'Medium Tank' %}selected{% endif %}>Medium Tank</option>
+                                <option value="Heavy Tank" {% if unit.vehicle_type == 'Heavy Tank' %}selected{% endif %}>Heavy Tank</option>
+                                <option value="Walker" {% if unit.vehicle_type == 'Walker' %}selected{% endif %}>Walker</option>
+                                <option value="Aircraft" {% if unit.vehicle_type == 'Aircraft' %}selected{% endif %}>Aircraft</option>
+                                <option value="Special" {% if unit.vehicle_type == 'Special' %}selected{% endif %}>Special Vehicle</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="card mb-3">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Vehicle Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="quality" class="form-label">Quality *</label>
+                                <select class="form-select" id="quality" name="quality" required>
+                                    <option value="">Select Quality...</option>
+                                    <option value="Conscript" {% if unit.quality == 'Conscript' %}selected{% endif %}>Conscript (4+)</option>
+                                    <option value="Regular" {% if unit.quality == 'Regular' %}selected{% endif %}>Regular (3+)</option>
+                                    <option value="Elite" {% if unit.quality == 'Elite' %}selected{% endif %}>Elite (2+)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="resolve" class="form-label">Resolve *</label>
+                                <select class="form-select" id="resolve" name="resolve" required>
+                                    <option value="">Select Resolve...</option>
+                                    <option value="Reluctant" {% if unit.resolve == 'Reluctant' %}selected{% endif %}>Reluctant</option>
+                                    <option value="Uncertain" {% if unit.resolve == 'Uncertain' %}selected{% endif %}>Uncertain</option>
+                                    <option value="Steady" {% if unit.resolve == 'Steady' %}selected{% endif %}>Steady</option>
+                                    <option value="Determined" {% if unit.resolve == 'Determined' %}selected{% endif %}>Determined</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="movement_type" class="form-label">Movement Type *</label>
+                            <select class="form-select" id="movement_type" name="movement_type" required>
+                                <option value="">Select Movement...</option>
+                                <option value="Fly" {% if unit.movement_type == 'Fly' %}selected{% endif %}>Fly (36" move)</option>
+                                <option value="Hover" {% if unit.movement_type == 'Hover' %}selected{% endif %}>Hover (18" move)</option>
+                                <option value="Tracked" {% if unit.movement_type == 'Tracked' %}selected{% endif %}>Tracked (12" move)</option>
+                                <option value="Wheeled" {% if unit.movement_type == 'Wheeled' %}selected{% endif %}>Wheeled (15" move)</option>
+                                <option value="Walk" {% if unit.movement_type == 'Walk' %}selected{% endif %}>Walk (9" move)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Armour -->
+                <div class="card mb-3">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">Vehicle Armour</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Directional armour values (5 pts per armour point)</p>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="vehicle_armour_front" class="form-label">Front Armour *</label>
+                                <input type="number" class="form-control" id="vehicle_armour_front" name="vehicle_armour_front" min="0" max="20" value="{{ unit.vehicle_armour_front }}" required>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="vehicle_armour_side" class="form-label">Side Armour *</label>
+                                <input type="number" class="form-control" id="vehicle_armour_side" name="vehicle_armour_side" min="0" max="20" value="{{ unit.vehicle_armour_side }}" required>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="vehicle_armour_rear" class="form-label">Rear Armour *</label>
+                                <input type="number" class="form-control" id="vehicle_armour_rear" name="vehicle_armour_rear" min="0" max="20" value="{{ unit.vehicle_armour_rear }}" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Capacity -->
+                <div class="card mb-3">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0">Crew & Capacity</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="crew_size" class="form-label">Crew Size *</label>
+                                <input type="number" class="form-control" id="crew_size" name="crew_size" min="1" max="10" value="{{ unit.crew_size }}" required>
+                                <small class="text-muted">Number of crew members</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="carrying_capacity" class="form-label">Transport Capacity</label>
+                                <input type="number" class="form-control" id="carrying_capacity" name="carrying_capacity" min="0" max="50" value="{{ unit.carrying_capacity or 0 }}">
+                                <small class="text-muted">Infantry capacity (0 if not transport)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Properties -->
+                <div class="card mb-3">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Vehicle Properties</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Special vehicle properties and abilities</p>
+                        <div class="mb-3">
+                            <textarea class="form-control" id="vehicle_properties" name="vehicle_properties" rows="3" placeholder="e.g., Amphibious, Smoke Launchers, Active Protection System">{{ unit.vehicle_properties or '' }}</textarea>
+                            <small class="text-muted">Enter properties separated by commas</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">Notes</h5>
+                    </div>
+                    <div class="card-body">
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Vehicle description, tactics, etc...">{{ unit.notes or '' }}</textarea>
+                        <small class="text-muted">Weapons can be modified separately</small>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="d-grid gap-2 mb-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-check-circle"></i> Save Changes
+                    </button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Points Calculator Sidebar -->
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Points Calculator</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Base Quality:</strong>
+                        <span id="calc_base_points" class="float-end">0</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Front Armour:</strong>
+                        <span id="calc_front" class="float-end">0</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Side Armour:</strong>
+                        <span id="calc_side" class="float-end">0</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Rear Armour:</strong>
+                        <span id="calc_rear" class="float-end">0</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Movement:</strong>
+                        <span id="calc_movement" class="float-end">0</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Transport Cap:</strong>
+                        <span id="calc_capacity" class="float-end">0</span>
+                    </div>
+                    <hr>
+                    <div class="fs-4">
+                        <strong>Total Points:</strong>
+                        <span id="calc_total" class="float-end text-primary">0</span>
+                    </div>
+                    <small class="text-muted mt-2 d-block">Weapons add additional points</small>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Quick Reference</h6>
+                </div>
+                <div class="card-body small">
+                    <p><strong>Movement Types:</strong></p>
+                    <ul class="mb-2">
+                        <li>Fly: 36" (15 pts)</li>
+                        <li>Hover: 18" (10 pts)</li>
+                        <li>Wheeled: 15" (8 pts)</li>
+                        <li>Tracked: 12" (5 pts)</li>
+                        <li>Walk: 9" (3 pts)</li>
+                    </ul>
+                    <p><strong>Armour:</strong> 5 pts per point</p>
+                    <p><strong>Capacity:</strong> 2 pts per infantry slot</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Real-time points calculator
+const qualityPoints = {
+    'Conscript': 6,
+    'Regular': 8,
+    'Elite': 10
+};
+
+const movementPoints = {
+    'Fly': 15,
+    'Hover': 10,
+    'Wheeled': 8,
+    'Tracked': 5,
+    'Walk': 3
+};
+
+function calculatePoints() {
+    const quality = document.getElementById('quality').value;
+    const movementType = document.getElementById('movement_type').value;
+    const frontArmour = parseInt(document.getElementById('vehicle_armour_front').value) || 0;
+    const sideArmour = parseInt(document.getElementById('vehicle_armour_side').value) || 0;
+    const rearArmour = parseInt(document.getElementById('vehicle_armour_rear').value) || 0;
+    const capacity = parseInt(document.getElementById('carrying_capacity').value) || 0;
+    
+    // Base points (quality)
+    const basePoints = qualityPoints[quality] || 0;
+    
+    // Armour points (5 pts per armour point)
+    const frontPts = frontArmour * 5;
+    const sidePts = sideArmour * 5;
+    const rearPts = rearArmour * 5;
+    
+    // Movement bonus
+    const movementPts = movementPoints[movementType] || 0;
+    
+    // Transport capacity (2 pts per slot)
+    const capacityPts = capacity * 2;
+    
+    const totalPoints = basePoints + frontPts + sidePts + rearPts + movementPts + capacityPts;
+    
+    // Update display
+    document.getElementById('calc_base_points').textContent = basePoints;
+    document.getElementById('calc_front').textContent = frontPts;
+    document.getElementById('calc_side').textContent = sidePts;
+    document.getElementById('calc_rear').textContent = rearPts;
+    document.getElementById('calc_movement').textContent = movementPts;
+    document.getElementById('calc_capacity').textContent = capacityPts;
+    document.getElementById('calc_total').textContent = totalPoints;
+}
+
+// Attach event listeners
+document.getElementById('quality').addEventListener('change', calculatePoints);
+document.getElementById('movement_type').addEventListener('change', calculatePoints);
+document.getElementById('vehicle_armour_front').addEventListener('input', calculatePoints);
+document.getElementById('vehicle_armour_side').addEventListener('input', calculatePoints);
+document.getElementById('vehicle_armour_rear').addEventListener('input', calculatePoints);
+document.getElementById('carrying_capacity').addEventListener('input', calculatePoints);
+
+// Initial calculation
+calculatePoints();
+</script>
+{% endblock %}

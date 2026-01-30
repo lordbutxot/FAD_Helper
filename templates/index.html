@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero">
+    <div class="container text-center">
+        <h1 class="display-4 mb-3"><i class="bi bi-shield-fill-check"></i> F.A.D. List Builder</h1>
+        <p class="lead mb-4">Create custom units, build army lists, and share them with the community</p>
+        {% if not current_user.is_authenticated %}
+        <div class="mt-4">
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg me-2">Get Started</a>
+            <a href="{{ url_for('browse_lists') }}" class="btn btn-outline-light btn-lg">Browse Lists</a>
+        </div>
+        {% else %}
+        <div class="mt-4">
+            <a href="{{ url_for('unit_builder') }}" class="btn btn-light btn-lg me-2">Build Units</a>
+            <a href="{{ url_for('list_builder') }}" class="btn btn-outline-light btn-lg">Create Army List</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container">
+    <!-- Features -->
+    <div class="row mb-5">
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-gear display-4 text-primary mb-3"></i>
+                    <h5 class="card-title">Custom Unit Builder</h5>
+                    <p class="card-text">Create custom units with automatic point calculation following F.A.D. rules</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-list-check display-4 text-success mb-3"></i>
+                    <h5 class="card-title">Army List Manager</h5>
+                    <p class="card-text">Build and manage complete army lists with point totals and export options</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-share display-4 text-danger mb-3"></i>
+                    <h5 class="card-title">Share & Browse</h5>
+                    <p class="card-text">Share your creations and browse lists from the F.A.D. community</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Public Lists -->
+    {% if recent_lists %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4">Recent Public Lists</h2>
+        </div>
+        {% for list in recent_lists %}
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ list.name }}</h5>
+                    <p class="card-text text-muted">
+                        <i class="bi bi-flag"></i> {{ list.faction or 'Custom Faction' }}<br>
+                        <i class="bi bi-trophy"></i> {{ list.total_points }} points<br>
+                        <i class="bi bi-people"></i> {{ list.total_units }} units
+                    </p>
+                    <p class="card-text small">
+                        by <strong>{{ list.owner.username }}</strong><br>
+                        <i class="bi bi-eye"></i> {{ list.views }} views
+                    </p>
+                    <a href="{{ url_for('view_list', list_id=list.id) }}" class="btn btn-primary btn-sm">View List</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Getting Started -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">Getting Started</h3>
+                    <ol class="mb-0">
+                        <li><strong>Register</strong> for a free account</li>
+                        <li><strong>Browse the Armoury</strong> to see available weapons, armour, and traits</li>
+                        <li><strong>Build Units</strong> using the unit builder with live point calculation</li>
+                        <li><strong>Create Army Lists</strong> by selecting your units and setting quantities</li>
+                        <li><strong>Share</strong> your lists with the community or keep them private</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

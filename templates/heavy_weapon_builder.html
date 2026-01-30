@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Heavy Weapons Team Builder - F.A.D. List Builder{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <h2>Heavy Weapons Team Builder</h2>
+            <p class="text-muted">Build a heavy weapons team. Save the team first, then add additional weapon options.</p>
+            
+            <form id="heavyWeaponForm" method="POST" action="{{ url_for('heavy_weapon_builder') }}">
+                <!-- Basic Info -->
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Basic Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Team Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required placeholder="e.g., Devastator Squad, Fire Support Team">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="faction" class="form-label">Faction</label>
+                            <input type="text" class="form-control" id="faction" name="faction" placeholder="Optional">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="card mb-3">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Team Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="quality" class="form-label">Quality *</label>
+                            <select class="form-select" id="quality" name="quality" required>
+                                <option value="">Select Quality...</option>
+                                <option value="Conscript">Conscript (4+)</option>
+                                <option value="Regular" selected>Regular (3+)</option>
+                                <option value="Elite">Elite (2+)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="resolve" class="form-label">Resolve *</label>
+                            <select class="form-select" id="resolve" name="resolve" required>
+                                <option value="">Select Resolve...</option>
+                                <option value="Reluctant">Reluctant</option>
+                                <option value="Uncertain">Uncertain</option>
+                                <option value="Steady" selected>Steady</option>
+                                <option value="Determined">Determined</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Primary Weapon -->
+                <div class="card mb-3">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">Primary Heavy Weapon</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="heavy_weapon_id" class="form-label">Heavy Weapon *</label>
+                            <select class="form-select" id="heavy_weapon_id" name="heavy_weapon_id" required>
+                                <option value="">Select Heavy Weapon...</option>
+                                {% for weapon in weapons if weapon.weapon_class == 'Heavy' %}
+                                <option value="{{ weapon.id }}">{{ weapon.name }} ({{ weapon.range }}, FE:{{ weapon.fire_effect }}, +{{ weapon.points }} pts)</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Additional weapon options can be added after saving</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="armour_id" class="form-label">Armour</label>
+                            <select class="form-select" id="armour_id" name="armour_id">
+                                <option value="">No Armour</option>
+                                {% for armour in armours %}
+                                <option value="{{ armour.id }}">{{ armour.name }} (+{{ armour.points }} pts)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Traits -->
+                <div class="card mb-3">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Team Traits</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Select special traits for this team</p>
+                        <div class="row">
+                            {% for trait in traits %}
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="traits" value="{{ trait.id }}" id="trait_{{ trait.id }}">
+                                    <label class="form-check-label" for="trait_{{ trait.id }}">
+                                        {{ trait.name }} 
+                                        <small class="text-muted">({{ trait.points_modifier }}{% if trait.points_modifier > 0 %}+{% endif %}{{ trait.points_modifier }} pts)</small>
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">Notes</h5>
+                    </div>
+                    <div class="card-body">
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Optional notes about this team..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="d-grid gap-2 mb-4">
+                    <button type="submit" class="btn btn-primary btn-lg">Save Heavy Weapons Team</button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Points Calculator Sidebar -->
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Points Calculator</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Base Quality:</strong>
+                        <span id="calc_base_points" class="float-end">0</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Heavy Weapon:</strong>
+                        <span id="calc_weapon" class="float-end">0</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Armour:</strong>
+                        <span id="calc_armour" class="float-end">0</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Traits:</strong>
+                        <span id="calc_traits" class="float-end">0</span>
+                    </div>
+                    <hr>
+                    <div class="fs-4">
+                        <strong>Total Points:</strong>
+                        <span id="calc_total" class="float-end text-primary">0</span>
+                    </div>
+                    <small class="text-muted mt-2 d-block">Additional weapon options can be added after saving</small>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Quick Reference</h6>
+                </div>
+                <div class="card-body small">
+                    <p><strong>Heavy Weapons:</strong></p>
+                    <ul class="mb-2">
+                        <li>Cannot move and fire</li>
+                        <li>May fire multiple weapons</li>
+                        <li>High fire effect ratings</li>
+                        <li>Long range capabilities</li>
+                    </ul>
+                    <p><strong>Deployment:</strong> Support unit for main infantry force</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Real-time points calculator
+const qualityPoints = {
+    'Conscript': 6,
+    'Regular': 8,
+    'Elite': 10
+};
+
+const weaponPoints = {
+    {% for weapon in weapons %}
+    '{{ weapon.id }}': {{ weapon.points }},
+    {% endfor %}
+};
+
+const armourPoints = {
+    {% for armour in armours %}
+    '{{ armour.id }}': {{ armour.points }},
+    {% endfor %}
+};
+
+const traitPoints = {
+    {% for trait in traits %}
+    '{{ trait.id }}': {{ trait.points_modifier }},
+    {% endfor %}
+};
+
+function calculatePoints() {
+    const quality = document.getElementById('quality').value;
+    const weaponId = document.getElementById('heavy_weapon_id').value;
+    const armourId = document.getElementById('armour_id').value;
+    
+    // Base points (quality)
+    const basePoints = qualityPoints[quality] || 0;
+    
+    // Weapon points
+    const weaponPts = weaponId ? (weaponPoints[weaponId] || 0) : 0;
+    
+    // Armour points
+    const armourPts = armourId ? (armourPoints[armourId] || 0) : 0;
+    
+    // Traits
+    let traitsPoints = 0;
+    document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
+        traitsPoints += traitPoints[checkbox.value] || 0;
+    });
+    
+    const totalPoints = basePoints + weaponPts + armourPts + traitsPoints;
+    
+    // Update display
+    document.getElementById('calc_base_points').textContent = basePoints;
+    document.getElementById('calc_weapon').textContent = weaponPts;
+    document.getElementById('calc_armour').textContent = armourPts;
+    document.getElementById('calc_traits').textContent = traitsPoints;
+    document.getElementById('calc_total').textContent = totalPoints;
+}
+
+// Attach event listeners
+document.getElementById('quality').addEventListener('change', calculatePoints);
+document.getElementById('heavy_weapon_id').addEventListener('change', calculatePoints);
+document.getElementById('armour_id').addEventListener('change', calculatePoints);
+document.querySelectorAll('input[name="traits"]').forEach(checkbox => {
+    checkbox.addEventListener('change', calculatePoints);
+});
+
+// Initial calculation
+calculatePoints();
+</script>
+{% endblock %}

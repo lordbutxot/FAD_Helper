@@ -1,0 +1,517 @@
+This section contains rules that enhance game play and provide a deeper and more realistic battle, but at the cost of added complexity.
+
+These rules are broken up into sections so that free to pick and choose those rules which suit your individual needs (and scenarios).
+
+Characters
+Commander Xao and Major Trask fight
+Two Characters from Scotia Grendel's VOID range
+
+Characters are inspiring leaders or mighty heroes, they function as an individual unit and require activation and action selection just like any other unit.
+
+Characters are represented by a single figure but may attach to and detach themselves from other units at will. However they may only act once each turn and Close Assault and Shoot on their own even when attached to a unit.
+
+Leadership Ratings
+Any unit containing a character may reroll a number of failed Morale Test dice, equal to the leadership rating of the attached character.
+
+Specialisation
+Characters are specialized by branch and must be classified as either Infantry, Gunnery (for heavy weapons) and Cavalry (for armour). If an officer is attached to a unit of the same branch, that unit may add the Leadership Rating of the officer to any Close Assault or Fire Effect rolls.
+
+For the purpose of Checking Resolve, any unit containing a character with the same specialisation will temporarily have their resolve raised by 1 level. If the character leaves the squad, they revert to their original strength.
+
+If the Command Response advanced rule is used, officers of any Quality Level will add +1 to the Command Response tests of those units they have joined of the same specialisation.
+
+Table 13: Character Leadership Ratings
+Leader Ratings	Reroll	Modifier
+Novice	0	0
+Experienced	1	+1
+Inspiring	2	+2
+Heroic	3	+3
+Characters in Vehicles
+If you are using vehicles and you would like a character riding that vehicle (maybe a war torn veteran who rides into the heart of battle on a motorbike), simply add the cost of the vehicle.
+
+The character will replace one of the crew of the vehicle and can leave, re-enter the vehicle as part of a command action. The character will replace one of the standard crew (so if they leave the vehicle, it will have a reduced crew) and if the vehicle only has a crew of one person, the vehicle becomes inactive once the character has left.
+
+Vehicles with a character on their crew who is a cavalry specialist will gain the benefits of that character’s specialisation, as well as other vehicles that are in the same unit.
+
+If a vehicle with a character in it is destroyed, that character can make a quality check, if all three dice pass, then the character survives and is placed adjacent to the wreckage as a single figure. The character cannot act for the rest of the turn, but then acts as normal for the rest of the game (even joining another vehicle, if they can).
+
+Command Disruption
+Any infantry unit that loses its squad leader is marked as Pinned instead of Under Fire the turn the squad leader is lost.
+
+Command Response
+In the thick of fighting, units do not always hear or obey new orders. They don’t have the luxury of a perfect view of the battlefield, with  enemy strengths and locations known. They may be reluctant to leave cover, and hesitant to engage the enemy in hand-to-hand combat.
+
+Under these rules, a unit will act as the player desires until one of the following conditions occur. If either condition applies, the unit must take a Command Response test.
+
+The unit activates Under Fire or Pinned.
+
+The unit activates 10” or less from an enemy unit.
+
+Determine Command Response
+To resolve command response, make a Quality Test, applying any of the following modifiers that are relevant:
+
+Table 14: Command Response Modifiers
+Squad Took Casualties Last Turn	-1
+Squad Has Untreated Wounded	-1
+Squad Leader Lost	-1
+Officer Present	+1
+If two or more dice exceed the quality level, the unit passes the test and may act as the player chooses.
+
+If none or only one dice exceeds the quality level, the unit fails the test they may Shoot, Recover Wounded or call for Indirect Artillery Fire as usual, but their movement is restricted as follows:
+
+The unit may only Move to improve cover.
+
+The unit may only Rush if heading away from the enemy.
+Demolitions
+A few targets are so heavily fortified as to be nearly indestructible. For these rare occasions, what you really want is something specifically designed to reduce that structure to rubble, this is where Demolition Charges are required.
+
+We strongly recommend that these weapons only be included in scenarios created for their use, as they are extremely powerful (designed to destroy massive bunkers, dams, a spaceship on a landing pad, perhaps even sink an enemy ship in harbor).
+
+Infantry units must be designated as carrying demolition charges. They may carry as many charges as the scenario requires. Upon activation, a squad with charges can elect to perform one of two "Demolition Actions" below.
+
+One member of the squad is busy performing the action, and can do nothing else. The rest of the squad members may perform one of the other Command Actions.
+
+Rig Charges
+One member of the squad will attempt to rig the charges for detonation, and place them in a spot to cause the most damage. Roll 3D6 (do NOT add them together), and note how many dice equal or exceed the Quality Level of the figure.
+
+If two or more dice succeed the charges are rigged.
+
+If only one die succeeds the task will take a bit longer; the charges will be rigged at the end of the next activation for this unit (no die roll is required), provided the unit remains in place.
+
+If no dice succeed the attempt fails. The unit can try again on a subsequent activation. 
+
+NOTE: that a unit marked as Under Fire rolls one less die when attempting to rig charges.
+
+Detonate Charges
+Detonate Charges: Before the charges can be detonated, the placing unit must get clear of the target area, with no figure from the unit any closer than 4” to the charges. There is one exception. If the unit is reduced to a single figure before they have a chance to get away, the last soldier can choose to detonate the charges, and be killed in the blast.
+
+To detonate the charges, roll 3d6 (do NOT add them together), and note how many dice equal or exceed the Quality Level of the figure.
+
+If two or more dice succeed the well placed charges go off with a huge explosion and the target is destroyed.
+
+If only one die succeeds the charges explode and the target is badly damaged.
+
+If no dice succeed the charges mostly fizzle, and a weak explosion causes only superficial damage. 
+
+NOTE: A badly damaged target is weakened to the point where it may eventually succumb to the damage. At the end of each turn roll 1d6. If the result is 4 or greater, the target is destroyed.
+
+Drop Troops
+During battle, troops may deploy from the air in a number of ways, including parachutes, anti-gravity modules, or some other ingenious fashion. For game purposes, all of these units will be referred to as Drop Troops.
+
+Drop Troops are not placed on the table during initial setup but held back in reserve. At any point during the game, when the active player has the option to activate a unit, he may choose to activate a unit of Drop Troops, and deploy them on the table.
+
+Select Drop Point
+To deploy Drop Troops, first select a target point on the table. This point must be at least 6” away from any difficult terrain features and enemy figures.
+
+Determine Drop Success
+To determine the success of the drop roll a Quality Test:
+
+If all three dice pass, the drop was perfect and the squad lands at the drop point without incident or scattering. Arrange the squad as desired, following rules for Coherency, they may not move this turn but can shoot.
+
+For each dice that fails, the unit scatters 1D6” in a random direction. Do this as a single die roll. The unit lands centred around this new spot. Place the figures following the rules for Coherency.
+
+If all three dice fail, the unit lands Pinned.
+
+For any troops that land on buildings or in woods make a Quality Test, if 2 or more dice pass the figure is fine, if only one passes the figure is wounded and if none are passed it is killed.
+
+The defender may have certain off-board, anti-air units, as defined by the scenario. These units fall into three types, as shown on the table below:
+
+Table 15: Anti-Air Units
+Light	2D6
+Medium	2D6
+Heavy	4D6
+For each anti-air unit, the defender rolls the specified number of dice. Any roll of 5+ means one enemy figure is killed. Regardless of the anti-air fire results, if the defender fires at the landing troops, that unit lands Under Fire, and should be marked as such.
+
+Fire Teams
+Some units receive additional training which allows them to better coordinate their efforts on the field of battle (as denoted by the Fire Team trait). These are two squads known as Fire Teams, which are “linked” to form a single, larger unit.
+
+Fire Teams have designated “partner” squads (noted before the game begins), and must remain within 12” of their partner or be considered out of Coherency.
+
+The two squads activate as one, but can select different actions. For all intents and purposes, the two squads are separate units, Checking  Resolve, taking Morale Tests, Close Assaulting and Shooting as independent units.
+
+They may, however, choose to work together and perform the same action. If this action is a Close Assault, then roll 2D6 as usual, but this time you add them together to determine the victor. If the Fire Teams choose to Shoot, then roll 2d6 as usual, and then add them together to determine the Fire Effect.
+
+If one Fire Team is eliminated for any reason, the other continues to act as a single squad.
+
+Fortifications
+These refer to any position constructed specifically for battle, designed to provide greater cover and tactical advantage for the troops that use them. These include foxholes, sandbag emplacements, bunkers and other covered structures made from reinforced materials (such as concrete and armour plating), and trenches.
+
+All provide hard cover and an Armour Rating bonus to the troops using the structure. This bonus is added to any armour the troops inside may already be wearing.
+
+Table 16: Fortification Bonus
+Type	Armour Rating	Armour Value
+Foxholes	+1	-
+Sandbags	+2	-
+Trenches	+3	-
+Light Bunker	+4	7
+Medium Bunker	+4	9
+Heavy Bunker	+4	11
+In addition to the above, troops in trenches which have not moved or fired may not be fired upon at ranges over 12”. Troops leaving trenches suffer a -4” movement penalty. 
+
+Further, units in bunkers and trenches are automatically successful on one of their dice when testing morale. 
+
+Bunkers also have an Armour Value. This is the defensive value of the structure itself. The structure can be targeted instead of the troops  inside. Shooting and close assaulting bunkers is handled exactly the same as the rules for targeting vehicles.
+
+Treat any penetrating hit on the structure as a “Bunker Destroyed” result. Any fixed weapons within the bunker are destroyed as well. Roll 1d6 for every trooper inside the bunker. If the result is a 3 or 4 the figure is wounded. If the result is a 5 or 6 the figure is killed, any survivors are marked as Pinned.
+
+Hacking
+What sci-fi game would be complete without the ability for skilled individuals to take over, disrupt and disable electrical and electronic systems? Hackers are specialists in this area and will come to the battlefield equipped with everything they need to disrupt and disable these systems.
+
+Selecting a Target
+In order to hack, a unit must have the "Hacking" trait and must be able to see an enemy unit. The unit must be equipped with either battle dress or better armour (if infantry) or appear suitably hackable if a vehicle (EG a high tech grav vehicle would be hackable, where as a modern day motorbike probably would not). Once they have chosen a target, the hacker must make a quality test and determine how many passes they get. The number of passes determines the result of the hack (as follows):
+
+Resisting Hacking
+Not all hackable targets are the same, some being easier to hack than others. This is represented by a resistance (that is a modifier applied to every dice rolled for the hackers quality test).
+
+This resistance is based on the combination of the target's Quality and Resolve (units with high Quality and Resolve will be better made, batter trained, etc) and can be seen below:
+
+ 	Rabble Quality	Conscript Quality	Regular Quality	Elite Quality
+Reluctant Resolve	+3	+2	+1	0
+Uncertain Resolve	+2	+1	0	-1
+Steady Resolve	+1	0	-1	-2
+Determined Resolve	 0	-1	-2	-3
+Determine the Effect
+Finally, check how many passes you got (taking into account the modifiers above) and compare to the list below:
+
+0-1 Passes: The hack failed, nothing happened but you can try again next turn.
+
+2 Passes: You manage to disrupt some secondary systems. Mark the target "Under Fire".
+
+3 Passes: You succeed in hacking the target. If the target is infantry, mark it as "Pinned", if it is a vehicle, mark it as "Damaged".
+
+Heavy Weapons Teams
+A heavy weapons team is an individual unit and requires activation and action selection just like other squads. These units may be a group of soldiers working a heavy weapon or simply a lone armed figure,depending on the miniatures used by the players.
+
+NOTE: These “teams” are still considered separate units even if they are only one figure.
+
+Heavy weapon teams may perform a standard Move, but may never Rush due to the weight of their weapon. They may only Shoot if they did not move that turn, to reflect the time spent packing up and deploying their weapons.
+
+If the weapon is served by crew and they take casualties, the squad suffers a -1 Fire Effect and -1” Movement penalty for each lost crew member.
+
+A heavy weapons team can be attached to an infantry squad when troops are first deployed. The two units must remain together (following normal rules for Coherency) for the duration of the game. They activate and move as one. For purposes of Checking Resolve and taking Morale Tests, the numbers of the two squads are combined.
+
+If the combined squad moves, only the infantry squad members may Shoot. If the combined squad does not move, the two components may fire at separate targets per the usual rules, or combine to fire at a single target.
+
+When firing at the same target, roll 2d6 (for the infantry) and 1d6 (for the heavy weapons) and COMBINE the two highest results, then add all  the usual modifiers that apply. The result is your Fire Effect rating.
+
+Follow all the usual rules for shooting from this point.
+
+Hidden Movement
+Often in battle, the exact location of the enemy is unknown. They may simply be out of sight. But they may be taking deliberate steps to avoid detection.
+
+A squad that begins its activation outside the line of sight of all enemy units may attempt to hide. To do this, make a Quality Test:
+
+If you get two or more passes, the attempt was a success and the unit can begin the activation in hiding.
+
+Otherwise, the attempt failed, and the unit simply acts normally this activation.
+
+A unit in hiding is replaced with three Hidden markers. Every time the unit is activated, all markers for that unit are activated. They move  individually, and up to 6” per turn, as long as they remain within 12” of another marker.
+
+The controlling player decides which marker represents the true location of the unit, and which two are fakes. It is NOT necessary to record this information in secret because the controlling player can decide which is which at any point during the game. 
+
+A marker which enters the uninterrupted LOS of an enemy must be revealed immediately and removed from the game. If the marker was the location of the unit, it is placed on the table at that location. Once the unit is revealed, any remaining markers for that unit are removed. 
+
+Markers in a terrain feature which can block LOS (such as buildings or woods) are revealed if the enemy enters the feature and comes within 6” of the marker.
+
+Indirect Artillery Fire
+All officers and infantry Squad Leaders may call for Indirect Artillery Fire as their action for the turn. They may not perform any other activity as they are too busy spotting, but the rest of the unit may perform one of the other Command Actions.
+
+These strikes are made by off-board artillery units armed with cannons, mortars or missile launchers (blast weapons). Each is capable of  receiving only one strike call per turn. The scenario should specify how many units there are, and of what types.
+
+To call in indirect artillery, use the following steps:
+
+Determine Timing
+To determine the timing of the strike make a quality test for the artillery unit:
+
+If two or more dice succeed, the message is received and the strike arrives immediately.
+
+If only 1 die succeeds, the message was garbled and there is no strike, but another attempt may be made on a later turn.
+
+If none of the dice succeed, communication with that artillery unit has been permanently knocked out. No further calls to that unit may be attempted.
+
+Determine Accuracy
+To determine if the strike is accurate the spotter has to make a quality test.
+
+If all dice pass, the strike hits with pinpoint accuracy.
+
+For each die that fails, the strike will scatter 1D6” in a random direction. 
+
+To resolve indirect artillery fire look at "Area effect weapons".
+
+Jet Packs
+Frequently referred to as boosters, jump jets, jump packs and similar, this term covers any device that permits powered jumps and leaps, rather than true flight.
+
+Rather than performing a regular move, a unit with Jet Packs may perform one of two types of aerial movement; they may Leap or Bound. 
+
+Leaping: this refers to a single powered leap, typically used to cross obstacles. The figures may move up to 12” on a Leap, clearing obstacles up to 6” in height. Taller obstacles can be crossed, but each 1” added to the height will reduce the jump length by 2”.
+
+A Leap may not be used to enter close assault, and the unit may not perform any other action that turn.
+
+Bounding: this is a series of short jumps used to cover ground quickly. Bounding troops may move a total of 18”, divided into 3 individual bounds of up to 6” each. Each bound must be taken in a straight line, and may clear obstacles up to the height of the bounding figure, but no higher. Bounding troops may fire, but suffer a 
+
+-2 penalty to their fire effect. 
+
+Troops may Bound into close assault, but the defending squad is allowed a free shot at their attackers. The range will be from the point of the last bound prior to making contact. Do not place Under Fire or Pinned markers for this, however, as the assaulting troops will be way too psyched up to care! 
+
+Squads equipped with Jet Packs may carry wounded in the normal fashion. Deduct 2” from leaps and 4” from Bound when doing so.
+
+Last Stand
+No epic battle is complete without a desperate last stand, preferably against the odds. Once per game, each player may select a single unit and declare they are making a Last Stand. Once a unit has made this declaration, the deed is done. There is no die to roll (although we suggest the player make a dramatic speech).
+
+A unit making a Last Stand is rooted to their spot. They will not move for any reason, but can regroup if they suffer casualties. There is no need to Check Resolve or take a Morale Test. And they ignore being Under Fire and Pinned. In short, they will hold their position; Shoot at their choice of enemy units, and fight to the last man.
+
+Losing Heart
+While a force may start a fire fight in high spirits, heavy resistance and casualties can swing things the opposite way. Checking the Resolve and taking Morale Tests applies only to individual units. This optional rule applies to the army as a whole. Once an army has sustained at least 50% losses*, the force will begin to Lose Heart, and the Resolve for all units will permanently drop by one level.
+
+Once an army has sustained at least 75% losses*, the force is considered decimated, and the Resolve for all remaining units will permanently drop by one more level. Any Reluctant unit required to lose another level of Resolve is automatically eliminated instead.
+
+* Losses relate to the overall total number of units eliminated from play. So squads, heavy weapons teams, snipers, officers and vehicles each count as a single unit. If the scenario includes on-board artillery (perhaps in a pillbox), or other “hard target points” such as bunkers, bridges and radar stations, players may wish to assign these “unit” status for purposes of determining army size. 
+
+Mines
+Mines can be used to bolster the defence of a position, slowing the enemy, or forcing them to take a different path. These “set and forget” devices will detonate when disturbed, usually triggered by pressure sensors or movement. They come in both light and heavy varieties.
+
+Each minefield consists of three markers which should be numbered for easy identification. They may be placed anywhere on the table. They cannot be fired upon or attacked in any way. One marker represents a real minefield. The other two are dummy markers. The player placing the mines should record both the type (light or heavy) and number of each real minefield on a separate sheet.
+
+Note that dummy minefields, once discovered, are removed from the game. Real minefields, however, will remain in play for the duration of the game (unless scenario special rules allow for the clearing or removal of minefields), and may be triggered any number of times.
+
+Any unit that approaches to within 4” of a mine must temporarily halt their movement and resolve their encounter with the mine. Roll 1d6. If the result is 5+ the unit passes through the minefield without incident and may finish its movement. Otherwise the player who placed the mine must check his records.
+
+If the mine is a dummy it is removed, and the unit may finish its movement. If the mine is real, resolve the attack immediately.
+
+Mines versus Infantry
+The attacker rolls 1d3 to determine the number of infantry figures that are hit by the blast. For each hit, the attacker rolls 1d6 and adds the Damage Rating of the mines. The defender rolls 1d6 and adds the Armour Rating of the targeted squad. To resolve these hits, continue with the rules to Determine Damage for infantry on page 19.
+
+Mines versus Vehicles
+The attacker rolls 1d3 to determine the number of hits suffered by the vehicle. For each hit, the attacker rolls 1d6 and adds the Anti-Tank Rating of the mines. The defender rolls 1d6 and adds the Armour Rating for the underside of the vehicle. To resolve these hits, continue with the rules to Determine Damage for vehicles on page 20.
+
+Non-Combatants
+Some scenarios may call for the inclusion of units with no fighting capabilities. These units may represent displaced civilians, news crews, or even panicked troops which have dropped their weapons and fled the battlefield. All such units are known as non-combatants.
+
+Non-combatants can only choose the Move Out action, and will always Rush away from visible enemy units, unless the scenario rules specify differently. For Quality Level purposes, treat these units as Rabble.
+
+Opportunity Fire
+It is often tactically prudent to position troops in such a way that they can direct fire against an area of terrain, in order to deny the enemy access. This may be the approach to a bridge, bunker or other installation, an intersection, a patch of open ground, etc. 
+
+Any unit, including squads of infantry, snipers, heavy weapons teams, and even vehicles may perform Opportunity fire once per turn – even if they have already been activated. Doing so does not count as activating the unit.
+
+To perform Op-Fire, interrupt an enemy unit (infantry or vehicle) at any point during its move. Note how much further the enemy unit could have moved, and mark the friendly unit as having performed Op-Fire.
+
+Then follow all the normal rules for shooting, except that no actual casualties or damage will be inflicted.
+
+When targeting infantry, if any hit becomes a kill (or a wound if the advanced rules are used), the enemy unit is repulsed instead. If no kills (or wounds) are caused by the Op-Fire, the enemy unit may continue to move as desired.
+
+When targeting vehicles, if the attacker scores three or more points higher than the defender when determining penetration, the enemy unit is repulsed instead. If no hits penetrate by at least 3 points, the vehicle may continue to move as desired.
+
+Being repulsed means the unit must use any remaining movement to head for the nearest cover, that will not take the unit closer to the shooter. The unit being repulsed may end their turn in the open if they have insufficient movement left to make it to cover.
+
+Personalities
+Stories and movies of warfare are filled with colourful personalities, and our gaming would be rather dull if it didn't take these figures into account.
+
+We recommend that players use models equal to the personality profiles they employ. An especially beefy soldier for a Brawler, a trooper with red cross arm bands, helmet and medical bag for a Medic, etc. But players are, of course, free to simply assign the profiles to regular models. 
+
+The number of personalities allowed per side may be scenario driven, a variable (such as 1d6 rolls per player), or a set number agreed to by both players. 
+
+Brawler: A Brawler receives an extra roll on the Kill Table during Close Assaults.
+
+Comms: A squad with a communications expert can re-roll one dice when checking Command Response and when calling for Indirect Artillery Fire (note you can only re-roll one dice per attempt to call indirect artillery).
+
+Knife Fighter: A knife fighter receives a +1 modifier during infantry Close Assaults. 
+
+Lucky: A squad with a lucky trooper can re-roll any one die roll once during the game.
+
+Medic: A Medic allows its unit to re-roll one dice for the Quality Test to recover wounded per turn.
+
+Motivator: Any squad with a Motivator may re-roll one dice on a Morale Test.
+
+Sharpshooter: Any squad with a Sharpshooter receives a Damage bonus of +1. 
+
+Anti-Armour Expert: Any squad with an anti-armour expert receives an AP bonus of +1. 
+
+Trigger Happy: A squad with a Trigger Happy trooper receives a Fire Effect bonus of +1.
+
+Powered Armour
+Powered Armour is an advanced suit of armour that combines miniaturised hydraulics and some form of armour plating to grant the wearer unrivalled protection and augmented strength, which grants the following benefits:
+
+Coherency of the unit is increased to 6”.
+
+Units gain a +3 modifier in infantry Close Assaults.
+
+Any kill result they suffered during infantry Close Assault can be negated on a D6 roll of 5+.
+
+Make two rolls for each figure wearing Powered Armour on the Kill Table during an infantry Close Assault.
+
+When dropping onto the battlefield and scattering onto buildings or in woods, units in Powered Armour are only wounded on a D6 roll of 6.
+
+Units wearing Powered Armour being transported by a vehicle which is destroyed are only wounded on a D6 roll of 5, and killed on a 6.
+
+A unit with Powered Armour can use any heavy weapon that does not have the word “heavy” in its name as a support weapon, although the unit must still adhere to the heavy weapons team advanced rule.
+Psionics
+Some soldiers are armed with more than the weapons they carry into combat, they have the ability to shape the events around them using only their minds. These individuals are known collectively as psionics.
+
+Psionics function as an individual, and require activation and action selection just like any other unit. They are represented by a single figure but may attach to and detach themselves from other units at will, however they may only act once each turn.
+
+Aptitude and Strength
+The capability of a psychic is measured with two statistics, Aptitude and Strength.
+
+Aptitude rates their skill at invoking their powers, while Strength represents their ability to withstand  invocation attempts.
+
+A typical psionic starts with 3 Strength points. Once reduced to zero Strength a psionic can no longer invoke their powers.
+
+As part of an Engage the Enemy action, the Psionic can attempt to invoke one power at any point during their activation. The psionic does not contribute to any ranged combat during the turn.
+
+Invoking Powers
+To invoke a Psionic power, choose the power and nominate the target unit. You then need to roll 3D6 and check how many dice roll over the aptitude target of the Psionic (based on the table below).
+
+Table 17: Psionic Aptitude
+Aptitude	Target Number
+Marginal	5+
+Competent	4+
+Expert	3+
+Master	2+
+If two or more dice succeed the power was invoked easily and the psionic suffers no loss of Strength.
+
+If only one die succeeds, the power was invoked with some difficulty, and the psionic is drained of one Strength point.
+
+If no dice succeed the power was not invoked, and the psionic is drained of one Strength point.
+
+Powers
+At the start of a game, the player must choose a number of powers equal to the Psionic character’s strength.
+
+Degrade: One enemy unit receives a -2 penalty to their Fire Effect or Assault roll on their next activation. No unit can receive this penalty more than once per turn.
+
+Demoralise: Mark one enemy unit Under Fire. If they are already marked as such, replace that marker with a Pinned marker.
+
+Embolden: One friendly unit does not have to take a morale test the next time they activate.
+
+Enhance: One friendly unit receives a +2 bonus to their Fire Effect or Assault roll on their next activation. No unit can receive this bonus more than once per turn.
+
+Expose: One enemy unit receives a penalty of -2 to their armour rating until after their next activation. No unit can receive this penalty more than once per turn.
+
+Harm: One figure in an enemy unit is hit by a mental blast. Roll 1d6. A result of 4+ and the target is killed; otherwise he is unharmed. If the Recover Wounded  advanced rules are being used, the target is wounded on a d6 result of 4 or 5, and killed on a result of 6. The targeted player chooses the figure.
+
+Heal: One wounded figure in a friendly unit is aided from within. Roll 1d6. A result of 4+ and the target fully recovers from his wounds and is able to resume his duties; otherwise he is unchanged.
+
+Inspire: Remove one Under Fire marker from a friendly unit. If they are Pinned, replace that marker with an Under Fire marker.
+
+Shield: One friendly unit receives a bonus of +2 to their armour rating until after their next activation. No unit can receive this bonus more than once per turn.
+
+Terror: One enemy unit must take a morale test the next time they activate.
+
+NOTE: All powers have a base range of 12”.
+
+Recover Wounded
+Squads that suffer fatalities in battle will press on with their mission for as long as they can; there will be time later to mourn the dead. But the wounded are a different matter entirely. They need medical attention, and soon, or they may die. Further, healthy members of a unit are often reluctant to leave untreated wounded behind. Under these rules, squads may now aid their wounded comrades.
+
+Upon activation, an infantry unit can elect to perform a Recover Wounded action. They can then form aid teams and treat their injured. With any luck, they will stabilize a wounded figure, and perhaps even help them return to fighting form.
+
+Wounding
+When using these rules, a figure is only killed when the attacker scores three or more points higher than the defender when rolling to Determine Damage. If the attacker scores equal to, or one or two points higher than the defender, the target figure is only wounded. This can be indicated by placing a suitable marker next to the injured figure, or laying the figure down.
+
+Wounded figures are out of action. They cannot move or fight, and if wounded again they are killed and removed from play.
+
+Recovering Wounded
+If less than half the unit are wounded then the unit can either attempt to act as normal or Recover Wounded as part of a command action. If they decide to shoot while they have wounded, the they do so at -3 fire effect and any movement is reduced by half.
+
+If more than half the unit is injured then it can perform no other action this turn than to attempt to recover wounded.
+
+If the entire unit is wounded, then it cannot be recovered and should be removed from play.
+
+The Recovery Test
+In order to recover wounded the squad must make a Quality Test for each wounded figure, applying all applicable modifiers from the table below.
+
+If all 3 dice pass then one model has recovered enough to be able to carry on fighting.
+
+If only 2 dice pass the figure is stabilised, but cannot fight. Remove the figure, no further attempts can be made to recover them and they do not count as a casualty when Checking Resolve.
+
+If no dice pass then the figure has died from his wounds, and is removed immediately.
+
+Table 18: Recover Wounded Modifiers
+Unit also fired this turn	-1
+Unit Under Fire	-2
+Unit Pinned	-3
+Leave No One Behind
+Squads are reluctant to leave untreated wounded comrades behind. If a squad without a medic wishes to abandon any un-stabilized wounded, they must make a Quality Test first.
+
+If all three dice pass, they may leave their wounded behind without penalty. If only two pass then their morale is now at one level less than normal when Checking Resolve for the remainder of the game. If one dice passes or less, then the squad will not abandon wounded this turn.
+
+Moving Wounded
+A squad may choose to carry their wounded with them, rather than abandoning them to their fate. For every fit soldier, one wounded may be moved. If a squad chooses to move wounded they move at half their standard rate and may not perform any other actions.
+
+Reserves
+Some units can be called upon to deploy after the battle has started (and so will not be deployed during the initial setup). To make use of reserves, either decide before the match how many units each side can hold in reserve, or alternatively add the "Reserves" trait to a unit.
+
+To use a unit in reserve, you must activate them (as per normal activation rules) and then make a Quality Test. If the result of the test means you are able to deploy then simply move the unit their standard movement distance, starting from the board edge you have deployed from.
+
+Deploy From Reserves Quality Test
+If all 3 dice pass: you can deploy from any table edge, but you must be at least 6” from an enemy unit or an objective.
+
+If 2 dice pass: you can deploy from either the left or right table edge relative to where you initially deployed, or from your initial deployment zone.
+
+If only one dice passes: you deploy from your initial deployment zone.
+
+If no dice pass: you cannot deploy this turn.
+
+Scout
+Sometimes, you need to send a squad member on ahead to search for hidden enemy positions, and to spot for artillery.
+
+Upon activation, a squad can elect to perform a Scout action. Pick one member of the squad and place their figure anywhere within three times the coherency distance of its squad.
+
+For Example: A scout from a squad with regular quality could be placed up to 12” away from any other member of the squad.
+
+From this position, the scout can be used to uncover Hidden troop markers. The rest of the
+squad members may perform one of the other Command Actions.
+
+If the scout calls for Indirect Artillery Fire, this constitutes the second Command Action  allowed by the unit, so the rest of the squad members will remain idle this turn.
+
+The next time this squad is activated the scout immediately returns to the squad and is placed anywhere within coherency distance of any other member. This is done prior to the squad checking resolve or selecting a new action.
+
+Smoke Grenades
+Any squad equipped with rifle grenades or a grenade launcher is considered to be carrying
+smoke grenades in addition to the usual explosive shells. Any squad so equipped may lay down one smoke screen per game.
+
+A squad choosing to lay down a smoke screen is essentially performing an Engage the Enemy action, but with a twist. If they wish, they can Shoot (lay down the smoke) before they Move.
+
+To lay down smoke, mark two points, each one no further than 10” from the squad, and no 
+
+further than 16” apart. The line connecting these two points is where smoke shells fall,  creating a thick cloud that obscures all lines of sight through it, and preventing any close
+assault charges or shooting through it as well.
+
+Smoke lasts for one turn. Remove the smoke markers the next time the squad is activated.
+
+Snipers
+Snipers are an individual unit and require activation and action selection like any other unit. They are represented by a single figure and cannot attach themselves to other units.
+
+As masters of concealment, if they didn’t move in their last activation, the enemy will suffer a -2 Fire Effect penalty if they target the sniper. 
+
+Snipers Move and Rush like other units, but cannot initiate Close Assault. They cannot Shoot if they moved this activation. They use the following special rules when shooting:
+
+Determine Clear Shot
+A sniper can target any enemy unit (and any single figure within that unit), regardless of Fire Priority. Once a target has been chosen make a quality test, if you get 2 or more passes the sniper has a clear shot (continue with the rules for Shooting at Infantry on page 18), otherwise he cannot fire this turn.
+
+Bullseye
+If the Sniper gets 3 passes on their website test, then they have got a perfect shot and can add +1 to their damage.
+
+Squad Leaders
+Some units may be led by a single model (such as a sergeant, experienced veteran, etc). If this is the case, designate one of the unit’s models as a leader and choose the level of experience (regular, experienced or veteran).
+
+Adding a squad leaders gives the squad several benefits. Firstly some special rules (such as call in indirect artillery fire) can only performed by a squad leader. Secondly a squad leader improves the quality level of his squad by a number of levels (depending on their experience) for determining Fire Effect bonuses and Quality Tests (but not weapon ranges).
+
+If the squad leader dies the squad reverts to their natural quality level.
+
+Table 20: Leader Experience
+Leader Experience	Quality Increase
+Regular	0 Levels
+Experienced	1 Level
+Veteran	2 Levels
+For Example: A conscript squad with an experienced leader is considered regular quality or rabble led by a veteran is considered regular quality.
+
+Traits
+Infantry and vehicles can be improve (or degraded) by giving them traits, which provide additional special rules to the unit they are assigned to. A full list if traits for both infantry and vehicles are available on the traits page.
+
+Vehicle Bogging
+Any time a tracked, walking or wheeled vehicle attempts to cross a patch of difficult ground (such as thick woods, deep streams or swamps), it has a chance of getting bogged down.
+
+For every 6” moved through such terrain, these vehicles must take a Bogging Test. A bogging test is a standard Quality Test, for tracked and walking vehicles if the vehicle passes on at least one dice then it may continue moving. For wheeled vehicles 2 dice must pass.
+
+If the test is failed the vehicle must stop in place. A vehicle can be freed by passing the same test at the start of any future activation.
+

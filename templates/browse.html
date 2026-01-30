@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Lists - F.A.D. List Builder{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4"><i class="bi bi-search"></i> Browse Public Army Lists</h1>
+    
+    <!-- Search and Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-5">
+                    <input type="text" class="form-control" name="search" placeholder="Search lists..." value="{{ search }}">
+                </div>
+                <div class="col-md-5">
+                    <select class="form-select" name="faction">
+                        <option value="">All Factions</option>
+                        {% for faction in factions %}
+                        <option value="{{ faction }}" {% if faction == selected_faction %}selected{% endif %}>{{ faction }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lists -->
+    {% if lists %}
+    <div class="row">
+        {% for list in lists %}
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ list.name }}</h5>
+                    <p class="card-text">
+                        <i class="bi bi-flag"></i> {{ list.faction or 'Custom Faction' }}<br>
+                        <i class="bi bi-trophy"></i> <strong>{{ list.total_points }}</strong> points<br>
+                        <i class="bi bi-people"></i> {{ list.total_units }} units
+                    </p>
+                    {% if list.description %}
+                    <p class="card-text small text-muted">{{ list.description[:100] }}{% if list.description|length > 100 %}...{% endif %}</p>
+                    {% endif %}
+                    <p class="card-text small">
+                        by <strong>{{ list.owner.username }}</strong><br>
+                        <i class="bi bi-eye"></i> {{ list.views }} views | 
+                        <i class="bi bi-calendar"></i> {{ list.created_at.strftime('%Y-%m-%d') }}
+                    </p>
+                    <a href="{{ url_for('view_list', list_id=list.id) }}" class="btn btn-primary btn-sm w-100">View List</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        No public lists found. {% if current_user.is_authenticated %}Be the first to <a href="{{ url_for('list_builder') }}">create and share one</a>!{% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

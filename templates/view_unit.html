@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}{{ unit.name }} - F.A.D. List Builder{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title">{{ unit.name }}</h1>
+                    <p class="text-muted">
+                        <span class="badge bg-primary">{{ unit.unit_type }}</span>
+                        {% if unit.faction %}
+                        <span class="badge bg-secondary">{{ unit.faction }}</span>
+                        {% endif %}
+                        {% if unit.is_public %}
+                        <span class="badge bg-success">Public</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Private</span>
+                        {% endif %}
+                    </p>
+                    
+                    <hr>
+                    
+                    <h4>Statistics</h4>
+                    <table class="table">
+                        <tr>
+                            <th>Quality:</th>
+                            <td>{{ unit.quality }}</td>
+                            <th>Resolve:</th>
+                            <td>{{ unit.resolve }}</td>
+                        </tr>
+                        {% if unit.unit_type == 'Infantry' %}
+                        <tr>
+                            <th>Squad Size:</th>
+                            <td colspan="3">{{ unit.squad_size }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                    
+                    <h4>Equipment</h4>
+                    <ul class="list-group mb-3">
+                        {% if unit.armour %}
+                        <li class="list-group-item">
+                            <strong>Armour:</strong> {{ unit.armour.name }} (Rating {{ unit.armour.rating }})
+                        </li>
+                        {% endif %}
+                        {% if unit.basic_weapon %}
+                        <li class="list-group-item">
+                            <strong>Basic Weapon:</strong> {{ unit.basic_weapon.name }}
+                        </li>
+                        {% endif %}
+                        {% if unit.support_weapon %}
+                        <li class="list-group-item">
+                            <strong>Support Weapon:</strong> {{ unit.support_weapon.name }}
+                        </li>
+                        {% endif %}
+                        {% if unit.heavy_weapon %}
+                        <li class="list-group-item">
+                            <strong>Heavy Weapon:</strong> {{ unit.heavy_weapon.name }}
+                        </li>
+                        {% endif %}
+                    </ul>
+                    
+                    {% if unit.get_traits()|length > 0 %}
+                    <h4>Traits</h4>
+                    <ul class="list-group mb-3">
+                        {% for trait in unit.get_traits() %}
+                        <li class="list-group-item">
+                            <strong>{{ trait.name }}</strong>: {{ trait.description }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    
+                    <p class="small text-muted">
+                        Created by <strong>{{ unit.creator.username }}</strong> on {{ unit.created_at.strftime('%Y-%m-%d') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h4>Point Cost</h4>
+                    <div class="points-display display-4 text-center my-4">
+                        {{ unit.total_points }}
+                    </div>
+                    <p class="text-center text-muted">points</p>
+                    
+                    {% if current_user.is_authenticated and unit.user_id == current_user.id %}
+                    <hr>
+                    <a href="{{ url_for('edit_unit', unit_id=unit.id) }}" class="btn btn-primary w-100 mb-2">
+                        <i class="bi bi-pencil"></i> Edit Unit
+                    </a>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary w-100">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('browse_lists') }}" class="btn btn-secondary w-100">
+                        <i class="bi bi-arrow-left"></i> Back to Browse
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

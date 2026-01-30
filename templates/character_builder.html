@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% block title %}Character Builder - F.A.D. List Builder{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <h2>Character Builder</h2>
+            <p class="text-muted">Build a unique character with leadership abilities and specialization.</p>
+            
+            <form id="characterForm" method="POST" action="{{ url_for('character_builder') }}">
+                <!-- Basic Info -->
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Basic Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Character Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="faction" class="form-label">Faction</label>
+                            <input type="text" class="form-control" id="faction" name="faction" placeholder="Optional">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="has_personality" name="has_personality" value="true">
+                                <label class="form-check-label" for="has_personality">
+                                    Has Personality <small class="text-muted">(+5 pts)</small>
+                                </label>
+                            </div>
+                            <small class="text-muted">Characters with personality can perform special actions</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="card mb-3">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Character Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="quality" class="form-label">Quality *</label>
+                            <select class="form-select" id="quality" name="quality" required>
+                                <option value="">Select Quality...</option>
+                                <option value="Conscript">Conscript (4+)</option>
+                                <option value="Regular">Regular (3+)</option>
+                                <option value="Elite" selected>Elite (2+)</option>
+                            </select>
+                            <small class="text-muted">Characters are typically Elite quality</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="resolve" class="form-label">Resolve *</label>
+                            <select class="form-select" id="resolve" name="resolve" required>
+                                <option value="">Select Resolve...</option>
+                                <option value="Uncertain">Uncertain</option>
+                                <option value="Steady">Steady</option>
+                                <option value="Determined" selected>Determined</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leadership -->
+                <div class="card mb-3">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0">Leadership</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="leadership_rating" class="form-label">Leadership Rating *</label>
+                            <select class="form-select" id="leadership_rating" name="leadership_rating" required>
+                                <option value="">Select Rating...</option>
+                                <option value="Novice">Novice (0 bonus, +0 pts)</option>
+                                <option value="Experienced">Experienced (+1 bonus, +10 pts)</option>
+                                <option value="Inspiring">Inspiring (+2 bonus, +20 pts)</option>
+                                <option value="Heroic">Heroic (+3 bonus, +30 pts)</option>
+                            </select>
+                            <small class="text-muted">Leadership rating affects Command Response tests</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="specialization" class="form-label">Specialization *</label>
+                            <select class="form-select" id="specialization" name="specialization" required>
+                                <option value="">Select Specialization...</option>
+                                <option value="Infantry">Infantry (bonus to infantry units)</option>
+                                <option value="Gunnery">Gunnery (bonus to shooting)</option>
+                                <option value="Cavalry">Cavalry (bonus to vehicles)</option>
+                            </select>
+                            <small class="text-muted">Specialization provides bonuses in specific situations</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Equipment -->
+                <div class="card mb-3">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Equipment</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="armour_id" class="form-label">Armour</label>
+                            <select class="form-select" id="armour_id" name="armour_id">
+                                <option value="">No Armour</option>
+                                {% for armour in armours %}
+                                <option value="{{ armour.id }}">{{ armour.name }} (+{{ armour.points }} pts)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="basic_weapon_id" class="form-label">Weapon *</label>
+                            <select class="form-select" id="basic_weapon_id" name="basic_weapon_id" required>
+                                <option value="">Select Weapon...</option>
+                                {% for weapon in weapons %}
+                                <option value="{{ weapon.id }}">{{ weapon.name }} ({{ weapon.range }}, FE:{{ weapon.fire_effect }}, +{{ weapon.points }} pts)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Traits -->
+                <div class="card mb-3">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">Character Traits</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Select special traits for this character</p>
+                        <div class="row">
+                            {% for trait in traits %}
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="traits" value="{{ trait.id }}" id="trait_{{ trait.id }}">
+                                    <label class="form-check-label" for="trait_{{ trait.id }}">
+                                        {{ trait.name }} 
+                                        <small class="text-muted">({{ trait.points_modifier }}{% if trait.points_modifier > 0 %}+{% endif %}{{ trait.points_modifier }} pts)</small>
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">Notes</h5>
+                    </div>
+                    <div class="card-body">
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Character background, abilities, etc..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="d-grid gap-2 mb-4">
+                    <button type="submit" class="btn btn-primary btn-lg">Save Character</button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Points Calculator Sidebar -->
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Points Calculator</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Base Quality:</strong>
+                        <span id="calc_base_points" class="float-end">0</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Leadership:</strong>
+                        <span id="calc_leadership" class="float-end">0</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Personality:</strong>
+                        <span id="calc_personality" class="float-end">0</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Equipment:</strong>
+                        <span id="calc_equipment" class="float-end">0</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Traits:</strong>
+                        <span id="calc_traits" class="float-end">0</span>
+                    </div>
+                    <hr>
+                    <div class="fs-4">
+                        <strong>Total Points:</strong>
+                        <span id="calc_total" class="float-end text-primary">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Quick Reference</h6>
+                </div>
+                <div class="card-body small">
+                    <p><strong>Leadership Ratings:</strong></p>
+                    <ul class="mb-2">
+                        <li>Novice: +0 (0 pts)</li>
+                        <li>Experienced: +1 (10 pts)</li>
+                        <li>Inspiring: +2 (20 pts)</li>
+                        <li>Heroic: +3 (30 pts)</li>
+                    </ul>
+                    <p><strong>Specializations:</strong></p>
+                    <ul>
+                        <li>Infantry: Bonus to infantry Command Response</li>
+                        <li>Gunnery: Bonus to shooting tests</li>
+                        <li>Cavalry: Bonus to vehicle Command Response</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Real-time points calculator
+const qualityPoints = {
+    'Conscript': 6,
+    'Regular': 8,
+    'Elite': 10
+};
+
+const leadershipPoints = {
+    'Novice': 0,
+    'Experienced': 10,
+    'Inspiring': 20,
+    'Heroic': 30
+};
+
+const weaponPoints = {
+    {% for weapon in weapons %}
+    '{{ weapon.id }}': {{ weapon.points }},
+    {% endfor %}
+};
+
+const armourPoints = {
+    {% for armour in armours %}
+    '{{ armour.id }}': {{ armour.points }},
+    {% endfor %}
+};
+
+const traitPoints = {
+    {% for trait in traits %}
+    '{{ trait.id }}': {{ trait.points_modifier }},
+    {% endfor %}
+};
+
+function calculatePoints() {
+    const quality = document.getElementById('quality').value;
+    const leadership = document.getElementById('leadership_rating').value;
+    const hasPersonality = document.getElementById('has_personality').checked;
+    const weaponId = document.getElementById('basic_weapon_id').value;
+    const armourId = document.getElementById('armour_id').value;
+    
+    // Base points (quality)
+    const basePoints = qualityPoints[quality] || 0;
+    
+    // Leadership bonus
+    const leadershipPts = leadershipPoints[leadership] || 0;
+    
+    // Personality
+    const personalityPts = hasPersonality ? 5 : 0;
+    
+    // Equipment points
+    const weaponPts = weaponId ? (weaponPoints[weaponId] || 0) : 0;
+    const armourPts = armourId ? (armourPoints[armourId] || 0) : 0;
+    const equipmentPoints = weaponPts + armourPts;
+    
+    // Traits
+    let traitsPoints = 0;
+    document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
+        traitsPoints += traitPoints[checkbox.value] || 0;
+    });
+    
+    const totalPoints = basePoints + leadershipPts + personalityPts + equipmentPoints + traitsPoints;
+    
+    // Update display
+    document.getElementById('calc_base_points').textContent = basePoints;
+    document.getElementById('calc_leadership').textContent = leadershipPts;
+    document.getElementById('calc_personality').textContent = personalityPts;
+    document.getElementById('calc_equipment').textContent = equipmentPoints;
+    document.getElementById('calc_traits').textContent = traitsPoints;
+    document.getElementById('calc_total').textContent = totalPoints;
+}
+
+// Attach event listeners
+document.getElementById('quality').addEventListener('change', calculatePoints);
+document.getElementById('leadership_rating').addEventListener('change', calculatePoints);
+document.getElementById('has_personality').addEventListener('change', calculatePoints);
+document.getElementById('basic_weapon_id').addEventListener('change', calculatePoints);
+document.getElementById('armour_id').addEventListener('change', calculatePoints);
+document.querySelectorAll('input[name="traits"]').forEach(checkbox => {
+    checkbox.addEventListener('change', calculatePoints);
+});
+
+// Initial calculation
+calculatePoints();
+</script>
+{% endblock %}

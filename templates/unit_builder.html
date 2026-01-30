@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+
+{% block title %}Unit Builder - F.A.D. List Builder{% endblock %}
+
+{% block extra_css %}
+<style>
+    .unit-config {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .points-calculator {
+        position: sticky;
+        top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4"><i class="bi bi-gear-fill"></i> Unit Builder</h1>
+    
+    <div class="row">
+        <!-- Unit Configuration -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <h3>Create Custom Unit</h3>
+                    
+                    <form id="unitForm">
+                        <!-- Basic Info -->
+                        <div class="unit-config">
+                            <h5>Basic Information</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Unit Name *</label>
+                                    <input type="text" class="form-control" id="unitName" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Unit Type *</label>
+                                    <select class="form-select" id="unitType" required>
+                                        <option value="Infantry">Infantry</option>
+                                        <option value="Heavy Weapons Team">Heavy Weapons Team</option>
+                                        <option value="Character">Character</option>
+                                        <option value="Psionic">Psionic</option>
+                                        <option value="Sniper">Sniper</option>
+                                        <option value="Vehicle">Vehicle</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Faction</label>
+                                    <input type="text" class="form-control" id="faction" placeholder="e.g., Space Marines, Aliens">
+                                </div>
+                                <div class="col-md-6 mb-3" id="squadSizeContainer">
+                                    <label class="form-label">Squad Size</label>
+                                    <input type="number" class="form-control" id="squadSize" value="5" min="1" max="20">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quality & Resolve -->
+                        <div class="unit-config">
+                            <h5>Quality & Resolve</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Quality *</label>
+                                    <select class="form-select" id="quality" required>
+                                        <option value="Rabble">Rabble (x0.7)</option>
+                                        <option value="Conscript">Conscript (x0)</option>
+                                        <option value="Regular" selected>Regular (x1.3)</option>
+                                        <option value="Elite">Elite (x1.6)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Resolve *</label>
+                                    <select class="form-select" id="resolve" required>
+                                        <option value="Reluctant">Reluctant (-0.5)</option>
+                                        <option value="Uncertain">Uncertain (-0.3)</option>
+                                        <option value="Steady" selected>Steady (0)</option>
+                                        <option value="Determined">Determined (+0.3)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Equipment -->
+                        <div class="unit-config">
+                            <h5>Equipment</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Armour</label>
+                                    <select class="form-select" id="armour">
+                                        <option value="">Select armour...</option>
+                                        {% for armour_item in armours %}
+                                        <option value="{{ armour_item.id }}" data-points="{{ armour_item.points }}">
+                                            {{ armour_item.name }} ({{ armour_item.points }} pts)
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Basic Weapon</label>
+                                    <select class="form-select" id="basicWeapon">
+                                        <option value="">Select weapon...</option>
+                                        {% for weapon in weapons %}
+                                        {% if weapon.category == 'Basic' %}
+                                        <option value="{{ weapon.id }}" data-points="{{ weapon.points }}">
+                                            {{ weapon.name }} ({{ weapon.points }} pts)
+                                        </option>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Support Weapon (Optional)</label>
+                                    <select class="form-select" id="supportWeapon">
+                                        <option value="">None</option>
+                                        {% for weapon in weapons %}
+                                        {% if weapon.category == 'Support' %}
+                                        <option value="{{ weapon.id }}" data-points="{{ weapon.points }}">
+                                            {{ weapon.name }} ({{ weapon.points }} pts)
+                                        </option>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Heavy Weapon (Optional)</label>
+                                    <select class="form-select" id="heavyWeapon">
+                                        <option value="">None</option>
+                                        {% for weapon in weapons %}
+                                        {% if weapon.category == 'Heavy' %}
+                                        <option value="{{ weapon.id }}" data-points="{{ weapon.points }}">
+                                            {{ weapon.name }} ({{ weapon.points }} pts)
+                                        </option>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Special Options -->
+                        <div class="unit-config">
+                            <h5>Special Options</h5>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="hasPersonality">
+                                    <label class="form-check-label" for="hasPersonality">
+                                        Has Personality (+1 pt)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Traits -->
+                        <div class="unit-config">
+                            <h5>Traits (Optional)</h5>
+                            <select class="form-select" id="traits" multiple size="5">
+                                {% for trait in traits %}
+                                <option value="{{ trait.id }}" data-multiplier="{{ trait.points_multiplier }}">
+                                    {{ trait.name }} (x{{ trait.points_multiplier }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Hold Ctrl/Cmd to select multiple traits</small>
+                        </div>
+
+                        <!-- Visibility -->
+                        <div class="unit-config">
+                            <h5>Visibility</h5>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="isPublic">
+                                <label class="form-check-label" for="isPublic">
+                                    Make this unit public (visible to all users)
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-save"></i> Save Unit
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Points Calculator -->
+        <div class="col-lg-4">
+            <div class="points-calculator">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Points Calculator</h4>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Base Cost:</span>
+                            <span id="baseCost">3.0</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Equipment:</span>
+                            <span id="equipmentCost">0.0</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Quality/Resolve:</span>
+                            <span id="qualityMultiplier">x1.3</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Traits:</span>
+                            <span id="traitMultiplier">x1.0</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong>Total Points:</strong>
+                            <strong class="points-display" id="totalPoints">3.9</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Calculate points in real-time
+function calculatePoints() {
+    const unitType = document.getElementById('unitType').value;
+    const quality = document.getElementById('quality').value;
+    const resolve = document.getElementById('resolve').value;
+    
+    // Base cost
+    let baseCost = 3.0;
+    if (unitType === 'Heavy Weapons Team') baseCost = 2.0;
+    else if (unitType === 'Character') baseCost = 9.0;
+    else if (unitType === 'Psionic') baseCost = 19.0;
+    else if (unitType === 'Sniper') baseCost = 15.0;
+    else if (unitType === 'Vehicle') baseCost = 10.0;
+    
+    // Equipment cost
+    let equipmentCost = 0;
+    const armour = document.getElementById('armour');
+    const basicWeapon = document.getElementById('basicWeapon');
+    const supportWeapon = document.getElementById('supportWeapon');
+    const heavyWeapon = document.getElementById('heavyWeapon');
+    
+    if (armour.value) equipmentCost += parseFloat(armour.options[armour.selectedIndex].dataset.points || 0);
+    if (basicWeapon.value) equipmentCost += parseFloat(basicWeapon.options[basicWeapon.selectedIndex].dataset.points || 0);
+    if (supportWeapon.value) equipmentCost += parseFloat(supportWeapon.options[supportWeapon.selectedIndex].dataset.points || 0);
+    if (heavyWeapon.value) equipmentCost += parseFloat(heavyWeapon.options[heavyWeapon.selectedIndex].dataset.points || 0);
+    
+    if (document.getElementById('hasPersonality').checked) equipmentCost += 1.0;
+    
+    // Quality/Resolve multipliers
+    const qualityMults = {'Rabble': 0.7, 'Conscript': 0, 'Regular': 1.3, 'Elite': 1.6};
+    const resolveMults = {'Reluctant': -0.5, 'Uncertain': -0.3, 'Steady': 0, 'Determined': 0.3};
+    const qualityMultiplier = qualityMults[quality] + resolveMults[resolve];
+    
+    // Trait multipliers
+    let traitMultiplier = 1.0;
+    const traits = document.getElementById('traits');
+    for (let opt of traits.selectedOptions) {
+        traitMultiplier *= parseFloat(opt.dataset.multiplier);
+    }
+    
+    // Calculate total
+    let total = (baseCost + equipmentCost) * qualityMultiplier * traitMultiplier;
+    
+    // Squad size for infantry
+    if (unitType === 'Infantry') {
+        total *= parseInt(document.getElementById('squadSize').value || 1);
+    }
+    
+    // Update display
+    document.getElementById('baseCost').textContent = baseCost.toFixed(1);
+    document.getElementById('equipmentCost').textContent = equipmentCost.toFixed(1);
+    document.getElementById('qualityMultiplier').textContent = 'x' + qualityMultiplier.toFixed(1);
+    document.getElementById('traitMultiplier').textContent = 'x' + traitMultiplier.toFixed(2);
+    document.getElementById('totalPoints').textContent = total.toFixed(2);
+}
+
+// Update UI based on unit type
+function updateUnitTypeUI() {
+    const unitType = document.getElementById('unitType').value;
+    const squadSizeContainer = document.getElementById('squadSizeContainer');
+    
+    if (unitType === 'Infantry') {
+        squadSizeContainer.style.display = 'block';
+    } else {
+        squadSizeContainer.style.display = 'none';
+    }
+    
+    calculatePoints();
+}
+
+// Event listeners
+document.getElementById('unitType').addEventListener('change', updateUnitTypeUI);
+document.querySelectorAll('select, input[type="number"], input[type="checkbox"]').forEach(el => {
+    el.addEventListener('change', calculatePoints);
+});
+
+// Form submission
+document.getElementById('unitForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const traits = Array.from(document.getElementById('traits').selectedOptions).map(opt => parseInt(opt.value));
+    
+    const data = {
+        name: document.getElementById('unitName').value,
+        unit_type: document.getElementById('unitType').value,
+        faction: document.getElementById('faction').value,
+        quality: document.getElementById('quality').value,
+        resolve: document.getElementById('resolve').value,
+        squad_size: parseInt(document.getElementById('squadSize').value || 1),
+        armour_id: document.getElementById('armour').value || null,
+        basic_weapon_id: document.getElementById('basicWeapon').value || null,
+        support_weapon_id: document.getElementById('supportWeapon').value || null,
+        heavy_weapon_id: document.getElementById('heavyWeapon').value || null,
+        has_personality: document.getElementById('hasPersonality').checked,
+        traits: traits,
+        is_public: document.getElementById('isPublic').checked
+    };
+    
+    try {
+        const response = await fetch('/unit/save', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            alert('Unit saved successfully!');
+            window.location.href = '/dashboard';
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error saving unit: ' + error);
+    }
+});
+
+// Initialize
+calculatePoints();
+updateUnitTypeUI();
+</script>
+{% endblock %}

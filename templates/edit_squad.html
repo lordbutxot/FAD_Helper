@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Squad - F.A.D. List Builder{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <h2>Edit Squad</h2>
+            <p class="text-muted">Update squad details. Save changes to preserve your modifications.</p>
+            
+            <form id="squadForm" method="POST" action="{{ url_for('edit_unit', unit_id=unit.id) }}">
+                <!-- Basic Info -->
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Basic Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Squad Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ unit.name }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="faction" class="form-label">Faction</label>
+                            <input type="text" class="form-control" id="faction" name="faction" value="{{ unit.faction or '' }}" placeholder="Optional">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="squad_size" class="form-label">Squad Size *</label>
+                            <input type="number" class="form-control" id="squad_size" name="squad_size" min="1" max="20" value="{{ unit.squad_size }}" required>
+                            <small class="text-muted">Number of soldiers in the squad</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="card mb-3">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Squad Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="quality" class="form-label">Quality *</label>
+                            <select class="form-select" id="quality" name="quality" required>
+                                <option value="">Select Quality...</option>
+                                <option value="Rabble" {% if unit.quality == 'Rabble' %}selected{% endif %}>Rabble (5+)</option>
+                                <option value="Conscript" {% if unit.quality == 'Conscript' %}selected{% endif %}>Conscript (4+)</option>
+                                <option value="Regular" {% if unit.quality == 'Regular' %}selected{% endif %}>Regular (3+)</option>
+                                <option value="Elite" {% if unit.quality == 'Elite' %}selected{% endif %}>Elite (2+)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="resolve" class="form-label">Resolve *</label>
+                            <select class="form-select" id="resolve" name="resolve" required>
+                                <option value="">Select Resolve...</option>
+                                <option value="Reluctant" {% if unit.resolve == 'Reluctant' %}selected{% endif %}>Reluctant</option>
+                                <option value="Uncertain" {% if unit.resolve == 'Uncertain' %}selected{% endif %}>Uncertain</option>
+                                <option value="Steady" {% if unit.resolve == 'Steady' %}selected{% endif %}>Steady</option>
+                                <option value="Determined" {% if unit.resolve == 'Determined' %}selected{% endif %}>Determined</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Default Equipment -->
+                <div class="card mb-3">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0">Default Equipment</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Select default equipment for the squad. Individual weapons can be customized after saving.</p>
+                        
+                        <div class="mb-3">
+                            <label for="armour_id" class="form-label">Default Armour</label>
+                            <select class="form-select" id="armour_id" name="armour_id">
+                                <option value="">No Armour</option>
+                                {% for armour in armours %}
+                                <option value="{{ armour.id }}" {% if unit.armour_id == armour.id %}selected{% endif %}>{{ armour.name }} (+{{ armour.points }} pts)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="basic_weapon_id" class="form-label">Default Weapon *</label>
+                            <select class="form-select" id="basic_weapon_id" name="basic_weapon_id" required>
+                                <option value="">Select Weapon...</option>
+                                {% for weapon in weapons %}
+                                <option value="{{ weapon.id }}" {% if unit.basic_weapon_id == weapon.id %}selected{% endif %}>{{ weapon.name }} ({{ weapon.range }}, FE:{{ weapon.fire_effect }}, +{{ weapon.points }} pts)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Traits -->
+                <div class="card mb-3">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Squad Traits</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Select special traits for this squad</p>
+                        <div class="row">
+                            {% for trait in traits %}
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="traits" value="{{ trait.id }}" id="trait_{{ trait.id }}" {% if trait.id in unit.get_traits() %}checked{% endif %}>
+                                    <label class="form-check-label" for="trait_{{ trait.id }}">
+                                        {{ trait.name }} 
+                                        <small class="text-muted">({{ trait.points_modifier }}{% if trait.points_modifier > 0 %}+{% endif %}{{ trait.points_modifier }} pts)</small>
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">Notes</h5>
+                    </div>
+                    <div class="card-body">
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Optional notes about this squad...">{{ unit.notes or '' }}</textarea>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="d-grid gap-2 mb-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-check-circle"></i> Save Changes
+                    </button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Points Calculator Sidebar -->
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Points Calculator</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Squad Size:</strong>
+                        <span id="calc_squad_size" class="float-end">{{ unit.squad_size }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Base Points:</strong>
+                        <span id="calc_base_points" class="float-end">0</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Equipment:</strong>
+                        <span id="calc_equipment" class="float-end">0</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Traits:</strong>
+                        <span id="calc_traits" class="float-end">0</span>
+                    </div>
+                    <hr>
+                    <div class="fs-4">
+                        <strong>Total Points:</strong>
+                        <span id="calc_total" class="float-end text-primary">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Quick Reference</h6>
+                </div>
+                <div class="card-body small">
+                    <p><strong>Quality Levels:</strong></p>
+                    <ul class="mb-2">
+                        <li>Rabble: 5+ (4 pts)</li>
+                        <li>Conscript: 4+ (6 pts)</li>
+                        <li>Regular: 3+ (8 pts)</li>
+                        <li>Elite: 2+ (10 pts)</li>
+                    </ul>
+                    <p><strong>Movement:</strong> 6" (12" Rush)</p>
+                    <p><strong>Coherency:</strong> Must stay within 3-6" of another squad member</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Real-time points calculator
+const qualityPoints = {
+    'Rabble': 4,
+    'Conscript': 6,
+    'Regular': 8,
+    'Elite': 10
+};
+
+const weaponPoints = {
+    {% for weapon in weapons %}
+    '{{ weapon.id }}': {{ weapon.points }},
+    {% endfor %}
+};
+
+const armourPoints = {
+    {% for armour in armours %}
+    '{{ armour.id }}': {{ armour.points }},
+    {% endfor %}
+};
+
+const traitPoints = {
+    {% for trait in traits %}
+    '{{ trait.id }}': {{ trait.points_modifier }},
+    {% endfor %}
+};
+
+function calculatePoints() {
+    const squadSize = parseInt(document.getElementById('squad_size').value) || 0;
+    const quality = document.getElementById('quality').value;
+    const weaponId = document.getElementById('basic_weapon_id').value;
+    const armourId = document.getElementById('armour_id').value;
+    
+    // Base points (quality × squad size)
+    const basePoints = (qualityPoints[quality] || 0) * squadSize;
+    
+    // Equipment points (weapon + armour) × squad size
+    const weaponPts = weaponId ? (weaponPoints[weaponId] || 0) : 0;
+    const armourPts = armourId ? (armourPoints[armourId] || 0) : 0;
+    const equipmentPoints = (weaponPts + armourPts) * squadSize;
+    
+    // Traits (flat points, not multiplied by squad size)
+    let traitsPoints = 0;
+    document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
+        traitsPoints += traitPoints[checkbox.value] || 0;
+    });
+    
+    const totalPoints = basePoints + equipmentPoints + traitsPoints;
+    
+    // Update display
+    document.getElementById('calc_squad_size').textContent = squadSize;
+    document.getElementById('calc_base_points').textContent = basePoints;
+    document.getElementById('calc_equipment').textContent = equipmentPoints;
+    document.getElementById('calc_traits').textContent = traitsPoints;
+    document.getElementById('calc_total').textContent = totalPoints;
+}
+
+// Attach event listeners
+document.getElementById('squad_size').addEventListener('input', calculatePoints);
+document.getElementById('quality').addEventListener('change', calculatePoints);
+document.getElementById('basic_weapon_id').addEventListener('change', calculatePoints);
+document.getElementById('armour_id').addEventListener('change', calculatePoints);
+document.querySelectorAll('input[name="traits"]').forEach(checkbox => {
+    checkbox.addEventListener('change', calculatePoints);
+});
+
+// Initial calculation
+calculatePoints();
+</script>
+{% endblock %}

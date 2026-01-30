@@ -1,0 +1,74 @@
+The Armoury
+The armoury contains a list of all the weapons and armour you can use in your F.A.D games, as well as damage, bonuses (such as fire effect or AP), range multipliers and points cost (for if you are using points). 
+
+Basic Weapons
+Weapon	Ra	DM	FE	AP	Additional Benefits	Points
+None	0	0	0	0		0.00
+Pistol	1	1	0	0	+1 to close assaults	0.25
+SMG	2	2	0	0	+1 to close assaults	0.50
+Assault Carbine	4	2	0	0		0.75
+Low-Tech Rifle	5	1	0	0		0.75
+Assault Rifle	5	2	0	0		1.00
+High Tech Rifle	6	2	0	0		1.25
+Gauss Pistol	3	3	0	0	+1 to close assaults	1.50
+Laser Rifle	7	2	0	0		1.50
+Gauss Carbine	5	3	0	0		1.75
+Blaster Pistol	1	4	0	0	+1 to close assaults	2.00
+Assault Rifle (linked)	5	2	0	0	Act as double troops for fire effect (Vehicle/Power Armour only)	2.00
+Blaster	3	4	0	0		2.00
+Gauss Rifle	6	3	0	0		2.00
+High Tech Rifle (linked)	6	2	0	0	Act as double troops for fire effect (Vehicle/Power Armour only)	2.25
+Laser Rifle (linked)	7	2	0	0		2.50
+Gauss Carbine (linked)	5	3	0	0	Act as double troops for fire effect (Vehicle/Power Armour only)	2.75
+Gauss Rifle (linked)	6	3	0	0	Act as double troops for fire effect (Vehicle/Power Armour only)	3.00
+
+
+
+Support Weapons
+Weapon	Ra	DM	FE	AP	Additional Benefits	Points
+Shotgun	2	2	2	0	+1 to close assaults	1.00
+Flamethrower	1	2	0	2	+1D6 to fire effect, +1 to close assaults	3.00
+Grenade Launcher	2	2	0	1	+1D6 Fire Effect	3.00
+SAW	6	2	2	0		3.00
+Fusion Gun	2	2	0	3		3.00
+Plasma Rifle	5	2	1	1		4.00
+SAW (Linked)	6	2	2	0	Act as double troops for fire effect (Vehicle/Power Armour only)	4.00
+Beam Rifle	7	2	0	1		5.00
+Plasma Rifle (Linked)	5	2	1	1	Act as double troops for fire effect (Vehicle/Power Armour only)	5.00
+Missile Launcher (Power Armour)	5	3	0	1	+1D6 FE, Power Armour only.	6.00
+
+
+
+Heavy Weapons
+Weapon	Ra	DM	FE	AP	Additional Benefits	Points
+General Purpose MG	7	3	3	0		5.00
+Sniper Rifle	10	3	0	0		5.00
+Heavy MG	8	4	2	0		6.00
+Mounted Flamethrower	3	2	0	2	+1D6 to fire effect, +1 to close assaults	6.00
+Chain Gun - Light	4	2	5	0		8.00
+Beam - Light	15	2	0	1		10.00
+Cannon - Light	10	3	0	0	Blast 3	10.00
+Chain Gun - Heavy	7	2	7	0		10.00
+Missile Launcher	8	2	1	3	Can fire HE (Blast 3, 0 AP) or AP (Blast 0, 3 AP)	10.00
+Morter - Light	10	2	1	0	Blast 3, Does not require line of sight	10.00
+Auto Cannon - Light	10	5	1	0		10.00
+Beam - Heavy	20	2	0	3		16.00
+Cannon - Medium	12	3	1	1	Infantry automatically pinned, Blast 4	16.00
+Auto Cannon - Heavy	13	6	1	0		16.00
+Morter - Heavy	12	2	1	0	Automatically pin, Blast 3, Does not require line of sight	16.00
+Rail Gun - Light	12	4	0	1		20.00
+Cannon - Heavy	15	3	3	2	Infantry automatically pinned, Blast 5	22.00
+Rail Gun - Heavy	15	4	0	3		30.00
+
+
+
+Armour
+Armour	Rating	Additional Benefits	Points
+None	3		-1
+Light	4		0
+Improved	5		1
+Heavy	6		2
+Battle Dress	7		3
+Lt. Power	7		6
+Medium Power	8		8
+Hvy. Power	9		10

@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - F.A.D. List Builder{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">
+        <i class="bi bi-shield-lock-fill text-warning"></i> Admin Panel
+    </h1>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Total Users</h5>
+                    <h2>{{ total_users }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Total Lists</h5>
+                    <h2>{{ total_lists }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Total Units</h5>
+                    <h2>{{ total_units }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Locked Accounts</h5>
+                    <h2>{{ locked_users }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Management Table -->
+    <div class="card">
+        <div class="card-header">
+            <h4 class="mb-0">User Management</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Admin</th>
+                            <th>Status</th>
+                            <th>Failed Logins</th>
+                            <th>Last Login</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr {% if user.account_locked_until and user.account_locked_until > now() %}class="table-danger"{% endif %}>
+                            <td>{{ user.id }}</td>
+                            <td>
+                                <strong>{{ user.username }}</strong>
+                                {% if user.id == current_user.id %}
+                                <span class="badge bg-info">You</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.email or '-' }}</td>
+                            <td>
+                                {% if user.is_admin %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-shield-fill"></i> Admin
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary">User</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.account_locked_until and user.account_locked_until > now() %}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-lock-fill"></i> Locked
+                                </span>
+                                {% else %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-unlock-fill"></i> Active
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.failed_login_attempts > 0 %}
+                                <span class="badge bg-warning text-dark">{{ user.failed_login_attempts }}</span>
+                                {% else %}
+                                <span class="text-muted">0</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.last_login %}
+                                {{ user.last_login.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                <span class="text-muted">Never</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    {% if user.account_locked_until and user.account_locked_until > now() %}
+                                    <form method="POST" action="{{ url_for('unlock_user', user_id=user.id) }}" style="display:inline;">
+                                        <button type="submit" class="btn btn-success" title="Unlock Account">
+                                            <i class="bi bi-unlock"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    
+                                    {% if user.id != current_user.id %}
+                                    <form method="POST" action="{{ url_for('toggle_admin', user_id=user.id) }}" style="display:inline;">
+                                        <button type="submit" class="btn btn-warning" title="Toggle Admin">
+                                            <i class="bi bi-shield-fill-check"></i>
+                                        </button>
+                                    </form>
+                                    
+                                    <form method="POST" action="{{ url_for('delete_user', user_id=user.id) }}" 
+                                          onsubmit="return confirm('Are you sure you want to delete user {{ user.username }}? This will delete all their units and lists!')" 
+                                          style="display:inline;">
+                                        <button type="submit" class="btn btn-danger" title="Delete User">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <button class="btn btn-secondary" disabled title="Cannot modify yourself">
+                                        <i class="bi bi-ban"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Admin Notes -->
+    <div class="alert alert-info mt-4">
+        <h5><i class="bi bi-info-circle-fill"></i> Admin Notes:</h5>
+        <ul class="mb-0">
+            <li><strong>Unlock:</strong> Immediately unlock a user account that was locked due to failed login attempts</li>
+            <li><strong>Toggle Admin:</strong> Grant or revoke admin privileges (you cannot remove your own admin status)</li>
+            <li><strong>Delete User:</strong> Permanently delete a user and all their units and lists (cannot delete yourself)</li>
+            <li><strong>Account Lockout:</strong> Users are automatically locked for 15 minutes after 5 failed login attempts</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .table td {
+        vertical-align: middle;
+    }
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+    }
+</style>
+{% endblock %}
