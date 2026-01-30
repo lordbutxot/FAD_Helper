@@ -188,8 +188,9 @@ def init_routes(app):
                 return render_template('register.html')
             
             # Create new user with pbkdf2:sha256 hashing
-            # Auto-promote the very first registered user to admin
-            is_first_user = User.query.count() == 0
+            # Auto-promote the very first registered user to admin, except test accounts
+            test_usernames = {'testuser', 'test', 'admin_test'}
+            is_first_user = User.query.count() == 0 and username.lower() not in test_usernames
             user = User(  # type: ignore
                 username=username,
                 email=email,
