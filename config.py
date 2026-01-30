@@ -11,18 +11,19 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
     # Database - Support both local dev and production
-    db_url = os.environ.get('DATABASE_URL')
-    if db_url:
-        # Production: PostgreSQL on Render
+    # Get DATABASE_URL and process it
+    _db_url = os.environ.get('DATABASE_URL')
+    if _db_url:
+        # Production: PostgreSQL on Render/Supabase
         # Convert postgres:// to postgresql:// (SQLAlchemy 1.4+ requires this)
-        if db_url.startswith('postgres://'):
-            db_url = db_url.replace('postgres://', 'postgresql://', 1)
+        if _db_url.startswith('postgres://'):
+            _db_url = _db_url.replace('postgres://', 'postgresql://', 1)
         
         # Supabase requires SSL. Append to URL if needed.
-        if 'supabase.co' in db_url and '?sslmode=' not in db_url:
-            db_url = db_url + '?sslmode=require'
+        if 'supabase.co' in _db_url and '?sslmode=' not in _db_url:
+            _db_url = _db_url + '?sslmode=require'
         
-        SQLALCHEMY_DATABASE_URI = db_url
+        SQLALCHEMY_DATABASE_URI = _db_url
     else:
         # Local development: SQLite
         SQLALCHEMY_DATABASE_URI = 'sqlite:///fad_lists.db'
@@ -56,7 +57,7 @@ class DevelopmentConfig(Config):
     """Development configuration"""
     DEBUG = True
     SESSION_COOKIE_SECURE = False  # Allow HTTP in development
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///fad_lists.db'
+    # Inherit SQLALCHEMY_DATABASE_URI from Config (respects DATABASE_URL if set)
 
 
 class ProductionConfig(Config):
