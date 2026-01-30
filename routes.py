@@ -1348,14 +1348,16 @@ def init_routes(app):
         query = ArmyList.query.filter_by(is_public=True)
         
         if faction:
-            query = query.filter(ArmyList.faction == faction)
+            # Filter by faction name, not faction field
+            query = query.join(Faction).filter(Faction.name == faction)
         
         if search:
             query = query.filter(ArmyList.name.contains(search) | ArmyList.description.contains(search))
         
         lists = query.order_by(ArmyList.created_at.desc()).all()
         
-        factions = db.session.query(ArmyList.faction).filter(ArmyList.is_public == True).distinct().all()
+        # Get list of public factions that have public lists
+        factions = db.session.query(Faction.name).join(ArmyList).filter(ArmyList.is_public == True).distinct().all()
         factions = [f[0] for f in factions if f[0]]
         
         return render_template('browse.html', lists=lists, factions=factions, selected_faction=faction, search=search)

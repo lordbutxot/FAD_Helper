@@ -37,7 +37,7 @@
                 <div class="card-body">
                     <h5 class="card-title">{{ list.name }}</h5>
                     <p class="card-text">
-                        <i class="bi bi-flag"></i> {{ list.faction or 'Custom Faction' }}<br>
+                        <i class="bi bi-flag"></i> {{ list.faction_obj.name if list.faction_obj else 'No Faction' }}<br>
                         <i class="bi bi-trophy"></i> <strong>{{ list.total_points }}</strong> points<br>
                         <i class="bi bi-people"></i> {{ list.total_units }} units
                     </p>
