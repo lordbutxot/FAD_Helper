@@ -1,150 +1,175 @@
 # F.A.D. (Fast and Dirty) List Builder
 
-A web-based army list builder for the F.A.D. wargame. Create custom units, build army lists, and share them with the community!
+A web-based army list builder for the F.A.D. wargame. Create custom factions, build units, assemble army lists, and share them with the community!
 
-## Features
+## ✨ Features
 
-- **Custom Unit Builder** - Create units following F.A.D. rules with automatic point calculation
-- **Army List Manager** - Build complete army lists with point totals
-- **User Authentication** - Register and login to save your creations
-- **List Sharing** - Share your lists publicly or keep them private
-- **Browse Community Lists** - Explore lists created by other players
-- **Complete Armoury** - View all weapons, armour, and traits from the game
-- **Point Calculator** - Real-time calculation following official F.A.D. formulas
+### Core Functionality
+- **🎨 Faction Creator** - Design custom factions with logos, colors, and playstyle tags
+- **⚔️ Advanced Unit Builder** - Create 6 types of units with automatic point calculation
+  - Infantry Squads with individual equipment
+  - Characters with leadership and specialization
+  - Snipers, Heavy Weapons Teams, Psionics, Vehicles
+- **📋 Army List Manager** - Build complete army lists with point totals
+- **👥 User System** - Register, login, and manage your creations
+- **🌐 Community Sharing** - Share factions/lists publicly or keep them private
+- **📚 Complete Armoury** - View all weapons, armour, and traits from the game
+- **🧮 Point Calculator** - Real-time calculation following official F.A.D. formulas
 
-## Installation
+## 🚀 Quick Start
 
 ### Prerequisites
-
 - Python 3.8 or higher
 - pip (Python package installer)
 
-### Setup
+### Option 1: Quick Start Script (Windows)
+```bash
+start.bat
+```
 
+### Option 2: Manual Setup
 1. **Install Dependencies**
-   ```powershell
+   ```bash
    pip install -r requirements.txt
    ```
 
 2. **Initialize the Database**
-   ```powershell
+   ```bash
    python init_db.py
    ```
-   This will create the database and populate it with all weapons, armour, and traits from F.A.D.
 
-3. **Run the Application**
-   ```powershell
+3. **Create Admin User (Optional)**
+   ```bash
+   python create_admin.py
+   ```
+
+4. **Run the Application**
+   ```bash
    python app.py
    ```
 
-4. **Access the Application**
+5. **Access the Application**
    Open your browser and go to: `http://localhost:5000`
 
-## Usage
+## 📖 Usage Guide
 
 ### First Time Setup
-
 1. **Register** for an account
-2. Browse the **Armoury** to familiarize yourself with available equipment
-3. Go to the **Unit Builder** to create your first custom unit
-4. Use the **List Builder** to assemble your army
+2. Browse the **Armoury** to see available equipment
+3. Create your first **Faction**
+4. Build **Units** for your faction
+5. Assemble **Army Lists** from your units
 
-### Creating Units
+### Creating Factions
+- Set faction name, description, and lore
+- Choose colors and upload custom logos
+- Add playstyle tags (artillery, psionic, elite forces, etc.)
+- Define faction-wide special rules
+- Make public to share with community
 
-The unit builder supports all F.A.D. unit types:
-- Infantry squads
-- Heavy Weapons Teams
-- Characters (Officers)
-- Psionics
-- Snipers
-- Vehicles
+### Building Units
+Supports all 6 F.A.D. unit types with automatic point calculation:
+- **Squads**: Infantry units with individual member equipment
+- **Characters**: Heroes with leadership ratings and specializations
+- **Snipers**: Long-range precision specialists
+- **Heavy Weapons**: Crew-served heavy ordinance teams
+- **Psionics**: Psychic units with aptitude and strength ratings
+- **Vehicles**: Tanks, walkers, transports with armor facings
 
-Points are calculated automatically based on:
-- Base unit type
-- Quality and Resolve
+Points calculated from:
+- Quality (Rabble → Elite) and Resolve (Reluctant → Determined)
 - Armour and weapons
-- Special traits
-- Squad size (for infantry)
+- Special traits and abilities
+- Squad size and equipment variations
 
-### Building Army Lists
+### Managing Army Lists
+1. Create units or browse public units
+2. Add units to your list with quantities
+3. Track total points and unit counts
+4. Save as public or private
+5. Share URLs with friends
 
-1. Create units first (or use public units from other players)
-2. Go to List Builder
-3. Add units and set quantities
-4. Save your list (public or private)
-5. Export for printing or share with friends
+## 🌐 Deployment
 
-### Sharing Lists
+Ready for free deployment! See [DEPLOYMENT.md](DEPLOYMENT.md) for complete guides.
 
-- **Private Lists**: Only you can see them
-- **Public Lists**: Visible in the community browse page
-- Share URLs directly with friends
-- View counts track popularity
+**Recommended:** [Render.com](https://render.com) (free PostgreSQL + HTTPS included)
 
-## Project Structure
+Quick deploy:
+```bash
+git push origin main  # Push to GitHub
+# Then connect repo on Render.com - auto-deploys!
+```
+
+## 📁 Project Structure
 
 ```
-FAD Script/
-├── app.py              # Main Flask application
-├── models.py           # Database models
-├── routes.py           # Application routes/views
-├── init_db.py          # Database initialization script
-├── requirements.txt    # Python dependencies
+FAD_Helper/
+├── app.py                  # Main Flask application
+├── config.py              # Production/development configuration
+├── models.py              # Database models (User, Faction, Unit, ArmyList)
+├── routes.py              # Application routes/views
+├── extensions.py          # Flask extensions (SQLAlchemy, Flask-Login)
+├── init_db.py            # Database initialization script
+├── create_admin.py       # Admin user creation utility
+├── requirements.txt      # Python dependencies
+├── Procfile             # For Heroku/Render deployment
+├── render.yaml          # Render.com auto-deploy config
+├── runtime.txt          # Python version specification
+├── .env.example         # Environment variables template
+├── .gitignore          # Git ignore rules
+├── DEPLOYMENT.md       # Complete deployment guide
+├── start.bat           # Quick start script (Windows)
+├── start.sh            # Quick start script (Unix/Linux/Mac)
 ├── templates/          # HTML templates
 │   ├── base.html
 │   ├── index.html
-│   ├── login.html
-│   ├── register.html
-│   ├── dashboard.html
-│   ├── browse.html
-│   ├── armoury.html
+│   ├── faction_creator.html
 │   ├── unit_builder.html
-│   └── list_builder.html
-└── fad_lists.db       # SQLite database (created after init)
+│   ├── list_builder.html
+│   ├── dashboard.html
+│   ├── browse_factions.html
+│   └── ... (and more)
+└── instance/           # Instance folder (created on first run)
+    └── fad_lists.db   # SQLite database
 ```
 
-## Game Data
+## 🎮 Game Data Included
 
-The app includes complete data from F.A.D.:
-- 18 Basic Weapons
-- 10 Support Weapons
-- 18 Heavy Weapons
-- 8 Armour Types
-- 40+ Special Traits
+Complete F.A.D. armory:
+- **Basic Weapons**: 18 types (Pistol → Gauss Rifle)
+- **Support Weapons**: 10 types (Shotgun → Beam Rifle)
+- **Heavy Weapons**: 18 types (HMG → Hellfire Cannon)
+- **Armour**: 8 types (None → Hardened Power Armour)
+- **Traits**: 40+ special abilities
+- **Playstyle Tags**: 35+ tactical doctrines
 
-All point calculations follow official F.A.D. rules from the faction creator.
+All point calculations follow official F.A.D. rules.
 
-## Technical Details
+## 🛠️ Technical Stack
 
-- **Backend**: Flask (Python web framework)
-- **Database**: SQLite (simple, file-based)
+- **Backend**: Flask 3.0, SQLAlchemy ORM
+- **Database**: SQLite (dev) / PostgreSQL (production)
+- **Authentication**: Flask-Login with secure password hashing
+- **Security**: CSRF protection, secure sessions, HTTPS-ready
 - **Frontend**: Bootstrap 5, vanilla JavaScript
-- **Authentication**: Flask-Login with password hashing
+- **Deployment**: Production-ready with gunicorn
 
-## Future Enhancements
+## 🔧 Development
 
-Possible additions:
-- Unit/List comments and ratings
-- Advanced search and filters
-- Export to PDF
-- Mobile app version
-- Pre-built faction lists
-- Battle reports integration
+```bash
+# Create virtual environment
+python -m venv .venv
+.venv\Scripts\activate  # Windows
+source .venv/bin/activate  # Linux/Mac
 
-## Credits
+# Install dependencies
+pip install -r requirements.txt
 
-- F.A.D. (Fast and Dirty) wargame rules
-- Community contributions welcome!
+# Set development mode
+$env:FLASK_ENV="development"  # PowerShell
+export FLASK_ENV=development  # Bash
 
-## License
-
-This is a community tool for the F.A.D. wargame. Please respect the original game's intellectual property.
-
-## Support
-
-For issues or questions:
-1. Check the Armoury for reference data
-2. Review the F.A.D. rulebooks
-3. Ask the community on the browse page
-
-Enjoy building your armies! ⚔️
+# Run with auto-reload
+python app.py
+```

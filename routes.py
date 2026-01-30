@@ -1161,21 +1161,6 @@ def init_routes(app):
         
         return render_template('view_unit.html', unit=unit)
     
-    @app.route('/unit/<int:unit_id>/edit')
-    @login_required
-    def edit_unit(unit_id):
-        unit = Unit.query.get_or_404(unit_id)
-        
-        if unit.user_id != current_user.id:
-            flash('You can only edit your own units', 'danger')
-            return redirect(url_for('dashboard'))
-        
-        weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
-        armours = Armour.query.order_by(Armour.points).all()
-        traits = Trait.query.order_by(Trait.category, Trait.name).all()
-        
-        return render_template('edit_unit.html', unit=unit, weapons=weapons, armours=armours, traits=traits)
-    
     @app.route('/unit/<int:unit_id>/delete', methods=['POST'])
     @login_required
     def delete_unit(unit_id):

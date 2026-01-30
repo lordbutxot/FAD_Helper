@@ -1,15 +1,21 @@
 @echo off
-echo ========================================
+REM Quick start script for Windows
+
+echo ==========================================
 echo F.A.D. List Builder - Quick Start
-echo ========================================
+echo ==========================================
 echo.
 
-echo [1/3] Installing dependencies...
+echo [1/3] Activating virtual environment...
+if exist .venv\Scripts\activate.bat (
+    call .venv\Scripts\activate.bat
+) else (
+    echo No virtual environment found, using global Python
+)
+echo.
+
+echo [2/3] Installing dependencies...
 pip install -r requirements.txt
-echo.
-
-echo [2/3] Initializing database...
-python init_db.py
 echo.
 
 echo [3/3] Starting application...
