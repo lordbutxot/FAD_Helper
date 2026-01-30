@@ -1,22 +1,45 @@
 """
 Production Database Initialization Script
 Initializes database with all official F.A.D. data for production deployment
+This script is SAFE to run multiple times - it preserves all user data
 """
 from app import app, db
-from models import Trait, Weapon, Armour, User
+from models import Trait, Weapon, Armour, User, Faction, ArmyList, Unit, FactionRating
 import sys
 
 def init_production_database():
-    """Initialize production database with all official F.A.D. data"""
+    """Initialize production database with all official F.A.D. data
+    
+    SAFE: This script only adds game data and preserves all user data:
+    - Users remain unchanged
+    - Factions remain unchanged  
+    - Army Lists remain unchanged
+    - Ratings remain unchanged
+    - Only repopulates game data (Traits, Weapons, Armour) if missing
+    """
     
     with app.app_context():
         print("🚀 Initializing Production Database...")
+        print("=" * 60)
+        print("⚠️  DATABASE PRESERVATION MODE - All user data is safe!")
         print("=" * 60)
         
         # Create all tables
         print("\n1. Creating database tables...")
         db.create_all()
-        print("   ✅ Tables created")
+        print("   ✅ Tables created/verified")
+        
+        # Count existing data
+        user_count = User.query.count()
+        faction_count = Faction.query.count()
+        list_count = ArmyList.query.count()
+        
+        if user_count > 0:
+            print(f"\n✅ Found {user_count} existing users - preserving all user data")
+        if faction_count > 0:
+            print(f"✅ Found {faction_count} existing factions - preserving all factions")
+        if list_count > 0:
+            print(f"✅ Found {list_count} existing army lists - preserving all lists")
         
         # Check if data already exists - if so, skip initialization
         if Trait.query.first() or Weapon.query.first() or Armour.query.first():

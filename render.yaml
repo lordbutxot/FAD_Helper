@@ -4,6 +4,7 @@
     env: python
     buildCommand: pip install -r requirements.txt && python init_production_db.py
     startCommand: gunicorn app:app
+    autoDeploy: true
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.1
@@ -19,4 +20,4 @@
 databases:
   - name: fad-db
     databaseName: fad_lists
-    user: fad_user
+    user: fad_user    ipAllowList: []  # Allow all IPs from app
