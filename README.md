@@ -18,6 +18,3 @@ Manual list building is slow, error-prone, and hard to share. F.A.D. Helper keep
 - 44 infantry traits + 26 vehicle properties
 - 46 weapons + 8 armour types
 - User accounts and saved lists
-
-## License
-Public deployment is allowed. Add a license if you want to make this open-source.
