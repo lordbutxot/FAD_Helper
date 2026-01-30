@@ -18,13 +18,11 @@ def init_production_database():
         db.create_all()
         print("   ✅ Tables created")
         
-        # Check if data already exists
+        # Check if data already exists - if so, skip initialization
         if Trait.query.first() or Weapon.query.first() or Armour.query.first():
-            print("\n⚠️  Database already contains data!")
-            response = input("   Do you want to skip initialization? (y/n): ")
-            if response.lower() == 'y':
-                print("   Skipping data population...")
-                return
+            print("\n✅ Database already initialized with data!")
+            print("   Skipping data population to preserve existing data...")
+            return
         
         # Infantry Traits (44 traits)
         print("\n2. Populating Infantry Traits...")
