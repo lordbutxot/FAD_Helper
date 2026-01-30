@@ -27,9 +27,9 @@ class Config:
         'pool_pre_ping': True,  # Verify connections before using
         'pool_recycle': 300,    # Recycle connections after 5 minutes
     }
-    # Supabase requires SSL. Add sslmode=require when using Supabase-hosted Postgres.
-    if 'supabase.co' in (db_url or ''):
-        SQLALCHEMY_ENGINE_OPTIONS['connect_args'] = {'sslmode': 'require'}
+    # Supabase requires SSL. Append to URL if needed.
+    if db_url and 'supabase.co' in db_url and '?sslmode=' not in db_url:
+        SQLALCHEMY_DATABASE_URI = db_url + '?sslmode=require'
     
     # Session configuration
     # Note: SESSION_COOKIE_SECURE = True requires HTTPS - set to False if getting cookie issues
