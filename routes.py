@@ -74,7 +74,8 @@ OFFICIAL_INFANTRY_TRAITS = [
     'Inflexible', 'Jet Packs', 'Legend', 'Limited Teleport', 'Mechanized', 'Night Vision', 'No Grenades',
     'Obvious Target', 'Recon', 'Regenerate', 'Relentless', 'Reserves', 'Resilient (2)', 'Resilient (3)',
     'Resilient (4)', 'Resilient (5)', 'Resilient (6)', 'Save', 'Self Repairing', 'Shaky', 'Shock Troops',
-    'Slick', 'Slow', 'Slow Firing', 'Stealth', 'Zombie'
+    'Slick', 'Slow', 'Slow Firing', 'Stealth', 'Supreme Armour', 'Supreme Weapon', 'Swift', 'Tank Hunter',
+    'Terrifying', 'Timid', 'Tough', 'Unstable Technology', 'Villain', 'Weak', 'Zombie'
 ]
 
 OFFICIAL_VEHICLE_TRAITS = [
