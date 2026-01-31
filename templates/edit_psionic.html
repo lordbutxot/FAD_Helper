@@ -148,10 +148,11 @@
                 <!-- How to Use Description -->
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> How to Use (Exported)</h5>
+                        <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> How to Use (Exported - Markdown Supported)</h5>
                     </div>
                     <div class="card-body">
-                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Explain how to use this psionic unit in battle (e.g., powers, tactics, positioning). This will be exported with the unit.">{{ unit.description or '' }}</textarea>
+                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Explain how to use this psionic unit in battle. Supports markdown:&#10;**Bold** for emphasis&#10;- Bullet points&#10;1. Numbered lists&#10;&#10;Examples: Psychic offense, Mind control defense, Unit morale boost, Enemy disruption">{{ unit.description or '' }}</textarea>
+                        <small class="text-muted d-block mt-2"><strong>Markdown Help:</strong> Use **bold**, *italic*, - bullets, 1. numbers, [link text](url), ### headers</small>
                     </div>
                 </div>
 
