@@ -102,42 +102,47 @@
                                                                             </div>
                                             
                                                                             <!-- Equipment -->
-                                                                            {% if item.unit.armour or item.unit.basic_weapon or item.unit.support_weapon or item.unit.heavy_weapon or item.unit.secondary_weapon %}
+                                                                            {% set armour = item.unit.armour or item.unit.parent.get_inherited_weapon('armour') if item.unit.parent else None %}
+                                                                            {% set basic_weapon = item.unit.basic_weapon or item.unit.parent.get_inherited_weapon('basic_weapon') if item.unit.parent else None %}
+                                                                            {% set secondary_weapon = item.unit.secondary_weapon or item.unit.parent.get_inherited_weapon('secondary_weapon') if item.unit.parent else None %}
+                                                                            {% set support_weapon = item.unit.support_weapon or item.unit.parent.get_inherited_weapon('support_weapon') if item.unit.parent else None %}
+                                                                            {% set heavy_weapon = item.unit.heavy_weapon or item.unit.parent.get_inherited_weapon('heavy_weapon') if item.unit.parent else None %}
+                                                                            {% if armour or basic_weapon or secondary_weapon or support_weapon or heavy_weapon %}
                                                                             <div class="mb-3">
                                                                                 <strong><i class="bi bi-shield-check"></i> Equipment:</strong>
                                                                                 <ul class="list-unstyled mb-0 ms-3">
-                                                                                    {% if item.unit.armour %}
-                                                                                    <li>🛡️ <strong>Armour:</strong> {{ item.unit.armour.name }} (Rating {{ item.unit.armour.rating }}) - {{ item.unit.armour.points }} pts</li>
+                                                                                    {% if armour %}
+                                                                                    <li>🛡️ <strong>Armour:</strong> {{ armour.name }} (Rating {{ armour.rating }}) - {{ armour.points }} pts</li>
                                                                                     {% endif %}
-                                                                                    {% if item.unit.basic_weapon %}
-                                                                                    <li>🔫 <strong>Basic Weapon:</strong> {{ item.unit.basic_weapon.name }} 
-                                                                                        <small class="text-muted">(Ra:{{ item.unit.basic_weapon.range }}, DM:{{ item.unit.basic_weapon.damage }}, FE:{{ item.unit.basic_weapon.fire_effect }}, AP:{{ item.unit.basic_weapon.ap }})</small> - {{ item.unit.basic_weapon.points }} pts
-                                                                                        {% if item.unit.basic_weapon.benefits %}
-                                                                                        <br><small class="text-info">➜ {{ item.unit.basic_weapon.benefits }}</small>
+                                                                                    {% if basic_weapon %}
+                                                                                    <li>🔫 <strong>Basic Weapon:</strong> {{ basic_weapon.name }} 
+                                                                                        <small class="text-muted">(Range: {{ basic_weapon.range }}, DM:{{ basic_weapon.damage }}, FE:{{ basic_weapon.fire_effect }}, AP:{{ basic_weapon.ap }})</small> - {{ basic_weapon.points }} pts
+                                                                                        {% if basic_weapon.benefits %}
+                                                                                        <br><small class="text-info">➜ {{ basic_weapon.benefits }}</small>
                                                                                         {% endif %}
                                                                                     </li>
                                                                                     {% endif %}
-                                                                                    {% if item.unit.secondary_weapon %}
-                                                                                    <li>🔫 <strong>Secondary Weapon:</strong> {{ item.unit.secondary_weapon.name }} 
-                                                                                        <small class="text-muted">(Ra:{{ item.unit.secondary_weapon.range }}, DM:{{ item.unit.secondary_weapon.damage }}, FE:{{ item.unit.secondary_weapon.fire_effect }}, AP:{{ item.unit.secondary_weapon.ap }})</small> - {{ item.unit.secondary_weapon.points }} pts
-                                                                                        {% if item.unit.secondary_weapon.benefits %}
-                                                                                        <br><small class="text-info">➜ {{ item.unit.secondary_weapon.benefits }}</small>
+                                                                                    {% if secondary_weapon %}
+                                                                                    <li>🔫 <strong>Secondary Weapon:</strong> {{ secondary_weapon.name }} 
+                                                                                        <small class="text-muted">(Range: {{ secondary_weapon.range }}, DM:{{ secondary_weapon.damage }}, FE:{{ secondary_weapon.fire_effect }}, AP:{{ secondary_weapon.ap }})</small> - {{ secondary_weapon.points }} pts
+                                                                                        {% if secondary_weapon.benefits %}
+                                                                                        <br><small class="text-info">➜ {{ secondary_weapon.benefits }}</small>
                                                                                         {% endif %}
                                                                                     </li>
                                                                                     {% endif %}
-                                                                                    {% if item.unit.support_weapon %}
-                                                                                    <li>⚡ <strong>Support Weapon:</strong> {{ item.unit.support_weapon.name }} 
-                                                                                        <small class="text-muted">(Ra:{{ item.unit.support_weapon.range }}, DM:{{ item.unit.support_weapon.damage }}, FE:{{ item.unit.support_weapon.fire_effect }}, AP:{{ item.unit.support_weapon.ap }})</small> - {{ item.unit.support_weapon.points }} pts
-                                                                                        {% if item.unit.support_weapon.benefits %}
-                                                                                        <br><small class="text-info">➜ {{ item.unit.support_weapon.benefits }}</small>
+                                                                                    {% if support_weapon %}
+                                                                                    <li>⚡ <strong>Support Weapon:</strong> {{ support_weapon.name }} 
+                                                                                        <small class="text-muted">(Range: {{ support_weapon.range }}, DM:{{ support_weapon.damage }}, FE:{{ support_weapon.fire_effect }}, AP:{{ support_weapon.ap }})</small> - {{ support_weapon.points }} pts
+                                                                                        {% if support_weapon.benefits %}
+                                                                                        <br><small class="text-info">➜ {{ support_weapon.benefits }}</small>
                                                                                         {% endif %}
                                                                                     </li>
                                                                                     {% endif %}
-                                                                                    {% if item.unit.heavy_weapon %}
-                                                                                    <li>💥 <strong>Heavy Weapon:</strong> {{ item.unit.heavy_weapon.name }} 
-                                                                                        <small class="text-muted">(Ra:{{ item.unit.heavy_weapon.range }}, DM:{{ item.unit.heavy_weapon.damage }}, FE:{{ item.unit.heavy_weapon.fire_effect }}, AP:{{ item.unit.heavy_weapon.ap }})</small> - {{ item.unit.heavy_weapon.points }} pts
-                                                                                        {% if item.unit.heavy_weapon.benefits %}
-                                                                                        <br><small class="text-info">➜ {{ item.unit.heavy_weapon.benefits }}</small>
+                                                                                    {% if heavy_weapon %}
+                                                                                    <li>💥 <strong>Heavy Weapon:</strong> {{ heavy_weapon.name }} 
+                                                                                        <small class="text-muted">(Range: {{ heavy_weapon.range }}, DM:{{ heavy_weapon.damage }}, FE:{{ heavy_weapon.fire_effect }}, AP:{{ heavy_weapon.ap }})</small> - {{ heavy_weapon.points }} pts
+                                                                                        {% if heavy_weapon.benefits %}
+                                                                                        <br><small class="text-info">➜ {{ heavy_weapon.benefits }}</small>
                                                                                         {% endif %}
                                                                                     </li>
                                                                                     {% endif %}
@@ -146,11 +151,12 @@
                                                                             {% endif %}
                                             
                                                                             <!-- Traits & Abilities -->
-                                                                            {% if item.unit.get_traits()|length > 0 %}
+                                                                            {% set traits = item.unit.get_traits() if item.unit.traits_json and item.unit.traits_json|length > 2 else (item.unit.parent.get_inherited_traits() if item.unit.parent else []) %}
+                                                                            {% if traits|length > 0 %}
                                                                             <div class="mb-2">
                                                                                 <strong><i class="bi bi-star-fill"></i> Traits & Abilities:</strong>
                                                                                 <ul class="list-unstyled mb-0 ms-3">
-                                                                                    {% for trait in item.unit.get_traits() %}
+                                                                                    {% for trait in traits %}
                                                                                     <li class="mb-2">
                                                                                         <span class="badge bg-success">{{ trait.name }}</span>
                                                                                         <br><small class="text-secondary">{{ trait.description }}</small>

@@ -144,8 +144,27 @@ class SquadMember(db.Model):
 
 
 class Unit(db.Model):
+        def get_inherited_traits(self):
+            """Return traits for this unit, inheriting from parent if not overridden."""
+            if self.traits_json and json.loads(self.traits_json):
+                return self.get_traits()
+            elif self.parent:
+                return self.parent.get_inherited_traits()
+            else:
+                return []
+
+        def get_inherited_weapon(self, weapon_type):
+            """Return weapon (basic, secondary, heavy, etc.) for this unit, inheriting from parent if not set."""
+            weapon = getattr(self, weapon_type, None)
+            if weapon:
+                return weapon
+            elif self.parent:
+                return self.parent.get_inherited_weapon(weapon_type)
+            else:
+                return None
     """Custom units created by users - Supports 6 unit types: Squad, Character, Sniper, Heavy Weapons, Psionic, Vehicle"""
     id = db.Column(db.Integer, primary_key=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('unit.id'), nullable=True)  # For parent/variant relationship
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     faction_id = db.Column(db.Integer, db.ForeignKey('faction.id'), nullable=True)  # Optional: can be unassigned
     name = db.Column(db.String(100), nullable=False)
@@ -210,6 +229,7 @@ class Unit(db.Model):
     secondary_weapon = db.relationship('Weapon', foreign_keys=[secondary_weapon_id])
     heavy_weapon = db.relationship('Weapon', foreign_keys=[heavy_weapon_id])
     squad_members = db.relationship('SquadMember', backref='unit', lazy=True, cascade='all, delete-orphan', order_by='SquadMember.member_number')
+    parent = db.relationship('Unit', remote_side=[id], backref='variants')
     
     def get_traits(self):
         """Get list of trait objects for this unit"""

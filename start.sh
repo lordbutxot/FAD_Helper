@@ -3,6 +3,9 @@ set -e
 
 echo "Migrating trait table constraint..."
 python migrate_trait_constraint.py
+        
+	echo "Running parent/variant migration..."
+	python migrate_add_unit_parent.py
 
 echo "Initializing database with game data..."
 python init_production_db.py

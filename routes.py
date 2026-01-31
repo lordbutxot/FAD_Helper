@@ -500,7 +500,7 @@ def init_routes(app):
         # Get search and filter parameters
         search_query = request.args.get('search', '').strip()
         playstyle_filter = request.args.get('playstyle', '').strip()
-        sort_by = request.args.get('sort', 'newest')  # newest, popular, name
+        sort_by = request.args.get('sort', 'newest')  # newest, score, name
         
         # Base query - only public factions
         query = Faction.query.filter_by(is_public=True)
@@ -523,11 +523,20 @@ def init_routes(app):
             query = query.order_by(Faction.name.asc())
         elif sort_by == 'oldest':
             query = query.order_by(Faction.created_at.asc())
+        elif sort_by == 'score':
+            # Sort by average rating (score), descending
+            # SQLAlchemy can't sort by hybrid property, so sort in Python
+            factions = query.all()
+            factions.sort(key=lambda f: f.get_average_rating(), reverse=True)
+            return render_template('browse_factions.html', 
+                                 factions=factions, 
+                                 playstyle_tags=PLAYSTYLE_TAGS,
+                                 search_query=search_query,
+                                 playstyle_filter=playstyle_filter,
+                                 sort_by=sort_by)
         else:  # newest (default)
             query = query.order_by(Faction.created_at.desc())
-        
         factions = query.all()
-        
         return render_template('browse_factions.html', 
                              factions=factions, 
                              playstyle_tags=PLAYSTYLE_TAGS,
@@ -1135,34 +1144,49 @@ def init_routes(app):
                 unit.quality = request.form.get('quality')
                 unit.resolve = request.form.get('resolve')
                 unit.notes = request.form.get('notes', '').strip()
-                
+
+                # Helper to preserve traits/properties if not present in form
+                def get_trait_ids(form_key, fallback_json):
+                    ids = request.form.getlist(form_key)
+                    if ids:
+                        return [int(t) for t in ids]
+                    elif fallback_json:
+                        try:
+                            return json.loads(fallback_json)
+                        except Exception:
+                            return []
+                    else:
+                        return []
+
                 # Type-specific fields
                 if unit.unit_type == 'Squad':
-                    unit.squad_size = int(request.form.get('squad_size', 5))
-                    unit.armour_id = request.form.get('armour_id') or None
-                    unit.basic_weapon_id = request.form.get('basic_weapon_id') or None
-                    unit.secondary_weapon_id = request.form.get('secondary_weapon_id') or None
-                    trait_ids = request.form.getlist('traits')
-                    unit.traits_json = json.dumps([int(t) for t in trait_ids])
-                    
+                    unit.squad_size = int(request.form.get('squad_size', unit.squad_size or 5))
+                    unit.armour_id = request.form.get('armour_id') or unit.armour_id
+                    unit.basic_weapon_id = request.form.get('basic_weapon_id') or unit.basic_weapon_id
+                    unit.secondary_weapon_id = request.form.get('secondary_weapon_id') or unit.secondary_weapon_id
+                    parent_id = request.form.get('parent_id')
+                    unit.parent_id = int(parent_id) if parent_id else None
+                    trait_ids = get_trait_ids('traits', unit.traits_json)
+                    unit.traits_json = json.dumps(trait_ids)
+
                     data = {
                         'unit_type': 'Squad',
                         'quality': unit.quality,
                         'squad_size': unit.squad_size,
                         'armour_id': int(unit.armour_id) if unit.armour_id else None,
                         'basic_weapon_id': int(unit.basic_weapon_id) if unit.basic_weapon_id else None,
-                        'traits': [int(t) for t in trait_ids]
+                        'traits': trait_ids
                     }
-                    
+
                 elif unit.unit_type == 'Character':
-                    unit.has_personality = request.form.get('has_personality') == 'true'
-                    unit.leadership_rating = request.form.get('leadership_rating')
-                    unit.specialization = request.form.get('specialization')
-                    unit.armour_id = request.form.get('armour_id') or None
-                    unit.basic_weapon_id = request.form.get('basic_weapon_id') or None
-                    trait_ids = request.form.getlist('traits')
-                    unit.traits_json = json.dumps([int(t) for t in trait_ids])
-                    
+                    unit.has_personality = request.form.get('has_personality') == 'true' if 'has_personality' in request.form else unit.has_personality
+                    unit.leadership_rating = request.form.get('leadership_rating') or unit.leadership_rating
+                    unit.specialization = request.form.get('specialization') or unit.specialization
+                    unit.armour_id = request.form.get('armour_id') or unit.armour_id
+                    unit.basic_weapon_id = request.form.get('basic_weapon_id') or unit.basic_weapon_id
+                    trait_ids = get_trait_ids('traits', unit.traits_json)
+                    unit.traits_json = json.dumps(trait_ids)
+
                     data = {
                         'unit_type': 'Character',
                         'quality': unit.quality,
@@ -1171,76 +1195,76 @@ def init_routes(app):
                         'specialization': unit.specialization,
                         'armour_id': int(unit.armour_id) if unit.armour_id else None,
                         'basic_weapon_id': int(unit.basic_weapon_id) if unit.basic_weapon_id else None,
-                        'traits': [int(t) for t in trait_ids]
+                        'traits': trait_ids
                     }
-                    
+
                 elif unit.unit_type == 'HeavyWeapon':
-                    unit.heavy_weapon_id = request.form.get('heavy_weapon_id') or None
-                    unit.armour_id = request.form.get('armour_id') or None
-                    unit.crew_count = int(request.form.get('crew_count', 2))
-                    trait_ids = request.form.getlist('traits')
-                    unit.traits_json = json.dumps([int(t) for t in trait_ids])
-                    
+                    unit.heavy_weapon_id = request.form.get('heavy_weapon_id') or unit.heavy_weapon_id
+                    unit.armour_id = request.form.get('armour_id') or unit.armour_id
+                    unit.crew_count = int(request.form.get('crew_count', unit.crew_count or 2))
+                    trait_ids = get_trait_ids('traits', unit.traits_json)
+                    unit.traits_json = json.dumps(trait_ids)
+
                     data = {
                         'unit_type': 'HeavyWeapon',
                         'quality': unit.quality,
                         'heavy_weapon_id': int(unit.heavy_weapon_id) if unit.heavy_weapon_id else None,
                         'armour_id': int(unit.armour_id) if unit.armour_id else None,
-                        'traits': [int(t) for t in trait_ids]
+                        'traits': trait_ids
                     }
-                    
+
                 elif unit.unit_type == 'Sniper':
-                    unit.has_personality = request.form.get('has_personality') == 'true'
-                    unit.basic_weapon_id = request.form.get('basic_weapon_id') or None
-                    unit.armour_id = request.form.get('armour_id') or None
-                    trait_ids = request.form.getlist('traits')
-                    unit.traits_json = json.dumps([int(t) for t in trait_ids])
-                    
+                    unit.has_personality = request.form.get('has_personality') == 'true' if 'has_personality' in request.form else unit.has_personality
+                    unit.basic_weapon_id = request.form.get('basic_weapon_id') or unit.basic_weapon_id
+                    unit.armour_id = request.form.get('armour_id') or unit.armour_id
+                    trait_ids = get_trait_ids('traits', unit.traits_json)
+                    unit.traits_json = json.dumps(trait_ids)
+
                     data = {
                         'unit_type': 'Sniper',
                         'quality': unit.quality,
                         'has_personality': unit.has_personality,
                         'basic_weapon_id': int(unit.basic_weapon_id) if unit.basic_weapon_id else None,
                         'armour_id': int(unit.armour_id) if unit.armour_id else None,
-                        'traits': [int(t) for t in trait_ids]
+                        'traits': trait_ids
                     }
-                    
+
                 elif unit.unit_type == 'Psionic':
-                    unit.has_personality = request.form.get('has_personality') == 'true'
-                    unit.psionic_level = request.form.get('psionic_level')
-                    unit.armour_id = request.form.get('armour_id') or None
-                    unit.basic_weapon_id = request.form.get('basic_weapon_id') or None
-                    trait_ids = request.form.getlist('traits')
-                    unit.traits_json = json.dumps([int(t) for t in trait_ids])
-                    
+                    unit.has_personality = request.form.get('has_personality') == 'true' if 'has_personality' in request.form else unit.has_personality
+                    unit.psionic_level = request.form.get('psionic_level') or getattr(unit, 'psionic_level', None)
+                    unit.armour_id = request.form.get('armour_id') or unit.armour_id
+                    unit.basic_weapon_id = request.form.get('basic_weapon_id') or unit.basic_weapon_id
+                    trait_ids = get_trait_ids('traits', unit.traits_json)
+                    unit.traits_json = json.dumps(trait_ids)
+
                     data = {
                         'unit_type': 'Psionic',
                         'quality': unit.quality,
                         'has_personality': unit.has_personality,
-                        'psionic_level': unit.psionic_level,
+                        'psionic_level': getattr(unit, 'psionic_level', None),
                         'armour_id': int(unit.armour_id) if unit.armour_id else None,
                         'basic_weapon_id': int(unit.basic_weapon_id) if unit.basic_weapon_id else None,
-                        'traits': [int(t) for t in trait_ids]
+                        'traits': trait_ids
                     }
-                    
+
                 elif unit.unit_type == 'Vehicle':
-                    unit.vehicle_type = request.form.get('vehicle_type')
-                    unit.movement_type = request.form.get('movement_type')
-                    unit.vehicle_armour_front = int(request.form.get('vehicle_armour_front', 3))
-                    unit.vehicle_armour_side = int(request.form.get('vehicle_armour_side', 2))
-                    unit.vehicle_armour_rear = int(request.form.get('vehicle_armour_rear', 1))
-                    unit.crew_size = int(request.form.get('crew_size', 2))
-                    unit.carrying_capacity = int(request.form.get('carrying_capacity', 0))
-                    
+                    unit.vehicle_type = request.form.get('vehicle_type') or unit.vehicle_type
+                    unit.movement_type = request.form.get('movement_type') or unit.movement_type
+                    unit.vehicle_armour_front = int(request.form.get('vehicle_armour_front', unit.vehicle_armour_front or 3))
+                    unit.vehicle_armour_side = int(request.form.get('vehicle_armour_side', unit.vehicle_armour_side or 2))
+                    unit.vehicle_armour_rear = int(request.form.get('vehicle_armour_rear', unit.vehicle_armour_rear or 1))
+                    unit.crew_size = int(request.form.get('crew_size', unit.crew_size or 2))
+                    unit.carrying_capacity = int(request.form.get('carrying_capacity', unit.carrying_capacity or 0))
+
                     # Weapons
-                    basic_weapon_id = request.form.get('basic_weapon_id') or None
-                    secondary_weapon_id = request.form.get('secondary_weapon_id') or None
+                    basic_weapon_id = request.form.get('basic_weapon_id') or unit.basic_weapon_id
+                    secondary_weapon_id = request.form.get('secondary_weapon_id') or unit.secondary_weapon_id
                     unit.basic_weapon_id = int(basic_weapon_id) if basic_weapon_id else None
                     unit.secondary_weapon_id = int(secondary_weapon_id) if secondary_weapon_id else None
-                    
-                    property_ids = request.form.getlist('traits')  # Vehicle properties use the trait checkboxes
-                    unit.traits_json = json.dumps([int(t) for t in property_ids])
-                    
+
+                    property_ids = get_trait_ids('traits', unit.traits_json)
+                    unit.traits_json = json.dumps(property_ids)
+
                     data = {
                         'unit_type': 'Vehicle',
                         'quality': unit.quality,
@@ -1251,27 +1275,28 @@ def init_routes(app):
                         'carrying_capacity': unit.carrying_capacity,
                         'basic_weapon_id': unit.basic_weapon_id,
                         'secondary_weapon_id': unit.secondary_weapon_id,
-                        'traits': [int(t) for t in property_ids]
+                        'traits': property_ids
                     }
-                
+
                 # Recalculate points
                 total_points = calculate_points(data)
                 unit.base_points = total_points
                 unit.total_points = total_points
                 unit.updated_at = datetime.utcnow()
-                
+
                 db.session.commit()
-                
+
                 flash(f'Unit "{unit.name}" updated successfully!', 'success')
                 return redirect(url_for('dashboard'))
-                
+
             except Exception as e:
                 db.session.rollback()
                 flash(f'Error updating unit: {str(e)}', 'danger')
         
         # Get user's factions for dropdown
         my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
-        
+        my_units = Unit.query.filter_by(user_id=current_user.id).order_by(Unit.name).all()
+
         # Determine which template to use based on unit type
         template_map = {
             'Squad': 'edit_squad.html',
@@ -1281,9 +1306,9 @@ def init_routes(app):
             'Psionic': 'edit_psionic.html',
             'Vehicle': 'edit_vehicle.html'
         }
-        
+
         template = template_map.get(unit.unit_type, 'edit_squad.html')
-        return render_template(template, unit=unit, weapons=weapons, secondary_weapons=secondary_weapons, armours=armours, traits=traits, my_factions=my_factions)
+        return render_template(template, unit=unit, weapons=weapons, secondary_weapons=secondary_weapons, armours=armours, traits=traits, my_factions=my_factions, my_units=my_units)
     
     @app.route('/unit/save', methods=['POST'])
     @login_required
