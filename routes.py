@@ -1040,6 +1040,8 @@ def init_routes(app):
                 rear_armour = int(request.form.get('vehicle_armour_rear', 1))
                 crew_size = int(request.form.get('crew_size', 1))
                 capacity = int(request.form.get('carrying_capacity', 0))
+                basic_weapon_id = request.form.get('basic_weapon_id') or None
+                secondary_weapon_id = request.form.get('secondary_weapon_id') or None
                 property_ids = request.form.getlist('traits')  # Vehicle properties use the trait checkboxes
                 notes = request.form.get('notes', '').strip()
                 description = request.form.get('description', '').strip()
@@ -1053,6 +1055,8 @@ def init_routes(app):
                     'vehicle_armour_side': side_armour,
                     'vehicle_armour_rear': rear_armour,
                     'carrying_capacity': capacity,
+                    'basic_weapon_id': int(basic_weapon_id) if basic_weapon_id else None,
+                    'secondary_weapon_id': int(secondary_weapon_id) if secondary_weapon_id else None,
                     'traits': [int(t) for t in property_ids]
                 }
                 total_points = calculate_points(data)
@@ -1071,6 +1075,8 @@ def init_routes(app):
                     vehicle_armour_rear=rear_armour,
                     crew_size=crew_size,
                     carrying_capacity=capacity,
+                    basic_weapon_id=int(basic_weapon_id) if basic_weapon_id else None,
+                    secondary_weapon_id=int(secondary_weapon_id) if secondary_weapon_id else None,
                     traits_json=json.dumps([int(t) for t in property_ids]),
                     description=description,
                     notes=notes,
@@ -1222,6 +1228,12 @@ def init_routes(app):
                     unit.crew_size = int(request.form.get('crew_size', 2))
                     unit.carrying_capacity = int(request.form.get('carrying_capacity', 0))
                     
+                    # Weapons
+                    basic_weapon_id = request.form.get('basic_weapon_id') or None
+                    secondary_weapon_id = request.form.get('secondary_weapon_id') or None
+                    unit.basic_weapon_id = int(basic_weapon_id) if basic_weapon_id else None
+                    unit.secondary_weapon_id = int(secondary_weapon_id) if secondary_weapon_id else None
+                    
                     property_ids = request.form.getlist('traits')  # Vehicle properties use the trait checkboxes
                     unit.traits_json = json.dumps([int(t) for t in property_ids])
                     
@@ -1233,6 +1245,8 @@ def init_routes(app):
                         'vehicle_armour_side': unit.vehicle_armour_side,
                         'vehicle_armour_rear': unit.vehicle_armour_rear,
                         'carrying_capacity': unit.carrying_capacity,
+                        'basic_weapon_id': unit.basic_weapon_id,
+                        'secondary_weapon_id': unit.secondary_weapon_id,
                         'traits': [int(t) for t in property_ids]
                     }
                 
@@ -1724,7 +1738,25 @@ def calculate_points(data):
         capacity = data.get('carrying_capacity', 0)
         total_points += capacity * 2
         
-        # Weapons will be added post-save
+        # Weapons (main and secondary)
+        if data.get('basic_weapon_id'):
+            weapon = Weapon.query.get(data['basic_weapon_id'])
+            if weapon:
+                total_points += weapon.points
+        
+        if data.get('secondary_weapon_id'):
+            weapon = Weapon.query.get(data['secondary_weapon_id'])
+            if weapon:
+                total_points += weapon.points
+        
+        # Vehicle traits/properties (use multipliers)
+        if data.get('traits'):
+            multiplier = 1.0
+            for trait_id in data['traits']:
+                trait = Trait.query.get(trait_id)
+                if trait:
+                    multiplier *= trait.points_multiplier
+            total_points *= multiplier
     
     return round(total_points, 2)
 

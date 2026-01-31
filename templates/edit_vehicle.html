@@ -165,6 +165,49 @@
                     </div>
                 </div>
 
+                <!-- Weapons -->
+                <div class="card mb-3">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">Vehicle Weapons</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Select primary and secondary weapons for this vehicle</p>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="basic_weapon_id" class="form-label">
+                                    Primary Weapon
+                                    <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Main armament"></i>
+                                </label>
+                                <select class="form-select" id="basic_weapon_id" name="basic_weapon_id">
+                                    <option value="">No Primary Weapon</option>
+                                    {% for weapon in weapons %}
+                                    <option value="{{ weapon.id }}" data-points="{{ weapon.points }}"
+                                        {% if unit.basic_weapon_id == weapon.id %}selected{% endif %}>
+                                        {{ weapon.name }} (+{{ weapon.points }} pts) - Range: {{ weapon.range }}" | Damage: {{ weapon.damage }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="secondary_weapon_id" class="form-label">
+                                    Secondary Weapon
+                                    <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Secondary armament (co-axial MG, pintle-mounted, etc.)"></i>
+                                </label>
+                                <select class="form-select" id="secondary_weapon_id" name="secondary_weapon_id">
+                                    <option value="">No Secondary Weapon</option>
+                                    {% for weapon in weapons %}
+                                    <option value="{{ weapon.id }}" data-points="{{ weapon.points }}"
+                                        {% if unit.secondary_weapon_id == weapon.id %}selected{% endif %}>
+                                        {{ weapon.name }} (+{{ weapon.points }} pts) - Range: {{ weapon.range }}" | Damage: {{ weapon.damage }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- How to Use Description -->
                 <div class="card mb-3">
                     <div class="card-header">
