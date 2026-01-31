@@ -66,10 +66,8 @@
 
 ### User System
 - Secure account registration and login
-- Password strength requirements
-- Account lockout protection (5 failed attempts)
 - Personal dashboard with saved content
-- Admin panel for site management
+- Role-based access control
 
 ---
 
@@ -79,8 +77,8 @@
 
 1. **Register an Account**
    - Visit [https://fad-helper.onrender.com](https://fad-helper.onrender.com)
-   - First registered user becomes admin automatically
-   - Create a secure password (8+ chars, uppercase, lowercase, number)
+   - Create a secure account
+   - Start building your armies
 
 2. **Create a Faction** (Optional)
    - Navigate to "Faction Creator"
@@ -162,26 +160,19 @@ List Builder → Set Name & Points → Add Units → Review Total
 ### Backend
 - **Flask 3.0.0** - Python web framework
 - **SQLAlchemy** - ORM and database management
-- **PostgreSQL** - Production database (Supabase)
-- **SQLite** - Local development database
+- **PostgreSQL** - Production database
 - **Flask-Login** - User authentication
-- **Werkzeug** - Password hashing (pbkdf2:sha256)
 
 ### Frontend
 - **Jinja2** - Template engine
 - **Bootstrap 5** - Responsive UI framework
 - **Bootstrap Icons** - Icon library
-- **Vanilla JavaScript** - Live preview and calculations
+- **JavaScript** - Interactive features
 
 ### Deployment
-- **Render.com** - Web hosting (free tier)
+- **Render.com** - Web hosting
 - **Gunicorn** - WSGI HTTP server
 - **Python 3.12.8** - Runtime environment
-
-### Data Management
-- **init_production_db.py** - Populates official game data
-- **migrate_squad_members.py** - Schema migrations
-- **start.sh** - Deployment initialization script
 
 ---
 
@@ -261,48 +252,12 @@ Base Cost = Quality Points × Squad Size
 
 6. **Access Application**
    - Open browser to `http://localhost:5000`
-   - Register first user (becomes admin)
+   - Register an account to get started
 
 ### Environment Variables (Optional)
 Create `.env` file for PostgreSQL:
 ```env
-DATABASE_URL=postgresql://user:password@host:port/database?sslmode=require
-```
-
----
-
-## 🔒 Security Features
-
-- **Password Requirements:** 8+ characters, mixed case, numbers
-- **Secure Hashing:** pbkdf2:sha256 with 16-byte salt
-- **Account Lockout:** 15 minutes after 5 failed attempts
-- **Session Management:** Flask-Login with secure cookies
-- **SQL Injection Protection:** SQLAlchemy ORM parameterization
-- **XSS Prevention:** Jinja2 auto-escaping
-
----
-
-## 📊 Database Schema
-
-### Core Tables
-- `user` - Player accounts and authentication
-- `faction` - Custom faction definitions
-- `army_list` - Saved army lists
-- `unit` - All unit types (polymorphic)
-- `squad_member` - Individual squad soldier records
-- `weapon` - Weapons library (Basic, Support, Heavy)
-- `armour` - Armour types
-- `trait` - Infantry traits
-- `vehicle_property` - Vehicle-specific properties
-- `faction_rating` - Community ratings
-
-### Key Relationships
-```
-User → Factions → Army Lists → Units
-                      ↓
-            Squad Members (for Squads)
-                      ↓
-        Weapons (Primary + Secondary)
+DATABASE_URL=postgresql://user:password@host:port/database
 ```
 
 ---
