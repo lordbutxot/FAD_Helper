@@ -3,7 +3,7 @@
     name: fad-helper
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python init_db_simple.py && gunicorn app:app
+    startCommand: sh start.sh
     autoDeploy: true
     envVars:
       - key: PYTHON_VERSION
