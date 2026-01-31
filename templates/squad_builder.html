@@ -423,39 +423,41 @@ function calculatePoints() {
     const weaponId = document.getElementById('basic_weapon_id').value;
     const armourId = document.getElementById('armour_id').value;
     
-    if (squadSize === 0) {
+    if (!quality || !resolve || squadSize === 0) {
         document.getElementById('preview-points').textContent = '0';
         return;
     }
     
-    // Step 1: Base cost per trooper = 3 points
-    let costPerTrooper = 3;
+    // Quality base points (matches backend)
+    const qualityBasePoints = {
+        'Rabble': 4,
+        'Conscript': 6,
+        'Regular': 8,
+        'Elite': 10
+    };
     
-    // Step 2: Add armour points
+    // Step 1: Start with quality base points per trooper
+    let costPerTrooper = qualityBasePoints[quality] || 8;
+    
+    // Step 2: Add armour points per trooper
     const armourPts = armourId ? (armourPoints[armourId] || 0) : 0;
     costPerTrooper += armourPts;
     
-    // Step 3: Add weapon points
+    // Step 3: Add weapon points per trooper
     const weaponPts = weaponId ? (weaponPoints[weaponId] || 0) : 0;
     costPerTrooper += weaponPts;
     
-    // Step 4: Multiply by (Quality multiplier + Resolve multiplier)
-    const qualityMult = qualityMultipliers[quality] || 0;
-    const resolveMult = resolveMultipliers[resolve] || 0;
-    const combinedMultiplier = qualityMult + resolveMult;
-    costPerTrooper = costPerTrooper * (1 + combinedMultiplier);
-    
-    // Step 5: Calculate total before traits
+    // Step 4: Multiply by squad size
     let totalCost = costPerTrooper * squadSize;
     
-    // Step 6: Apply each trait multiplier individually
+    // Step 5: Apply each trait multiplier sequentially (per game rules)
     document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
-        const traitMult = traitPoints[checkbox.value] || 1;
+        const traitMult = traitPoints[checkbox.value] || 1.0;
         totalCost = totalCost * traitMult;
     });
     
-    // Round to nearest whole number
-    const finalPoints = Math.round(totalCost);
+    // Round to 2 decimal places
+    const finalPoints = Math.round(totalCost * 100) / 100;
     
     // Update preview
     document.getElementById('preview-points').textContent = finalPoints;

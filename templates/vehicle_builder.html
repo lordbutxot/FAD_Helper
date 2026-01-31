@@ -505,45 +505,53 @@ function updatePreview() {
 function calculatePoints() {
     const quality = document.getElementById('quality').value;
     const resolve = document.getElementById('resolve').value;
-    const vehicleType = document.getElementById('vehicle_type').value;
     const movementType = document.getElementById('movement_type').value;
     const frontArmour = parseInt(document.getElementById('vehicle_armour_front').value) || 0;
     const sideArmour = parseInt(document.getElementById('vehicle_armour_side').value) || 0;
     const rearArmour = parseInt(document.getElementById('vehicle_armour_rear').value) || 0;
     const capacity = parseInt(document.getElementById('carrying_capacity').value) || 0;
+    const primaryWeaponId = document.getElementById('basic_weapon_id').value;
+    const secondaryWeaponId = document.getElementById('secondary_weapon_id').value;
     
-    // Official F.A.D. points formula for vehicles:
-    // 1. Base cost from vehicle type
-    let cost = vehicleBaseCosts[vehicleType] || 20;
+    if (!quality || !resolve || !movementType) {
+        document.getElementById('preview-points').textContent = '0';
+        return;
+    }
     
-    // 2. Add armour: (average armour rating × 2)
-    const avgArmour = (frontArmour + sideArmour + rearArmour) / 3;
-    cost += avgArmour * 2;
+    // Quality base points (matches backend)
+    const qualityBasePoints = {
+        'Rabble': 4,
+        'Conscript': 6,
+        'Regular': 8,
+        'Elite': 10
+    };
     
-    // 3. Add movement bonus
+    // Step 1: Start with quality base points
+    let cost = qualityBasePoints[quality] || 8;
+    
+    // Step 2: Add movement type
     const movementPts = movementPoints[movementType] || 0;
     cost += movementPts;
     
-    // 4. Add transport capacity (2 pts per slot)
-    const capacityPts = capacity * 2;
-    cost += capacityPts;
+    // Step 3: Add armour (5 pts per armour point, directional)
+    cost += (frontArmour + sideArmour + rearArmour) * 5;
     
-    // 5. Multiply by (1 + Quality multiplier + Resolve multiplier)
-    const qualityMult = qualityMultipliers[quality] || 0;
-    const resolveMult = resolveMultipliers[resolve] || 0;
-    cost = cost * (1 + qualityMult + resolveMult);
+    // Step 4: Add transport capacity (2 pts per slot)
+    cost += capacity * 2;
     
-    // 6. Apply property multipliers (multiply individually, not sum)
-    const propertyCheckboxes = document.querySelectorAll('input[name="traits"]:checked');
-    propertyCheckboxes.forEach(checkbox => {
-        const propId = checkbox.value;
-        if (propertyMultipliers[propId]) {
-            cost = cost * propertyMultipliers[propId].multiplier;
-        }
+    // Step 5: Add weapons
+    const primaryPts = primaryWeaponId ? (weaponPoints[primaryWeaponId] || 0) : 0;
+    const secondaryPts = secondaryWeaponId ? (weaponPoints[secondaryWeaponId] || 0) : 0;
+    cost += primaryPts + secondaryPts;
+    
+    // Step 6: Apply each trait/property multiplier sequentially (per game rules)
+    document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
+        const traitMult = traitPoints[checkbox.value] || 1.0;
+        cost = cost * traitMult;
     });
     
-    // 7. Round to nearest whole number
-    const totalPoints = Math.round(cost);
+    // Round to 2 decimal places
+    const totalPoints = Math.round(cost * 100) / 100;
     
     // Update preview
     document.getElementById('preview-points').textContent = totalPoints;
@@ -561,6 +569,8 @@ document.getElementById('vehicle_armour_side').addEventListener('input', updateP
 document.getElementById('vehicle_armour_rear').addEventListener('input', updatePreview);
 document.getElementById('crew_size').addEventListener('input', updatePreview);
 document.getElementById('carrying_capacity').addEventListener('input', updatePreview);
+document.getElementById('basic_weapon_id').addEventListener('change', updatePreview);
+document.getElementById('secondary_weapon_id').addEventListener('change', updatePreview);
 
 // Add event listeners to property checkboxes
 document.querySelectorAll('input[name="traits"]').forEach(checkbox => {

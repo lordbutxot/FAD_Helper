@@ -388,31 +388,38 @@ function calculatePoints() {
     const weaponId = document.getElementById('heavy_weapon_id').value;
     const armourId = document.getElementById('armour_id').value;
     
-    // Official F.A.D. points formula:
-    // 1. Base cost: 3 points per trooper
-    let cost = 3;
+    if (!quality || !resolve) {
+        document.getElementById('preview-points').textContent = '0';
+        return;
+    }
     
-    // 2. Add armour modifier
-    const armourPts = armourId ? (armourPoints[armourId] || 0) : 0;
-    cost += armourPts;
+    // Quality base points (matches backend)
+    const qualityBasePoints = {
+        'Rabble': 4,
+        'Conscript': 6,
+        'Regular': 8,
+        'Elite': 10
+    };
     
-    // 3. Add weapon points
+    // Step 1: Start with quality base points
+    let cost = qualityBasePoints[quality] || 8;
+    
+    // Step 2: Add heavy weapon
     const weaponPts = weaponId ? (weaponPoints[weaponId] || 0) : 0;
     cost += weaponPts;
     
-    // 4. Multiply by (1 + Quality multiplier + Resolve multiplier)
-    const qualityMult = qualityMultipliers[quality] || 0;
-    const resolveMult = resolveMultipliers[resolve] || 0;
-    cost = cost * (1 + qualityMult + resolveMult);
+    // Step 3: Add armour
+    const armourPts = armourId ? (armourPoints[armourId] || 0) : 0;
+    cost += armourPts;
     
-    // 5. Multiply by each trait's points_multiplier individually
+    // Step 4: Apply each trait multiplier sequentially (per game rules)
     document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
-        const traitMult = traitPoints[checkbox.value] || 1;
+        const traitMult = traitPoints[checkbox.value] || 1.0;
         cost = cost * traitMult;
     });
     
-    // 6. Round to nearest whole number
-    const totalPoints = Math.round(cost);
+    // Round to 2 decimal places
+    const totalPoints = Math.round(cost * 100) / 100;
     
     // Update preview
     document.getElementById('preview-points').textContent = totalPoints;
