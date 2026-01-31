@@ -60,6 +60,15 @@
                                         {% if item.unit.faction %}
                                         <br><small class="text-muted">{{ item.unit.faction }}</small>
                                         {% endif %}
+                                        {% if item.attached_units %}
+                                        <div class="mt-2 ms-3">
+                                            {% for attached in item.attached_units %}
+                                            <div class="text-info small">
+                                                <i class="bi bi-paperclip"></i> <strong>{{ attached.name }}</strong> ({{ attached.unit_type }}, {{ attached.total_points }} pts)
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
                                         <br>
                                         <button class="btn btn-sm btn-outline-info mt-1" type="button" data-bs-toggle="collapse" data-bs-target="#unit-details-{{ loop.index }}" aria-expanded="false">
                                             <i class="bi bi-info-circle"></i> Details

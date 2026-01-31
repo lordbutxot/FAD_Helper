@@ -80,7 +80,7 @@
                                             <td>{{ unit.unit_type }}</td>
                                             <td class="points-display">{{ unit.total_points }}</td>
                                             <td>
-                                                <button class="btn btn-sm btn-primary" onclick="addUnitToList({{ unit.id }}, '{{ unit.name }}', {{ unit.total_points }})">
+                                                <button class="btn btn-sm btn-primary" onclick="addUnitToList({{ unit.id }}, '{{ unit.name }}', {{ unit.total_points }}, '{{ unit.unit_type }}')">
                                                     <i class="bi bi-plus"></i> Add
                                                 </button>
                                             </td>
@@ -167,16 +167,19 @@
 <script>
 let listUnits = [];
 
-function addUnitToList(unitId, unitName, unitPoints) {
-    const existing = listUnits.find(u => u.unit_id === unitId);
-    if (existing) {
-        existing.quantity++;
+function addUnitToList(unitId, unitName, unitPoints, unitType = '') {
+    // Store unit type for attachment logic
+    const existingUnit = listUnits.find(u => u.unit_id === unitId);
+    if (existingUnit) {
+        existingUnit.quantity += 1;
     } else {
         listUnits.push({
             unit_id: unitId,
             name: unitName,
             points: unitPoints,
-            quantity: 1
+            quantity: 1,
+            unit_type: unitType,
+            attached_units: []
         });
     }
     updateListDisplay();
@@ -209,14 +212,40 @@ function updateListDisplay() {
     let totalUnits = 0;
     let totalPoints = 0;
     
+    // Get squads for attachment dropdown
+    const squads = listUnits.filter(u => u.unit_type === 'Squad');
+    const attachableTypes = ['Character', 'Sniper', 'Psionic'];
+    
     listUnits.forEach(unit => {
         totalUnits += unit.quantity;
         totalPoints += unit.points * unit.quantity;
         
+        // Check if unit is attachable
+        const isAttachable = attachableTypes.includes(unit.unit_type);
+        
+        // Get attached units
+        const attachedUnitsHtml = (unit.attached_units || []).map(attachedId => {
+            const attachedUnit = listUnits.find(u => u.unit_id === attachedId);
+            if (attachedUnit) {
+                return `
+                    <div class="ms-4 mt-2 p-2 bg-light border-start border-3 border-info">
+                        <small><i class="bi bi-paperclip"></i> ${attachedUnit.name} (${attachedUnit.points} pts)</small>
+                        <button class="btn btn-xs btn-outline-danger float-end" style="padding: 0 4px; font-size: 10px;" onclick="detachUnit(${unit.unit_id}, ${attachedId})">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                `;
+            }
+            return '';
+        }).join('');
+        
         html += `
             <div class="mb-3 p-2 border rounded">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <strong>${unit.name}</strong>
+                    <div>
+                        <strong>${unit.name}</strong>
+                        <span class="badge bg-secondary ms-2">${unit.unit_type}</span>
+                    </div>
                     <button class="btn btn-sm btn-danger" onclick="removeUnitFromList(${unit.unit_id})">
                         <i class="bi bi-trash"></i>
                     </button>
@@ -229,6 +258,20 @@ function updateListDisplay() {
                     </div>
                     <span class="points-display">${(unit.points * unit.quantity).toFixed(2)} pts</span>
                 </div>
+                ${unit.unit_type === 'Squad' && squads.length > 0 ? `
+                <div class="mt-2">
+                    <select class="form-select form-select-sm" id="attachSelect_${unit.unit_id}" style="max-width: 250px;">
+                        <option value="">Attach unit to this squad...</option>
+                        ${listUnits.filter(u => attachableTypes.includes(u.unit_type) && !isUnitAttached(u.unit_id)).map(u => 
+                            `<option value="${u.unit_id}">${u.name} (${u.unit_type})</option>`
+                        ).join('')}
+                    </select>
+                    <button class="btn btn-sm btn-info mt-1" onclick="attachUnit(${unit.unit_id})">
+                        <i class="bi bi-link"></i> Attach
+                    </button>
+                </div>
+                ` : ''}
+                ${attachedUnitsHtml}
             </div>
         `;
     });
@@ -236,6 +279,51 @@ function updateListDisplay() {
     container.innerHTML = html;
     document.getElementById('totalUnits').textContent = totalUnits;
     document.getElementById('totalPoints').textContent = totalPoints.toFixed(2);
+}
+
+function isUnitAttached(unitId) {
+    // Check if this unit is already attached to any squad
+    return listUnits.some(u => (u.attached_units || []).includes(unitId));
+}
+
+function attachUnit(squadId) {
+    const selectElement = document.getElementById(`attachSelect_${squadId}`);
+    const unitToAttachId = parseInt(selectElement.value);
+    
+    if (!unitToAttachId) {
+        alert('Please select a unit to attach');
+        return;
+    }
+    
+    const squad = listUnits.find(u => u.unit_id === squadId);
+    const unitToAttach = listUnits.find(u => u.unit_id === unitToAttachId);
+    
+    if (!squad || !unitToAttach) {
+        alert('Unit not found');
+        return;
+    }
+    
+    // Check if already attached
+    if (isUnitAttached(unitToAttachId)) {
+        alert(`${unitToAttach.name} is already attached to a squad`);
+        return;
+    }
+    
+    // Attach the unit
+    if (!squad.attached_units) {
+        squad.attached_units = [];
+    }
+    squad.attached_units.push(unitToAttachId);
+    
+    updateListDisplay();
+}
+
+function detachUnit(squadId, attachedUnitId) {
+    const squad = listUnits.find(u => u.unit_id === squadId);
+    if (squad && squad.attached_units) {
+        squad.attached_units = squad.attached_units.filter(id => id !== attachedUnitId);
+        updateListDisplay();
+    }
 }
 
 async function saveList() {
@@ -254,7 +342,11 @@ async function saveList() {
         name: name,
         faction_id: document.getElementById('listFaction').value || null,
         description: document.getElementById('listDescription').value,
-        units: listUnits.map(u => ({unit_id: u.unit_id, quantity: u.quantity})),
+        units: listUnits.map(u => ({
+            unit_id: u.unit_id, 
+            quantity: u.quantity,
+            attached_units: u.attached_units || []
+        })),
         is_public: document.getElementById('isPublic').checked
     };
     

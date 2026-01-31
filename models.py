@@ -264,7 +264,7 @@ class ArmyList(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def get_units(self):
-        """Get list of units with their quantities"""
+        """Get list of units with their quantities and attached units"""
         if not self.units_json:
             return []
         units_data = json.loads(self.units_json)
@@ -272,9 +272,18 @@ class ArmyList(db.Model):
         for item in units_data:
             unit = Unit.query.get(item['unit_id'])
             if unit:
+                # Get attached units if any
+                attached_units_list = []
+                if 'attached_units' in item and item['attached_units']:
+                    for attached_id in item['attached_units']:
+                        attached_unit = Unit.query.get(attached_id)
+                        if attached_unit:
+                            attached_units_list.append(attached_unit)
+                
                 result.append({
                     'unit': unit,
-                    'quantity': item['quantity']
+                    'quantity': item['quantity'],
+                    'attached_units': attached_units_list
                 })
         return result
     
