@@ -6,28 +6,28 @@
 <div class="container mt-4">
     <!-- Faction Header -->
     <div class="card mb-4" style="border-color: {{ faction.color }}; border-width: 3px;">
-        <div class="card-header text-white" style="background-color: {{ faction.color }};">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h2 class="mb-0">
-                        {% if faction.logo_filename %}
-                        <img src="{{ url_for('static', filename='faction_logos/' + faction.logo_filename) }}" alt="{{ faction.name }}" style="width: 50px; height: 50px; object-fit: contain; margin-right: 10px; background: white; padding: 5px; border-radius: 8px;">
-                        {% else %}
-                        <i class="bi bi-{{ faction.icon }}-fill"></i>
-                        {% endif %}
-                        {{ faction.name }}
-                    </h2>
-                </div>
-                <div class="col-auto">
-                    {% if faction.is_public %}
-                    <span class="badge bg-light text-dark"><i class="bi bi-globe"></i> Public</span>
-                    {% else %}
-                    <span class="badge bg-secondary"><i class="bi bi-lock"></i> Private</span>
-                    {% endif %}
-                </div>
+        <div class="card-header text-white text-center py-5" style="background-color: {{ faction.color }};">
+            <div class="d-flex flex-column align-items-center">
+                {% if faction.logo_filename %}
+                <img src="{{ url_for('static', filename='faction_logos/' + faction.logo_filename) }}" alt="{{ faction.name }}" style="width: 120px; height: 120px; object-fit: contain; margin-bottom: 15px; background: white; padding: 10px; border-radius: 12px;">
+                {% else %}
+                <i class="bi bi-{{ faction.icon }}-fill" style="font-size: 100px; margin-bottom: 15px;"></i>
+                {% endif %}
+                <h1 class="mb-0">{{ faction.name }}</h1>
             </div>
         </div>
+        
         <div class="card-body">
+            <div class="d-flex justify-content-center mb-3">
+                {% if faction.is_public %}
+                <span class="badge bg-success"><i class="bi bi-globe"></i> Public</span>
+                {% else %}
+                <span class="badge bg-secondary"><i class="bi bi-lock"></i> Private</span>
+                {% endif %}
+            </div>
+            
+            <hr>
+            
             <div class="markdown-content">
                 {{ faction.description|markdown|safe }}
             </div>
@@ -36,7 +36,7 @@
             {% if playstyle_tags_list %}
             <div class="mb-3">
                 <h5><i class="bi bi-joystick"></i> How to Play</h5>
-                <div class="d-flex flex-wrap gap-2">
+                <div class="d-flex flex-wrap gap-2 justify-content-center">
                     {% for tag_id in playstyle_tags_list %}
                     {% set tag_info = playstyle_tags.get(tag_id) %}
                     {% if tag_info %}
