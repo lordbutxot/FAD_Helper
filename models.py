@@ -197,6 +197,7 @@ class Unit(db.Model):
     total_points = db.Column(db.Float, nullable=False)
     
     # Metadata
+    description = db.Column(db.Text)  # "How to use" guide for this unit
     is_public = db.Column(db.Boolean, default=False)
     notes = db.Column(db.Text)  # User notes about the unit
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

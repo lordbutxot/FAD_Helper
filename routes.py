@@ -696,6 +696,7 @@ def init_routes(app):
                 secondary_weapon_id = request.form.get('secondary_weapon_id') or None
                 trait_ids = request.form.getlist('traits')
                 notes = request.form.get('notes', '').strip()
+                description = request.form.get('description', '').strip()
                 
                 # Calculate points
                 data = {
@@ -721,6 +722,7 @@ def init_routes(app):
                     basic_weapon_id=int(basic_weapon_id) if basic_weapon_id else None,
                     secondary_weapon_id=int(secondary_weapon_id) if secondary_weapon_id else None,
                     traits_json=json.dumps([int(t) for t in trait_ids]),
+                    description=description,
                     notes=notes,
                     base_points=total_points,
                     total_points=total_points
@@ -764,8 +766,9 @@ def init_routes(app):
                 basic_weapon_id = request.form.get('basic_weapon_id') or None
                 trait_ids = request.form.getlist('traits')
                 notes = request.form.get('notes', '').strip()
+                description = request.form.get('description', '').strip()
                 
-                # Calculate points
+                # Calculate points for Character
                 data = {
                     'unit_type': 'Character',
                     'quality': quality,
@@ -790,6 +793,7 @@ def init_routes(app):
                     armour_id=int(armour_id) if armour_id else None,
                     basic_weapon_id=int(basic_weapon_id) if basic_weapon_id else None,
                     traits_json=json.dumps([int(t) for t in trait_ids]),
+                    description=description,
                     notes=notes,
                     base_points=total_points,
                     total_points=total_points

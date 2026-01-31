@@ -109,13 +109,23 @@
                     </div>
                 </div>
 
+                <!-- How to Use Description -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> How to Use (Exported)</h5>
+                    </div>
+                    <div class="card-body">
+                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Explain how to use this heavy weapon team in battle (e.g., positioning, field of fire). This will be exported with the unit.">{{ unit.description or '' }}</textarea>
+                    </div>
+                </div>
+
                 <!-- Notes -->
                 <div class="card mb-3">
                     <div class="card-header">
                         <h5 class="mb-0">Notes</h5>
                     </div>
                     <div class="card-body">
-                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Optional notes about this team...">{{ unit.notes or '' }}</textarea>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Optional notes about this heavy weapon team... (internal only, not exported)">{{ unit.notes or '' }}</textarea>
                     </div>
                 </div>
 
