@@ -117,6 +117,28 @@ class Trait(db.Model):
         return f'<Trait {self.name}>'
 
 
+class SquadMember(db.Model):
+    """Individual squad members with their specific equipment"""
+    id = db.Column(db.Integer, primary_key=True)
+    unit_id = db.Column(db.Integer, db.ForeignKey('unit.id', ondelete='CASCADE'), nullable=False)
+    member_number = db.Column(db.Integer, nullable=False)  # Position in squad (1, 2, 3...)
+    member_type = db.Column(db.String(20), nullable=False, default='Regular')  # Regular, Support, Leader
+    
+    # Equipment
+    weapon_id = db.Column(db.Integer, db.ForeignKey('weapon.id'), nullable=True)
+    secondary_weapon_id = db.Column(db.Integer, db.ForeignKey('weapon.id'), nullable=True)  # Pistols, etc.
+    
+    # Metadata
+    notes = db.Column(db.String(200))  # Optional notes (e.g., "Squad Leader", "Medic")
+    
+    # Relationships
+    weapon = db.relationship('Weapon', foreign_keys=[weapon_id])
+    secondary_weapon = db.relationship('Weapon', foreign_keys=[secondary_weapon_id])
+    
+    def __repr__(self):
+        return f'<SquadMember {self.member_number} of Unit {self.unit_id}>'
+
+
 class Unit(db.Model):
     """Custom units created by users - Supports 6 unit types: Squad, Character, Sniper, Heavy Weapons, Psionic, Vehicle"""
     id = db.Column(db.Integer, primary_key=True)
@@ -141,10 +163,12 @@ class Unit(db.Model):
     # Equipment (shared)
     armour_id = db.Column(db.Integer, db.ForeignKey('armour.id'))
     basic_weapon_id = db.Column(db.Integer, db.ForeignKey('weapon.id'))
+    secondary_weapon_id = db.Column(db.Integer, db.ForeignKey('weapon.id'), nullable=True)  # Pistols, backup weapons
     
     # Heavy Weapons Team specific
     heavy_weapon_id = db.Column(db.Integer, db.ForeignKey('weapon.id'), nullable=True)
     weapon_options_json = db.Column(db.Text)  # JSON list of additional weapon options
+    crew_count = db.Column(db.Integer, default=2)  # Number of crew members (default 2 for heavy weapons teams)
     
     # Psionic specific
     psionic_aptitude = db.Column(db.String(20))  # Marginal, Competent, Expert, Master
@@ -156,7 +180,7 @@ class Unit(db.Model):
     vehicle_armour_front = db.Column(db.Integer)
     vehicle_armour_side = db.Column(db.Integer)
     vehicle_armour_rear = db.Column(db.Integer)
-    crew_size = db.Column(db.Integer)
+    crew_size = db.Column(db.Integer, default=1)  # Number of crew members
     carrying_capacity = db.Column(db.Integer)
     vehicle_weapons_json = db.Column(db.Text)  # JSON list of vehicle weapons
     vehicle_properties_json = db.Column(db.Text)  # JSON list of vehicle properties/traits
@@ -177,7 +201,9 @@ class Unit(db.Model):
     # Relationships
     armour = db.relationship('Armour', foreign_keys=[armour_id])
     basic_weapon = db.relationship('Weapon', foreign_keys=[basic_weapon_id])
+    secondary_weapon = db.relationship('Weapon', foreign_keys=[secondary_weapon_id])
     heavy_weapon = db.relationship('Weapon', foreign_keys=[heavy_weapon_id])
+    squad_members = db.relationship('SquadMember', backref='unit', lazy=True, cascade='all, delete-orphan', order_by='SquadMember.member_number')
     
     def get_traits(self):
         """Get list of trait objects for this unit"""
