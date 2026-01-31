@@ -697,15 +697,18 @@ def init_routes(app):
                 trait_ids = request.form.getlist('traits')
                 notes = request.form.get('notes', '').strip()
                 description = request.form.get('description', '').strip()
+                weapon_distribution = request.form.get('weapon_distribution', '').strip()
                 
                 # Calculate points
                 data = {
                     'unit_type': 'Squad',
                     'quality': quality,
+                    'resolve': resolve,
                     'squad_size': squad_size,
                     'armour_id': int(armour_id) if armour_id else None,
                     'basic_weapon_id': int(basic_weapon_id) if basic_weapon_id else None,
-                    'traits': [int(t) for t in trait_ids]
+                    'traits': [int(t) for t in trait_ids],
+                    'weapon_distribution': weapon_distribution
                 }
                 total_points = calculate_points(data)
                 
@@ -722,6 +725,7 @@ def init_routes(app):
                     basic_weapon_id=int(basic_weapon_id) if basic_weapon_id else None,
                     secondary_weapon_id=int(secondary_weapon_id) if secondary_weapon_id else None,
                     traits_json=json.dumps([int(t) for t in trait_ids]),
+                    squad_members_json=weapon_distribution if weapon_distribution else None,
                     description=description,
                     notes=notes,
                     base_points=total_points,
@@ -1621,27 +1625,67 @@ def calculate_points(data):
     # ==================== SQUAD ====================
     if unit_type == 'Squad':
         squad_size = data.get('squad_size', 5)
+        armour_id = data.get('armour_id')
         
-        # Step 1: Base cost per trooper = 3 points
-        cost_per_trooper = 3
+        # Check if weapon distribution is specified
+        weapon_distribution = data.get('weapon_distribution', '')
         
-        # Step 2: Add armour per trooper
-        if data.get('armour_id'):
-            armour = Armour.query.get(data['armour_id'])
-            if armour:
-                cost_per_trooper += armour.points
+        if weapon_distribution and weapon_distribution != '{}':
+            # Parse weapon distribution JSON
+            try:
+                distribution = json.loads(weapon_distribution) if isinstance(weapon_distribution, str) else weapon_distribution
+                
+                # Calculate cost per weapon type
+                for weapon_id_str, quantity in distribution.items():
+                    weapon_id = int(weapon_id_str)
+                    quantity = int(quantity)
+                    
+                    # Base cost per trooper
+                    cost_per_trooper = 3
+                    
+                    # Add armour
+                    if armour_id:
+                        armour = Armour.query.get(armour_id)
+                        if armour:
+                            cost_per_trooper += armour.points
+                    
+                    # Add weapon
+                    weapon = Weapon.query.get(weapon_id)
+                    if weapon:
+                        cost_per_trooper += weapon.points
+                    
+                    # Apply Quality and Resolve multipliers
+                    cost_per_trooper = cost_per_trooper * (1 + quality_mult + resolve_mult)
+                    
+                    # Add to total
+                    total_points += cost_per_trooper * quantity
+                    
+            except (json.JSONDecodeError, ValueError, TypeError):
+                # Fall back to default weapon
+                weapon_distribution = None
         
-        # Step 3: Add weapon per trooper
-        if data.get('basic_weapon_id'):
-            weapon = Weapon.query.get(data['basic_weapon_id'])
-            if weapon:
-                cost_per_trooper += weapon.points
-        
-        # Step 4: Apply Quality and Resolve multipliers
-        cost_per_trooper = cost_per_trooper * (1 + quality_mult + resolve_mult)
-        
-        # Step 5: Multiply by squad size
-        total_points = cost_per_trooper * squad_size
+        # If no distribution, use default weapon for all
+        if not weapon_distribution or weapon_distribution == '{}':
+            # Step 1: Base cost per trooper = 3 points
+            cost_per_trooper = 3
+            
+            # Step 2: Add armour per trooper
+            if armour_id:
+                armour = Armour.query.get(armour_id)
+                if armour:
+                    cost_per_trooper += armour.points
+            
+            # Step 3: Add weapon per trooper
+            if data.get('basic_weapon_id'):
+                weapon = Weapon.query.get(data['basic_weapon_id'])
+                if weapon:
+                    cost_per_trooper += weapon.points
+            
+            # Step 4: Apply Quality and Resolve multipliers
+            cost_per_trooper = cost_per_trooper * (1 + quality_mult + resolve_mult)
+            
+            # Step 5: Multiply by squad size
+            total_points = cost_per_trooper * squad_size
         
         # Step 6: Apply trait multipliers sequentially (per game rules)
         if data.get('traits'):

@@ -149,6 +149,39 @@
                     </div>
                 </div>
 
+                <!-- Weapon Distribution (Advanced) -->
+                <div class="card mb-3">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="bi bi-diagram-3"></i> Weapon Distribution (Optional)
+                            <button type="button" class="btn btn-sm btn-outline-dark float-end" id="toggleWeaponDistribution">
+                                <i class="bi bi-chevron-down"></i> Customize
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="card-body" id="weaponDistributionSection" style="display: none;">
+                        <p class="text-muted">Specify how many soldiers carry each weapon type. Leave blank to use default weapon for all.</p>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> <strong>Tip:</strong> Total must equal squad size (<span id="targetSquadSize">5</span>). 
+                            Current total: <strong id="weaponDistributionTotal">0</strong>
+                        </div>
+                        
+                        <input type="hidden" id="weapon_distribution" name="weapon_distribution" value="">
+                        
+                        <div id="weaponDistributionInputs" class="row">
+                            <!-- Dynamically populated weapon quantity inputs -->
+                        </div>
+                        
+                        <button type="button" class="btn btn-sm btn-secondary mt-2" id="addWeaponType">
+                            <i class="bi bi-plus-circle"></i> Add Weapon Type
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="resetDistribution">
+                            <i class="bi bi-arrow-clockwise"></i> Reset to Default
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Traits -->
                 <div class="card mb-3">
                     <div class="card-header bg-info text-white">
@@ -417,47 +450,11 @@ function updatePreview() {
 }
 
 function calculatePoints() {
-    const squadSize = parseInt(document.getElementById('squad_size').value) || 0;
-    const quality = document.getElementById('quality').value;
-    const resolve = document.getElementById('resolve').value;
-    const weaponId = document.getElementById('basic_weapon_id').value;
-    const armourId = document.getElementById('armour_id').value;
-    
-    if (!quality || !resolve || squadSize === 0) {
-        document.getElementById('preview-points').textContent = '0';
-        return;
+    if (weaponDistributionEnabled && document.getElementById('weapon_distribution').value) {
+        calculatePointsWithDistribution();
+    } else {
+        calculatePointsWithDistribution(); // Use same function, it handles both cases
     }
-    
-    // Step 1: Base cost per trooper = 3 points
-    let costPerTrooper = 3;
-    
-    // Step 2: Add armour points per trooper
-    const armourPts = armourId ? (armourPoints[armourId] || 0) : 0;
-    costPerTrooper += armourPts;
-    
-    // Step 3: Add weapon points per trooper
-    const weaponPts = weaponId ? (weaponPoints[weaponId] || 0) : 0;
-    costPerTrooper += weaponPts;
-    
-    // Step 4: Apply Quality and Resolve multipliers
-    const qualityMult = qualityMultipliers[quality] || 0;
-    const resolveMult = resolveMultipliers[resolve] || 0;
-    costPerTrooper = costPerTrooper * (1 + qualityMult + resolveMult);
-    
-    // Step 5: Multiply by squad size
-    let totalCost = costPerTrooper * squadSize;
-    
-    // Step 6: Apply each trait multiplier sequentially (per game rules)
-    document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
-        const traitMult = traitPoints[checkbox.value] || 1.0;
-        totalCost = totalCost * traitMult;
-    });
-    
-    // Round to 2 decimal places
-    const finalPoints = Math.round(totalCost * 100) / 100;
-    
-    // Update preview
-    document.getElementById('preview-points').textContent = finalPoints;
 }
 
 // Attach event listeners to all inputs
@@ -475,5 +472,177 @@ document.querySelectorAll('input[name="traits"]').forEach(checkbox => {
 
 // Initial update
 updatePreview();
+
+// ==================== WEAPON DISTRIBUTION SYSTEM ====================
+let weaponDistributionEnabled = false;
+let distributionEntries = [];
+
+// Toggle weapon distribution section
+document.getElementById('toggleWeaponDistribution').addEventListener('click', function() {
+    const section = document.getElementById('weaponDistributionSection');
+    const icon = this.querySelector('i');
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        icon.className = 'bi bi-chevron-up';
+        weaponDistributionEnabled = true;
+        if (distributionEntries.length === 0) {
+            addWeaponDistributionRow();
+        }
+    } else {
+        section.style.display = 'none';
+        icon.className = 'bi bi-chevron-down';
+        weaponDistributionEnabled = false;
+    }
+});
+
+// Add new weapon distribution row
+function addWeaponDistributionRow(weaponId = '', quantity = 0) {
+    const container = document.getElementById('weaponDistributionInputs');
+    const index = distributionEntries.length;
+    
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'col-md-6 mb-3';
+    rowDiv.id = `weaponDist_${index}`;
+    
+    rowDiv.innerHTML = `
+        <div class="input-group">
+            <select class="form-select weapon-dist-select" data-index="${index}">
+                <option value="">Select Weapon...</option>
+                ${Object.keys(weaponNames).map(id => 
+                    `<option value="${id}" ${id == weaponId ? 'selected' : ''}>${weaponNames[id]}</option>`
+                ).join('')}
+            </select>
+            <input type="number" class="form-control weapon-dist-qty" data-index="${index}" 
+                   min="0" max="50" value="${quantity}" placeholder="Qty" style="max-width: 80px;">
+            <button type="button" class="btn btn-outline-danger" onclick="removeWeaponDistRow(${index})">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+    `;
+    
+    container.appendChild(rowDiv);
+    distributionEntries.push({ index, weaponId, quantity });
+    
+    // Add event listeners
+    rowDiv.querySelector('.weapon-dist-select').addEventListener('change', updateWeaponDistribution);
+    rowDiv.querySelector('.weapon-dist-qty').addEventListener('input', updateWeaponDistribution);
+}
+
+// Remove weapon distribution row
+function removeWeaponDistRow(index) {
+    const row = document.getElementById(`weaponDist_${index}`);
+    if (row) {
+        row.remove();
+        distributionEntries = distributionEntries.filter(e => e.index !== index);
+        updateWeaponDistribution();
+    }
+}
+
+// Update weapon distribution data and totals
+function updateWeaponDistribution() {
+    let total = 0;
+    const distribution = {};
+    
+    document.querySelectorAll('.weapon-dist-select').forEach(select => {
+        const index = select.dataset.index;
+        const weaponId = select.value;
+        const qtyInput = document.querySelector(`.weapon-dist-qty[data-index="${index}"]`);
+        const quantity = parseInt(qtyInput.value) || 0;
+        
+        if (weaponId && quantity > 0) {
+            distribution[weaponId] = (distribution[weaponId] || 0) + quantity;
+            total += quantity;
+        }
+    });
+    
+    // Update total display
+    document.getElementById('weaponDistributionTotal').textContent = total;
+    
+    // Update hidden field
+    document.getElementById('weapon_distribution').value = JSON.stringify(distribution);
+    
+    // Update target squad size
+    const squadSize = parseInt(document.getElementById('squad_size').value) || 0;
+    document.getElementById('targetSquadSize').textContent = squadSize;
+    
+    // Highlight if mismatch
+    const totalSpan = document.getElementById('weaponDistributionTotal');
+    if (total !== squadSize && total > 0) {
+        totalSpan.className = 'text-danger fw-bold';
+    } else {
+        totalSpan.className = 'fw-bold';
+    }
+    
+    // Recalculate points with custom distribution
+    calculatePointsWithDistribution();
+}
+
+// Calculate points considering weapon distribution
+function calculatePointsWithDistribution() {
+    const squadSize = parseInt(document.getElementById('squad_size').value) || 0;
+    const quality = document.getElementById('quality').value;
+    const resolve = document.getElementById('resolve').value;
+    const armourId = document.getElementById('armour_id').value;
+    
+    if (!quality || !resolve || squadSize === 0) {
+        document.getElementById('preview-points').textContent = '0';
+        return;
+    }
+    
+    const qualityMult = qualityMultipliers[quality] || 0;
+    const resolveMult = resolveMultipliers[resolve] || 0;
+    const armourPts = armourId ? (armourPoints[armourId] || 0) : 0;
+    
+    let totalCost = 0;
+    
+    // Check if weapon distribution is enabled and has valid data
+    const distributionData = document.getElementById('weapon_distribution').value;
+    if (weaponDistributionEnabled && distributionData && distributionData !== '{}') {
+        const distribution = JSON.parse(distributionData);
+        
+        // Calculate cost per weapon type
+        for (const [weaponId, quantity] of Object.entries(distribution)) {
+            const weaponPts = weaponPoints[weaponId] || 0;
+            let costPerTrooper = 3 + armourPts + weaponPts;
+            costPerTrooper = costPerTrooper * (1 + qualityMult + resolveMult);
+            totalCost += costPerTrooper * quantity;
+        }
+    } else {
+        // Use default weapon for all
+        const weaponId = document.getElementById('basic_weapon_id').value;
+        const weaponPts = weaponId ? (weaponPoints[weaponId] || 0) : 0;
+        let costPerTrooper = 3 + armourPts + weaponPts;
+        costPerTrooper = costPerTrooper * (1 + qualityMult + resolveMult);
+        totalCost = costPerTrooper * squadSize;
+    }
+    
+    // Apply trait multipliers
+    document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
+        const traitMult = traitPoints[checkbox.value] || 1.0;
+        totalCost = totalCost * traitMult;
+    });
+    
+    const finalPoints = Math.round(totalCost * 100) / 100;
+    document.getElementById('preview-points').textContent = finalPoints;
+}
+
+// Add weapon type button
+document.getElementById('addWeaponType').addEventListener('click', () => addWeaponDistributionRow());
+
+// Reset distribution
+document.getElementById('resetDistribution').addEventListener('click', function() {
+    document.getElementById('weaponDistributionInputs').innerHTML = '';
+    distributionEntries = [];
+    document.getElementById('weapon_distribution').value = '';
+    updateWeaponDistribution();
+});
+
+// Update squad size listener to update target
+document.getElementById('squad_size').addEventListener('input', function() {
+    if (weaponDistributionEnabled) {
+        updateWeaponDistribution();
+    }
+});
+
 </script>
 {% endblock %}

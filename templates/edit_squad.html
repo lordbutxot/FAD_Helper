@@ -122,6 +122,39 @@
                     </div>
                 </div>
 
+                <!-- Weapon Distribution (Advanced) -->
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-diagram-3"></i> Weapon Distribution (Optional)
+                            <button type="button" class="btn btn-sm btn-outline-light float-end" id="toggleWeaponDistribution">
+                                <i class="bi bi-chevron-down"></i> Customize
+                            </button>
+                        </h5>
+                    </div>
+                    <div class="card-body" id="weaponDistributionSection" style="display: none;">
+                        <p class="text-muted">Specify how many soldiers carry each weapon type.</p>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> <strong>Tip:</strong> Total must equal squad size (<span id="targetSquadSize">{{ unit.squad_size }}</span>). 
+                            Current total: <strong id="weaponDistributionTotal">0</strong>
+                        </div>
+                        
+                        <input type="hidden" id="weapon_distribution" name="weapon_distribution" value="{{ unit.squad_members_json or '' }}">
+                        
+                        <div id="weaponDistributionInputs" class="row">
+                            <!-- Dynamically populated weapon quantity inputs -->
+                        </div>
+                        
+                        <button type="button" class="btn btn-sm btn-secondary mt-2" id="addWeaponType">
+                            <i class="bi bi-plus-circle"></i> Add Weapon Type
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="resetDistribution">
+                            <i class="bi bi-arrow-clockwise"></i> Reset to Default
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Traits -->
                 <div class="card mb-3">
                     <div class="card-header bg-info text-white">
