@@ -36,6 +36,10 @@ db.init_app(app)
 login_manager.init_app(app)
 login_manager.login_view = 'login'  # type: ignore
 
+# Register markdown filter for templates
+from extensions import markdown_to_html
+app.jinja_env.filters['markdown'] = markdown_to_html
+
 # Now import models and routes (after db is initialized)
 from models import User, ArmyList, Unit, Weapon, Armour, Trait
 from routes import init_routes

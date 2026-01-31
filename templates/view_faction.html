@@ -28,7 +28,9 @@
             </div>
         </div>
         <div class="card-body">
-            <p class="lead">{{ faction.description }}</p>
+            <div class="markdown-content">
+                {{ faction.description|markdown|safe }}
+            </div>
             
             {% set playstyle_tags_list = faction.get_playstyle_tags() %}
             {% if playstyle_tags_list %}
@@ -50,14 +52,18 @@
             {% if faction.background %}
             <hr>
             <h5>Background & Lore</h5>
-            <p class="text-muted">{{ faction.background }}</p>
+            <div class="markdown-content">
+                {{ faction.background|markdown|safe }}
+            </div>
             {% endif %}
             
             {% if faction.special_rules %}
             <hr>
             <h5>Special Rules</h5>
             <div class="alert alert-warning">
-                <pre class="mb-0" style="white-space: pre-wrap;">{{ faction.special_rules }}</pre>
+                <div class="markdown-content">
+                    {{ faction.special_rules|markdown|safe }}
+                </div>
             </div>
             {% endif %}
             

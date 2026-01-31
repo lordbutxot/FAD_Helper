@@ -21,7 +21,9 @@
                     </p>
                     
                     {% if army_list.description %}
-                    <p class="lead">{{ army_list.description }}</p>
+                    <div class="markdown-content">
+                        {{ army_list.description|markdown|safe }}
+                    </div>
                     {% endif %}
                     
                     <hr>
