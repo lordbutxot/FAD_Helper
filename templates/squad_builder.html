@@ -127,6 +127,25 @@
                                 {% endfor %}
                             </select>
                         </div>
+
+                        <div class="mb-3">
+                            <label for="secondary_weapon_id" class="form-label">
+                                Default Secondary Weapon (Optional)
+                                <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Backup weapon like pistols or grenades"></i>
+                            </label>
+                            <select class="form-select" id="secondary_weapon_id" name="secondary_weapon_id">
+                                <option value="">No Secondary Weapon</option>
+                                {% for weapon in weapons %}
+                                <option value="{{ weapon.id }}"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="right"
+                                        title="Range: {{ weapon.range_multiplier }}× | Damage: {{ weapon.damage }} | Fire Effect: {{ weapon.fire_effect }}{% if weapon.armor_piercing > 0 %} | AP: {{ weapon.armor_piercing }}{% endif %}{% if weapon.special_rules %} | {{ weapon.special_rules }}{% endif %}">
+                                    {{ weapon.name }} (Rng:{{ weapon.range_multiplier }}, Dmg:{{ weapon.damage }}, FE:{{ weapon.fire_effect }}, +{{ weapon.points }} pts)
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Note: Individual weapons can be customized after saving using the Squad Members manager.</small>
+                        </div>
                     </div>
                 </div>
 

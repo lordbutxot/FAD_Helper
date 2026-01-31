@@ -7,7 +7,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from extensions import db
-from models import User, ArmyList, Unit, Weapon, Armour, Trait, Faction, FactionRating
+from models import User, ArmyList, Unit, Weapon, Armour, Trait, Faction, FactionRating, SquadMember
 from datetime import datetime, timedelta
 from functools import wraps
 import json
@@ -661,6 +661,7 @@ def init_routes(app):
                 squad_size = int(request.form.get('squad_size', 5))
                 armour_id = request.form.get('armour_id') or None
                 basic_weapon_id = request.form.get('basic_weapon_id') or None
+                secondary_weapon_id = request.form.get('secondary_weapon_id') or None
                 trait_ids = request.form.getlist('traits')
                 notes = request.form.get('notes', '').strip()
                 
@@ -686,6 +687,7 @@ def init_routes(app):
                     squad_size=squad_size,
                     armour_id=int(armour_id) if armour_id else None,
                     basic_weapon_id=int(basic_weapon_id) if basic_weapon_id else None,
+                    secondary_weapon_id=int(secondary_weapon_id) if secondary_weapon_id else None,
                     traits_json=json.dumps([int(t) for t in trait_ids]),
                     notes=notes,
                     base_points=total_points,
@@ -788,6 +790,7 @@ def init_routes(app):
                 resolve = request.form.get('resolve')
                 heavy_weapon_id = request.form.get('heavy_weapon_id') or None
                 armour_id = request.form.get('armour_id') or None
+                crew_count = int(request.form.get('crew_count', 2))
                 trait_ids = request.form.getlist('traits')
                 notes = request.form.get('notes', '').strip()
                 
@@ -810,6 +813,7 @@ def init_routes(app):
                     resolve=resolve,
                     heavy_weapon_id=int(heavy_weapon_id) if heavy_weapon_id else None,
                     armour_id=int(armour_id) if armour_id else None,
+                    crew_count=crew_count,
                     traits_json=json.dumps([int(t) for t in trait_ids]),
                     notes=notes,
                     base_points=total_points,
@@ -977,7 +981,7 @@ def init_routes(app):
                 front_armour = int(request.form.get('vehicle_armour_front', 3))
                 side_armour = int(request.form.get('vehicle_armour_side', 2))
                 rear_armour = int(request.form.get('vehicle_armour_rear', 1))
-                crew_size = int(request.form.get('crew_size', 2))
+                crew_size = int(request.form.get('crew_size', 1))
                 capacity = int(request.form.get('carrying_capacity', 0))
                 properties = request.form.get('vehicle_properties', '').strip()
                 notes = request.form.get('notes', '').strip()
@@ -1059,6 +1063,7 @@ def init_routes(app):
                     unit.squad_size = int(request.form.get('squad_size', 5))
                     unit.armour_id = request.form.get('armour_id') or None
                     unit.basic_weapon_id = request.form.get('basic_weapon_id') or None
+                    unit.secondary_weapon_id = request.form.get('secondary_weapon_id') or None
                     trait_ids = request.form.getlist('traits')
                     unit.traits_json = json.dumps([int(t) for t in trait_ids])
                     
@@ -1094,6 +1099,7 @@ def init_routes(app):
                 elif unit.unit_type == 'HeavyWeapon':
                     unit.heavy_weapon_id = request.form.get('heavy_weapon_id') or None
                     unit.armour_id = request.form.get('armour_id') or None
+                    unit.crew_count = int(request.form.get('crew_count', 2))
                     trait_ids = request.form.getlist('traits')
                     unit.traits_json = json.dumps([int(t) for t in trait_ids])
                     
@@ -1648,3 +1654,105 @@ def calculate_points(data):
         # Weapons will be added post-save
     
     return round(total_points, 2)
+
+
+    # ==================== SQUAD MEMBER MANAGEMENT ====================
+    @app.route('/unit/<int:unit_id>/squad-members', methods=['GET'])
+    @login_required
+    def manage_squad_members(unit_id):
+        """View and manage individual squad members"""
+        unit = Unit.query.get_or_404(unit_id)
+        
+        if unit.user_id != current_user.id:
+            abort(403)
+        
+        if unit.unit_type != 'Squad':
+            flash('This unit is not a squad', 'warning')
+            return redirect(url_for('dashboard'))
+        
+        weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
+        squad_members = SquadMember.query.filter_by(unit_id=unit_id).order_by(SquadMember.member_number).all()
+        
+        return render_template('manage_squad_members.html', 
+                             unit=unit, 
+                             squad_members=squad_members,
+                             weapons=weapons)
+    
+    @app.route('/unit/<int:unit_id>/squad-member/add', methods=['POST'])
+    @login_required
+    def add_squad_member(unit_id):
+        """Add a new squad member"""
+        unit = Unit.query.get_or_404(unit_id)
+        
+        if unit.user_id != current_user.id:
+            abort(403)
+        
+        if unit.unit_type != 'Squad':
+            return jsonify({'success': False, 'message': 'Not a squad unit'}), 400
+        
+        try:
+            member_number = request.form.get('member_number', type=int)
+            member_type = request.form.get('member_type', 'Regular')
+            weapon_id = request.form.get('weapon_id', type=int) or None
+            secondary_weapon_id = request.form.get('secondary_weapon_id', type=int) or None
+            notes = request.form.get('notes', '').strip()
+            
+            member = SquadMember(
+                unit_id=unit_id,
+                member_number=member_number,
+                member_type=member_type,
+                weapon_id=weapon_id,
+                secondary_weapon_id=secondary_weapon_id,
+                notes=notes
+            )
+            
+            db.session.add(member)
+            db.session.commit()
+            
+            return jsonify({'success': True, 'message': 'Squad member added'})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'message': str(e)}), 500
+    
+    @app.route('/squad-member/<int:member_id>/edit', methods=['POST'])
+    @login_required
+    def edit_squad_member(member_id):
+        """Edit an existing squad member"""
+        member = SquadMember.query.get_or_404(member_id)
+        unit = Unit.query.get_or_404(member.unit_id)
+        
+        if unit.user_id != current_user.id:
+            abort(403)
+        
+        try:
+            member.member_type = request.form.get('member_type', 'Regular')
+            member.weapon_id = request.form.get('weapon_id', type=int) or None
+            member.secondary_weapon_id = request.form.get('secondary_weapon_id', type=int) or None
+            member.notes = request.form.get('notes', '').strip()
+            
+            db.session.commit()
+            
+            return jsonify({'success': True, 'message': 'Squad member updated'})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'message': str(e)}), 500
+    
+    @app.route('/squad-member/<int:member_id>/delete', methods=['POST'])
+    @login_required
+    def delete_squad_member(member_id):
+        """Delete a squad member"""
+        member = SquadMember.query.get_or_404(member_id)
+        unit = Unit.query.get_or_404(member.unit_id)
+        
+        if unit.user_id != current_user.id:
+            abort(403)
+        
+        try:
+            db.session.delete(member)
+            db.session.commit()
+            
+            return jsonify({'success': True, 'message': 'Squad member deleted'})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'message': str(e)}), 500
+

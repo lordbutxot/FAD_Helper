@@ -163,10 +163,10 @@
                             <div class="col-md-6 mb-3">
                                 <label for="crew_size" class="form-label">
                                     Crew Size *
-                                    <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Number of crew members to operate vehicle"></i>
+                                    <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Number of crew members to operate vehicle. Set to 0 for AI-controlled vehicles"></i>
                                 </label>
-                                <input type="number" class="form-control" id="crew_size" name="crew_size" min="1" max="10" value="2" required>
-                                <small class="text-muted">Number of crew members</small>
+                                <input type="number" class="form-control" id="crew_size" name="crew_size" min="0" max="10" value="1" required>
+                                <small class="text-muted">Default 1 (0 for autonomous vehicles)</small>
                             </div>
                             
                             <div class="col-md-6 mb-3">
