@@ -242,6 +242,11 @@
                         <div id="preview-weapon">None</div>
                     </div>
                     
+                    <div class="mb-3">
+                        <small class="text-muted">Secondary Weapon:</small>
+                        <div id="preview-secondary-weapon">None</div>
+                    </div>
+                    
                     <div id="preview-traits-container" class="mb-3" style="display: none;">
                         <small class="text-muted">Traits:</small>
                         <div id="preview-traits">
@@ -372,6 +377,10 @@ function updatePreview() {
     const weaponId = document.getElementById('basic_weapon_id').value;
     document.getElementById('preview-weapon').textContent = weaponId ? weaponNames[weaponId] : 'None';
     
+    // Update secondary weapon
+    const secondaryWeaponId = document.getElementById('secondary_weapon_id').value;
+    document.getElementById('preview-secondary-weapon').textContent = secondaryWeaponId ? weaponNames[secondaryWeaponId] : 'None';
+    
     // Update traits
     const selectedTraits = [];
     document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
@@ -446,6 +455,7 @@ document.getElementById('squad_size').addEventListener('input', updatePreview);
 document.getElementById('quality').addEventListener('change', updatePreview);
 document.getElementById('resolve').addEventListener('change', updatePreview);
 document.getElementById('basic_weapon_id').addEventListener('change', updatePreview);
+document.getElementById('secondary_weapon_id').addEventListener('change', updatePreview);
 document.getElementById('armour_id').addEventListener('change', updatePreview);
 document.querySelectorAll('input[name="traits"]').forEach(checkbox => {
     checkbox.addEventListener('change', updatePreview);
