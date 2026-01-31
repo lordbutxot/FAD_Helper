@@ -1040,12 +1040,9 @@ def init_routes(app):
                 rear_armour = int(request.form.get('vehicle_armour_rear', 1))
                 crew_size = int(request.form.get('crew_size', 1))
                 capacity = int(request.form.get('carrying_capacity', 0))
-                properties = request.form.get('vehicle_properties', '').strip()
+                property_ids = request.form.getlist('traits')  # Vehicle properties use the trait checkboxes
                 notes = request.form.get('notes', '').strip()
                 description = request.form.get('description', '').strip()
-                
-                # Parse properties (comma-separated)
-                props_list = [p.strip() for p in properties.split(',') if p.strip()] if properties else []
                 
                 # Calculate points
                 data = {
@@ -1055,7 +1052,8 @@ def init_routes(app):
                     'vehicle_armour_front': front_armour,
                     'vehicle_armour_side': side_armour,
                     'vehicle_armour_rear': rear_armour,
-                    'carrying_capacity': capacity
+                    'carrying_capacity': capacity,
+                    'traits': [int(t) for t in property_ids]
                 }
                 total_points = calculate_points(data)
                 
@@ -1073,7 +1071,7 @@ def init_routes(app):
                     vehicle_armour_rear=rear_armour,
                     crew_size=crew_size,
                     carrying_capacity=capacity,
-                    vehicle_properties_json=json.dumps(props_list),
+                    traits_json=json.dumps([int(t) for t in property_ids]),
                     description=description,
                     notes=notes,
                     base_points=total_points,
@@ -1224,9 +1222,8 @@ def init_routes(app):
                     unit.crew_size = int(request.form.get('crew_size', 2))
                     unit.carrying_capacity = int(request.form.get('carrying_capacity', 0))
                     
-                    properties = request.form.get('vehicle_properties', '').strip()
-                    props_list = [p.strip() for p in properties.split(',') if p.strip()] if properties else []
-                    unit.vehicle_properties_json = json.dumps(props_list)
+                    property_ids = request.form.getlist('traits')  # Vehicle properties use the trait checkboxes
+                    unit.traits_json = json.dumps([int(t) for t in property_ids])
                     
                     data = {
                         'unit_type': 'Vehicle',
@@ -1235,7 +1232,8 @@ def init_routes(app):
                         'vehicle_armour_front': unit.vehicle_armour_front,
                         'vehicle_armour_side': unit.vehicle_armour_side,
                         'vehicle_armour_rear': unit.vehicle_armour_rear,
-                        'carrying_capacity': unit.carrying_capacity
+                        'carrying_capacity': unit.carrying_capacity,
+                        'traits': [int(t) for t in property_ids]
                     }
                 
                 # Recalculate points

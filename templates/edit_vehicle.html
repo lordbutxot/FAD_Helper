@@ -140,10 +140,27 @@
                         <h5 class="mb-0">Vehicle Properties</h5>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted">Special vehicle properties and abilities</p>
-                        <div class="mb-3">
-                            <textarea class="form-control" id="vehicle_properties" name="vehicle_properties" rows="3" placeholder="e.g., Amphibious, Smoke Launchers, Active Protection System">{{ unit.vehicle_properties or '' }}</textarea>
-                            <small class="text-muted">Enter properties separated by commas</small>
+                        <p class="text-muted">Select special vehicle properties and abilities (each affects points multiplier)</p>
+                        <div class="row">
+                            {% set unit_trait_ids = unit.get_traits()|map(attribute='id')|list %}
+                            {% for trait in traits %}
+                            {% if trait.category == 'Vehicle' %}
+                            <div class="col-md-6 mb-2">
+                                <div class="form-check trait-option">
+                                    <input class="form-check-input" type="checkbox" name="traits" value="{{ trait.id }}" id="trait_{{ trait.id }}" 
+                                        {% if trait.id in unit_trait_ids %}checked{% endif %}>
+                                    <label class="form-check-label" for="trait_{{ trait.id }}">
+                                        {{ trait.name }} 
+                                        <small class="text-muted">(×{{ trait.points_multiplier }})</small>
+                                        <i class="bi bi-info-circle info-icon" 
+                                           data-bs-toggle="tooltip" 
+                                           data-bs-placement="right"
+                                           title="{{ trait.description }} | Multiplier: ×{{ trait.points_multiplier }}"></i>
+                                    </label>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
