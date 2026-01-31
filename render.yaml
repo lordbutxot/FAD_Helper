@@ -2,8 +2,9 @@
   - type: web
     name: fad-helper
     env: python
-    buildCommand: pip install -r requirements.txt; echo "Installing done"; python init_db_simple.py; echo "Database init done"
+    buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
+    preDeployCommand: python init_db_simple.py
     autoDeploy: true
     envVars:
       - key: PYTHON_VERSION
