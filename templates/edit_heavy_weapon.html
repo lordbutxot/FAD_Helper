@@ -22,8 +22,25 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="faction" class="form-label">Faction</label>
-                            <input type="text" class="form-control" id="faction" name="faction" value="{{ unit.faction or '' }}" placeholder="Optional">
+                            <label for="faction_id" class="form-label">
+                                Faction
+                                <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Select a faction to organize your units"></i>
+                            </label>
+                            <select class="form-select" id="faction_id" name="faction_id">
+                                <option value="">No Faction</option>
+                                {% for faction in my_factions %}
+                                <option value="{{ faction.id }}" {% if unit.faction_id == faction.id %}selected{% endif %}>
+                                    {{ faction.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% if my_factions|length == 0 %}
+                            <small class="text-muted">
+                                <a href="{{ url_for('faction_creator') }}" class="text-decoration-none">
+                                    <i class="bi bi-plus-circle"></i> Create your first faction
+                                </a>
+                            </small>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

@@ -518,23 +518,16 @@ function calculatePoints() {
         return;
     }
     
-    // Quality base points (matches backend)
-    const qualityBasePoints = {
-        'Rabble': 4,
-        'Conscript': 6,
-        'Regular': 8,
-        'Elite': 10
-    };
+    // Step 1: Base cost = 10 points for vehicle
+    let cost = 10;
     
-    // Step 1: Start with quality base points
-    let cost = qualityBasePoints[quality] || 8;
+    // Step 2: Add armour (average × 3)
+    const avgArmour = (frontArmour + sideArmour + rearArmour) / 3;
+    cost += avgArmour * 3;
     
-    // Step 2: Add movement type
+    // Step 3: Add movement type
     const movementPts = movementPoints[movementType] || 0;
     cost += movementPts;
-    
-    // Step 3: Add armour (5 pts per armour point, directional)
-    cost += (frontArmour + sideArmour + rearArmour) * 5;
     
     // Step 4: Add transport capacity (2 pts per slot)
     cost += capacity * 2;
@@ -544,7 +537,12 @@ function calculatePoints() {
     const secondaryPts = secondaryWeaponId ? (weaponPoints[secondaryWeaponId] || 0) : 0;
     cost += primaryPts + secondaryPts;
     
-    // Step 6: Apply each trait/property multiplier sequentially (per game rules)
+    // Step 6: Apply Quality and Resolve multipliers
+    const qualityMult = qualityMultipliers[quality] || 0;
+    const resolveMult = resolveMultipliers[resolve] || 0;
+    cost = cost * (1 + qualityMult + resolveMult);
+    
+    // Step 7: Apply each trait/property multiplier sequentially (per game rules)
     document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
         const traitMult = traitPoints[checkbox.value] || 1.0;
         cost = cost * traitMult;

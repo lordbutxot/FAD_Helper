@@ -387,32 +387,30 @@ function calculatePoints() {
     const resolve = document.getElementById('resolve').value;
     const weaponId = document.getElementById('heavy_weapon_id').value;
     const armourId = document.getElementById('armour_id').value;
+    const crewCount = parseInt(document.getElementById('crew_count').value) || 2;
     
     if (!quality || !resolve) {
         document.getElementById('preview-points').textContent = '0';
         return;
     }
     
-    // Quality base points (matches backend)
-    const qualityBasePoints = {
-        'Rabble': 4,
-        'Conscript': 6,
-        'Regular': 8,
-        'Elite': 10
-    };
+    // Step 1: Base cost = 2 points per crew member
+    let cost = 2 * crewCount;
     
-    // Step 1: Start with quality base points
-    let cost = qualityBasePoints[quality] || 8;
-    
-    // Step 2: Add heavy weapon
-    const weaponPts = weaponId ? (weaponPoints[weaponId] || 0) : 0;
-    cost += weaponPts;
-    
-    // Step 3: Add armour
+    // Step 2: Add armour
     const armourPts = armourId ? (armourPoints[armourId] || 0) : 0;
     cost += armourPts;
     
-    // Step 4: Apply each trait multiplier sequentially (per game rules)
+    // Step 3: Add heavy weapon
+    const weaponPts = weaponId ? (weaponPoints[weaponId] || 0) : 0;
+    cost += weaponPts;
+    
+    // Step 4: Apply Quality and Resolve multipliers
+    const qualityMult = qualityMultipliers[quality] || 0;
+    const resolveMult = resolveMultipliers[resolve] || 0;
+    cost = cost * (1 + qualityMult + resolveMult);
+    
+    // Step 5: Apply each trait multiplier sequentially (per game rules)
     document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
         const traitMult = traitPoints[checkbox.value] || 1.0;
         cost = cost * traitMult;

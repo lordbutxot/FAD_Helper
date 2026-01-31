@@ -1265,6 +1265,9 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error updating unit: {str(e)}', 'danger')
         
+        # Get user's factions for dropdown
+        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
+        
         # Determine which template to use based on unit type
         template_map = {
             'Squad': 'edit_squad.html',
@@ -1276,7 +1279,7 @@ def init_routes(app):
         }
         
         template = template_map.get(unit.unit_type, 'edit_squad.html')
-        return render_template(template, unit=unit, weapons=weapons, secondary_weapons=secondary_weapons, armours=armours, traits=traits)
+        return render_template(template, unit=unit, weapons=weapons, secondary_weapons=secondary_weapons, armours=armours, traits=traits, my_factions=my_factions)
     
     @app.route('/unit/save', methods=['POST'])
     @login_required
@@ -1592,16 +1595,25 @@ def calculate_points(data):
     """Calculate unit points based on configuration - Supports all 6 unit types"""
     unit_type = data.get('unit_type', 'Squad')
     
-    # Quality base points (from Rules)
-    quality_points = {
-        'Rabble': 4,
-        'Conscript': 6,
-        'Regular': 8,
-        'Elite': 10
+    # Quality and Resolve multipliers (from F.A.D. rules)
+    quality_multipliers = {
+        'Rabble': 0.7,
+        'Conscript': 0.0,
+        'Regular': 1.3,
+        'Elite': 1.6
+    }
+    
+    resolve_multipliers = {
+        'Reluctant': -0.5,
+        'Uncertain': -0.3,
+        'Steady': 0.0,
+        'Determined': 0.3
     }
     
     quality = data.get('quality', 'Regular')
-    base_points = quality_points.get(quality, 8)
+    resolve = data.get('resolve', 'Steady')
+    quality_mult = quality_multipliers.get(quality, 1.3)
+    resolve_mult = resolve_multipliers.get(resolve, 0.0)
     
     # Initialize total
     total_points = 0
@@ -1609,167 +1621,195 @@ def calculate_points(data):
     # ==================== SQUAD ====================
     if unit_type == 'Squad':
         squad_size = data.get('squad_size', 5)
-        # Base points × squad size
-        total_points = base_points * squad_size
         
-        # Equipment per squad member
+        # Step 1: Base cost per trooper = 3 points
+        cost_per_trooper = 3
+        
+        # Step 2: Add armour per trooper
         if data.get('armour_id'):
             armour = Armour.query.get(data['armour_id'])
             if armour:
-                total_points += armour.points * squad_size
+                cost_per_trooper += armour.points
         
+        # Step 3: Add weapon per trooper
         if data.get('basic_weapon_id'):
             weapon = Weapon.query.get(data['basic_weapon_id'])
             if weapon:
-                total_points += weapon.points * squad_size
+                cost_per_trooper += weapon.points
         
-        # Traits (apply multipliers sequentially per game rules)
+        # Step 4: Apply Quality and Resolve multipliers
+        cost_per_trooper = cost_per_trooper * (1 + quality_mult + resolve_mult)
+        
+        # Step 5: Multiply by squad size
+        total_points = cost_per_trooper * squad_size
+        
+        # Step 6: Apply trait multipliers sequentially (per game rules)
         if data.get('traits'):
-            multiplier = 1.0
             for trait_id in data['traits']:
                 trait = Trait.query.get(trait_id)
                 if trait:
-                    multiplier *= trait.points_multiplier
-            total_points *= multiplier
+                    total_points *= trait.points_multiplier
     
     # ==================== CHARACTER ====================
     elif unit_type == 'Character':
-        total_points = base_points
+        # Step 1: Base cost = 3 points
+        total_points = 3
         
-        # Leadership rating
-        leadership_points = {
-            'Novice': 0,
-            'Experienced': 10,
-            'Inspiring': 20,
-            'Heroic': 30
-        }
-        leadership = data.get('leadership_rating', 'Novice')
-        total_points += leadership_points.get(leadership, 0)
-        
-        # Personality
-        if data.get('has_personality'):
-            total_points += 5
-        
-        # Equipment (single model)
+        # Step 2: Add armour
         if data.get('armour_id'):
             armour = Armour.query.get(data['armour_id'])
             if armour:
                 total_points += armour.points
         
+        # Step 3: Add weapon
         if data.get('basic_weapon_id'):
             weapon = Weapon.query.get(data['basic_weapon_id'])
             if weapon:
                 total_points += weapon.points
         
-        # Traits (apply multipliers sequentially per game rules)
+        # Step 4: Add personality
+        if data.get('has_personality'):
+            total_points += 1
+        
+        # Step 5: Add leadership rating
+        leadership_points = {
+            'Novice': 0,
+            'Experienced': 3,
+            'Inspiring': 8,
+            'Heroic': 15
+        }
+        leadership = data.get('leadership_rating', 'Novice')
+        total_points += leadership_points.get(leadership, 0)
+        
+        # Step 6: Apply Quality and Resolve multipliers
+        total_points = total_points * (1 + quality_mult + resolve_mult)
+        
+        # Step 7: Apply trait multipliers sequentially (per game rules)
         if data.get('traits'):
-            multiplier = 1.0
             for trait_id in data['traits']:
                 trait = Trait.query.get(trait_id)
                 if trait:
-                    multiplier *= trait.points_multiplier
-            total_points *= multiplier
+                    total_points *= trait.points_multiplier
     
     # ==================== HEAVY WEAPON ====================
     elif unit_type == 'HeavyWeapon':
-        total_points = base_points
+        # Step 1: Base cost = 2 points × crew count
+        crew_count = data.get('crew_count', 2)
+        total_points = 2 * crew_count
         
-        # Heavy weapon
+        # Step 2: Add armour
+        if data.get('armour_id'):
+            armour = Armour.query.get(data['armour_id'])
+            if armour:
+                total_points += armour.points
+        
+        # Step 3: Add heavy weapon
         if data.get('heavy_weapon_id'):
             weapon = Weapon.query.get(data['heavy_weapon_id'])
             if weapon:
                 total_points += weapon.points
         
-        # Armour
-        if data.get('armour_id'):
-            armour = Armour.query.get(data['armour_id'])
-            if armour:
-                total_points += armour.points
+        # Step 4: Apply Quality and Resolve multipliers
+        total_points = total_points * (1 + quality_mult + resolve_mult)
         
-        # Traits (apply multipliers sequentially per game rules)
+        # Step 5: Apply trait multipliers sequentially (per game rules)
         if data.get('traits'):
-            multiplier = 1.0
             for trait_id in data['traits']:
                 trait = Trait.query.get(trait_id)
                 if trait:
-                    multiplier *= trait.points_multiplier
-            total_points *= multiplier
+                    total_points *= trait.points_multiplier
     
     # ==================== SNIPER ====================
     elif unit_type == 'Sniper':
-        total_points = base_points
+        # Step 1: Base cost = 3 points
+        total_points = 3
         
-        # Personality
-        if data.get('has_personality'):
-            total_points += 5
-        
-        # Equipment
-        if data.get('basic_weapon_id'):
-            weapon = Weapon.query.get(data['basic_weapon_id'])
-            if weapon:
-                total_points += weapon.points
-        
+        # Step 2: Add armour
         if data.get('armour_id'):
             armour = Armour.query.get(data['armour_id'])
             if armour:
                 total_points += armour.points
         
-        # Traits (apply multipliers sequentially per game rules)
+        # Step 3: Add weapon (sniper rifle)
+        if data.get('basic_weapon_id'):
+            weapon = Weapon.query.get(data['basic_weapon_id'])
+            if weapon:
+                total_points += weapon.points
+        
+        # Step 4: Add personality
+        if data.get('has_personality'):
+            total_points += 1
+        
+        # Step 5: Apply Quality and Resolve multipliers
+        total_points = total_points * (1 + quality_mult + resolve_mult)
+        
+        # Step 6: Apply trait multipliers sequentially (per game rules)
         if data.get('traits'):
-            multiplier = 1.0
             for trait_id in data['traits']:
                 trait = Trait.query.get(trait_id)
                 if trait:
-                    multiplier *= trait.points_multiplier
-            total_points *= multiplier
+                    total_points *= trait.points_multiplier
     
     # ==================== PSIONIC ====================
     elif unit_type == 'Psionic':
-        total_points = base_points
-        
-        # Psionic aptitude
-        aptitude_points = {
-            'Marginal': 10,
-            'Competent': 20,
-            'Expert': 30,
-            'Master': 40
+        # Psionic aptitude base costs
+        aptitude_base_costs = {
+            'Marginal': 5,
+            'Competent': 10,
+            'Expert': 15,
+            'Master': 20
         }
-        aptitude = data.get('psionic_aptitude', 'Marginal')
-        total_points += aptitude_points.get(aptitude, 10)
         
-        # Psionic strength (5 pts per level)
-        strength = data.get('psionic_strength', 0)
-        total_points += strength * 5
+        # Step 1: Base cost = 3 points
+        total_points = 3
         
-        # Personality
-        if data.get('has_personality'):
-            total_points += 5
-        
-        # Equipment (optional backup)
-        if data.get('basic_weapon_id'):
-            weapon = Weapon.query.get(data['basic_weapon_id'])
-            if weapon:
-                total_points += weapon.points
-        
+        # Step 2: Add armour
         if data.get('armour_id'):
             armour = Armour.query.get(data['armour_id'])
             if armour:
                 total_points += armour.points
         
-        # Traits (apply multipliers sequentially per game rules)
+        # Step 3: Add weapon (optional backup)
+        if data.get('basic_weapon_id'):
+            weapon = Weapon.query.get(data['basic_weapon_id'])
+            if weapon:
+                total_points += weapon.points
+        
+        # Step 4: Add personality
+        if data.get('has_personality'):
+            total_points += 1
+        
+        # Step 5: Apply Quality and Resolve multipliers
+        total_points = total_points * (1 + quality_mult + resolve_mult)
+        
+        # Step 6: Add psionic aptitude (after multipliers)
+        aptitude = data.get('psionic_aptitude', 'Marginal')
+        total_points += aptitude_base_costs.get(aptitude, 5)
+        
+        # Step 7: Add psionic strength (2 pts per level)
+        strength = data.get('psionic_strength', 0)
+        total_points += strength * 2
+        
+        # Step 8: Apply trait multipliers sequentially (per game rules)
         if data.get('traits'):
-            multiplier = 1.0
             for trait_id in data['traits']:
                 trait = Trait.query.get(trait_id)
                 if trait:
-                    multiplier *= trait.points_multiplier
-            total_points *= multiplier
+                    total_points *= trait.points_multiplier
     
     # ==================== VEHICLE ====================
     elif unit_type == 'Vehicle':
-        total_points = base_points
+        # Step 1: Base cost = 10 points for vehicle
+        total_points = 10
         
-        # Movement type
+        # Step 2: Add armour (average × 3)
+        front = data.get('vehicle_armour_front', 0)
+        side = data.get('vehicle_armour_side', 0)
+        rear = data.get('vehicle_armour_rear', 0)
+        avg_armour = (front + side + rear) / 3
+        total_points += avg_armour * 3
+        
+        # Step 3: Add movement type
         movement_points = {
             'Fly': 15,
             'Hover': 10,
@@ -1780,17 +1820,11 @@ def calculate_points(data):
         movement = data.get('movement_type', 'Tracked')
         total_points += movement_points.get(movement, 5)
         
-        # Armour (5 pts per armour point, directional)
-        front = data.get('vehicle_armour_front', 0)
-        side = data.get('vehicle_armour_side', 0)
-        rear = data.get('vehicle_armour_rear', 0)
-        total_points += (front + side + rear) * 5
-        
-        # Transport capacity (2 pts per slot)
+        # Step 4: Add transport capacity (2 pts per slot)
         capacity = data.get('carrying_capacity', 0)
         total_points += capacity * 2
         
-        # Weapons (main and secondary)
+        # Step 5: Add weapons
         if data.get('basic_weapon_id'):
             weapon = Weapon.query.get(data['basic_weapon_id'])
             if weapon:
@@ -1801,14 +1835,15 @@ def calculate_points(data):
             if weapon:
                 total_points += weapon.points
         
-        # Vehicle traits/properties (use multipliers)
+        # Step 6: Apply Quality and Resolve multipliers
+        total_points = total_points * (1 + quality_mult + resolve_mult)
+        
+        # Step 7: Apply trait/property multipliers sequentially (per game rules)
         if data.get('traits'):
-            multiplier = 1.0
             for trait_id in data['traits']:
                 trait = Trait.query.get(trait_id)
                 if trait:
-                    multiplier *= trait.points_multiplier
-            total_points *= multiplier
+                    total_points *= trait.points_multiplier
     
     return round(total_points, 2)
 

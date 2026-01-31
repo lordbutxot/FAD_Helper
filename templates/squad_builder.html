@@ -428,16 +428,8 @@ function calculatePoints() {
         return;
     }
     
-    // Quality base points (matches backend)
-    const qualityBasePoints = {
-        'Rabble': 4,
-        'Conscript': 6,
-        'Regular': 8,
-        'Elite': 10
-    };
-    
-    // Step 1: Start with quality base points per trooper
-    let costPerTrooper = qualityBasePoints[quality] || 8;
+    // Step 1: Base cost per trooper = 3 points
+    let costPerTrooper = 3;
     
     // Step 2: Add armour points per trooper
     const armourPts = armourId ? (armourPoints[armourId] || 0) : 0;
@@ -447,10 +439,15 @@ function calculatePoints() {
     const weaponPts = weaponId ? (weaponPoints[weaponId] || 0) : 0;
     costPerTrooper += weaponPts;
     
-    // Step 4: Multiply by squad size
+    // Step 4: Apply Quality and Resolve multipliers
+    const qualityMult = qualityMultipliers[quality] || 0;
+    const resolveMult = resolveMultipliers[resolve] || 0;
+    costPerTrooper = costPerTrooper * (1 + qualityMult + resolveMult);
+    
+    // Step 5: Multiply by squad size
     let totalCost = costPerTrooper * squadSize;
     
-    // Step 5: Apply each trait multiplier sequentially (per game rules)
+    // Step 6: Apply each trait multiplier sequentially (per game rules)
     document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
         const traitMult = traitPoints[checkbox.value] || 1.0;
         totalCost = totalCost * traitMult;

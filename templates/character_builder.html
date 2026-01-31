@@ -468,34 +468,31 @@ function calculatePoints() {
         return;
     }
     
-    // Quality base points (matches backend)
-    const qualityBasePoints = {
-        'Rabble': 4,
-        'Conscript': 6,
-        'Regular': 8,
-        'Elite': 10
-    };
+    // Step 1: Base cost = 3 points
+    let cost = 3;
     
-    // Step 1: Start with quality base points
-    let cost = qualityBasePoints[quality] || 8;
-    
-    // Step 2: Add leadership rating
-    const leadershipPts = leadershipPoints[leadership] || 0;
-    cost += leadershipPts;
-    
-    // Step 3: Add personality
-    const personalityPts = hasPersonality ? 5 : 0;
-    cost += personalityPts;
-    
-    // Step 4: Add armour
+    // Step 2: Add armour
     const armourPts = armourId ? (armourPoints[armourId] || 0) : 0;
     cost += armourPts;
     
-    // Step 5: Add weapon
+    // Step 3: Add weapon
     const weaponPts = weaponId ? (weaponPoints[weaponId] || 0) : 0;
     cost += weaponPts;
     
-    // Step 6: Apply each trait multiplier sequentially (per game rules)
+    // Step 4: Add personality
+    const personalityPts = hasPersonality ? 1 : 0;
+    cost += personalityPts;
+    
+    // Step 5: Add leadership rating
+    const leadershipPts = leadership === 'Experienced' ? 3 : leadership === 'Inspiring' ? 8 : 0;
+    cost += leadershipPts;
+    
+    // Step 6: Apply Quality and Resolve multipliers
+    const qualityMult = qualityMultipliers[quality] || 0;
+    const resolveMult = resolveMultipliers[resolve] || 0;
+    cost = cost * (1 + qualityMult + resolveMult);
+    
+    // Step 7: Apply each trait multiplier sequentially (per game rules)
     document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
         const traitMult = traitPoints[checkbox.value] || 1.0;
         cost = cost * traitMult;

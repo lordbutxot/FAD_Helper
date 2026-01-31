@@ -473,45 +473,42 @@ function calculatePoints() {
         return;
     }
     
-    // Quality base points (matches backend)
-    const qualityBasePoints = {
-        'Rabble': 4,
-        'Conscript': 6,
-        'Regular': 8,
-        'Elite': 10
+    // Aptitude base cost
+    const aptitudeBaseCost = {
+        'Marginal': 5,
+        'Competent': 10,
+        'Expert': 15,
+        'Master': 20
     };
     
-    // Aptitude points (from backend)
-    const aptitudePointsMap = {
-        'Marginal': 10,
-        'Competent': 20,
-        'Expert': 30,
-        'Master': 40
-    };
+    // Step 1: Base cost = 3 points
+    let cost = 3;
     
-    // Step 1: Start with quality base points
-    let cost = qualityBasePoints[quality] || 8;
-    
-    // Step 2: Add psionic aptitude
-    const aptitudePts = aptitudePointsMap[aptitude] || 10;
-    cost += aptitudePts;
-    
-    // Step 3: Add psionic strength (5 pts per level)
-    cost += strength * 5;
-    
-    // Step 4: Add personality
-    const personalityPts = hasPersonality ? 5 : 0;
-    cost += personalityPts;
-    
-    // Step 5: Add weapon (optional backup)
-    const weaponPts = weaponId ? (weaponPoints[weaponId] || 0) : 0;
-    cost += weaponPts;
-    
-    // Step 6: Add armour
+    // Step 2: Add armour
     const armourPts = armourId ? (armourPoints[armourId] || 0) : 0;
     cost += armourPts;
     
-    // Step 7: Apply each trait multiplier sequentially (per game rules)
+    // Step 3: Add weapon (optional backup)
+    const weaponPts = weaponId ? (weaponPoints[weaponId] || 0) : 0;
+    cost += weaponPts;
+    
+    // Step 4: Add personality
+    const personalityPts = hasPersonality ? 1 : 0;
+    cost += personalityPts;
+    
+    // Step 5: Apply Quality and Resolve multipliers
+    const qualityMult = qualityMultipliers[quality] || 0;
+    const resolveMult = resolveMultipliers[resolve] || 0;
+    cost = cost * (1 + qualityMult + resolveMult);
+    
+    // Step 6: Add psionic aptitude (after multipliers)
+    const aptitudePts = aptitudeBaseCost[aptitude] || 5;
+    cost += aptitudePts;
+    
+    // Step 7: Add psionic strength (2 pts per level)
+    cost += strength * 2;
+    
+    // Step 8: Apply each trait multiplier sequentially (per game rules)
     document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
         const traitMult = traitPoints[checkbox.value] || 1.0;
         cost = cost * traitMult;
