@@ -1,7 +1,9 @@
 """
 Migration: Add parent_id to Unit for parent/variant system
 """
+
 from extensions import db
+from app import app
 
 
 def upgrade():
@@ -30,4 +32,5 @@ def downgrade():
             print(f"[migrate_add_unit_parent] Error dropping parent_id column: {e}")
 
 if __name__ == "__main__":
-    upgrade()
+    with app.app_context():
+        upgrade()
