@@ -139,7 +139,12 @@ def init_routes(app):
     
     @app.route('/')
     def index():
-        recent_lists = ArmyList.query.filter_by(is_public=True).order_by(ArmyList.created_at.desc()).limit(6).all()
+        try:
+            recent_lists = ArmyList.query.filter_by(is_public=True).order_by(ArmyList.created_at.desc()).limit(6).all()
+        except Exception as e:
+            # Database tables may not exist yet - show empty list
+            print(f"Warning: Could not fetch recent lists: {e}")
+            recent_lists = []
         return render_template('index.html', recent_lists=recent_lists)
     
     @app.route('/register', methods=['GET', 'POST'])
