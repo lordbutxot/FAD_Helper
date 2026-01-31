@@ -46,9 +46,11 @@ def migrate_database():
                 db.session.execute(text("""
                     ALTER TABLE unit ADD COLUMN secondary_weapon_id INTEGER REFERENCES weapon(id)
                 """))
+                db.session.commit()
                 print("   ✅ secondary_weapon_id column added")
             except Exception as e:
-                if "duplicate column" in str(e).lower():
+                db.session.rollback()
+                if "duplicate column" in str(e).lower() or "already exists" in str(e).lower():
                     print("   ℹ️  secondary_weapon_id column already exists")
                 else:
                     raise
@@ -59,9 +61,11 @@ def migrate_database():
                 db.session.execute(text("""
                     ALTER TABLE unit ADD COLUMN crew_count INTEGER DEFAULT 2
                 """))
+                db.session.commit()
                 print("   ✅ crew_count column added")
             except Exception as e:
-                if "duplicate column" in str(e).lower():
+                db.session.rollback()
+                if "duplicate column" in str(e).lower() or "already exists" in str(e).lower():
                     print("   ℹ️  crew_count column already exists")
                 else:
                     raise
