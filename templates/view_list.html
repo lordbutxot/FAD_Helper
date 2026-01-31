@@ -58,11 +58,99 @@
                                         {% if item.unit.faction %}
                                         <br><small class="text-muted">{{ item.unit.faction }}</small>
                                         {% endif %}
+                                        <br>
+                                        <button class="btn btn-sm btn-outline-info mt-1" type="button" data-bs-toggle="collapse" data-bs-target="#unit-details-{{ loop.index }}" aria-expanded="false">
+                                            <i class="bi bi-info-circle"></i> Details
+                                        </button>
                                     </td>
                                     <td>{{ item.unit.unit_type }}</td>
                                     <td>{{ item.quantity }}</td>
                                     <td class="points-display">{{ item.unit.total_points }}</td>
                                     <td class="points-display">{{ (item.unit.total_points * item.quantity)|round(2) }}</td>
+                                                                <tr class="collapse" id="unit-details-{{ loop.index }}">
+                                                                    <td colspan="5" class="bg-light">
+                                                                        <div class="card card-body">
+                                                                            <h6><i class="bi bi-clipboard-data"></i> {{ item.unit.name }} - Full Profile</h6>
+                                            
+                                                                            <!-- Statistics -->
+                                                                            <div class="mb-3">
+                                                                                <strong>Statistics:</strong>
+                                                                                <ul class="list-unstyled mb-0 ms-3">
+                                                                                    <li><span class="badge bg-primary">Quality:</span> {{ item.unit.quality }}</li>
+                                                                                    <li><span class="badge bg-primary">Resolve:</span> {{ item.unit.resolve }}</li>
+                                                                                    {% if item.unit.unit_type == 'Squad' and item.unit.squad_size %}
+                                                                                    <li><span class="badge bg-primary">Squad Size:</span> {{ item.unit.squad_size }}</li>
+                                                                                    {% endif %}
+                                                                                    {% if item.unit.unit_type == 'Heavy Weapon Team' and item.unit.crew_size %}
+                                                                                    <li><span class="badge bg-primary">Crew Size:</span> {{ item.unit.crew_size }}</li>
+                                                                                    {% endif %}
+                                                                                    {% if item.unit.unit_type == 'Vehicle' and item.unit.crew_count %}
+                                                                                    <li><span class="badge bg-primary">Crew:</span> {{ item.unit.crew_count }}</li>
+                                                                                    {% endif %}
+                                                                                </ul>
+                                                                            </div>
+                                            
+                                                                            <!-- Equipment -->
+                                                                            {% if item.unit.armour or item.unit.basic_weapon or item.unit.support_weapon or item.unit.heavy_weapon or item.unit.secondary_weapon %}
+                                                                            <div class="mb-3">
+                                                                                <strong><i class="bi bi-shield-check"></i> Equipment:</strong>
+                                                                                <ul class="list-unstyled mb-0 ms-3">
+                                                                                    {% if item.unit.armour %}
+                                                                                    <li>🛡️ <strong>Armour:</strong> {{ item.unit.armour.name }} (Rating {{ item.unit.armour.rating }}) - {{ item.unit.armour.points }} pts</li>
+                                                                                    {% endif %}
+                                                                                    {% if item.unit.basic_weapon %}
+                                                                                    <li>🔫 <strong>Basic Weapon:</strong> {{ item.unit.basic_weapon.name }} 
+                                                                                        <small class="text-muted">(Ra:{{ item.unit.basic_weapon.range }}, DM:{{ item.unit.basic_weapon.damage }}, FE:{{ item.unit.basic_weapon.fire_effect }}, AP:{{ item.unit.basic_weapon.ap }})</small> - {{ item.unit.basic_weapon.points }} pts
+                                                                                        {% if item.unit.basic_weapon.benefits %}
+                                                                                        <br><small class="text-info">➜ {{ item.unit.basic_weapon.benefits }}</small>
+                                                                                        {% endif %}
+                                                                                    </li>
+                                                                                    {% endif %}
+                                                                                    {% if item.unit.secondary_weapon %}
+                                                                                    <li>🔫 <strong>Secondary Weapon:</strong> {{ item.unit.secondary_weapon.name }} 
+                                                                                        <small class="text-muted">(Ra:{{ item.unit.secondary_weapon.range }}, DM:{{ item.unit.secondary_weapon.damage }}, FE:{{ item.unit.secondary_weapon.fire_effect }}, AP:{{ item.unit.secondary_weapon.ap }})</small> - {{ item.unit.secondary_weapon.points }} pts
+                                                                                        {% if item.unit.secondary_weapon.benefits %}
+                                                                                        <br><small class="text-info">➜ {{ item.unit.secondary_weapon.benefits }}</small>
+                                                                                        {% endif %}
+                                                                                    </li>
+                                                                                    {% endif %}
+                                                                                    {% if item.unit.support_weapon %}
+                                                                                    <li>⚡ <strong>Support Weapon:</strong> {{ item.unit.support_weapon.name }} 
+                                                                                        <small class="text-muted">(Ra:{{ item.unit.support_weapon.range }}, DM:{{ item.unit.support_weapon.damage }}, FE:{{ item.unit.support_weapon.fire_effect }}, AP:{{ item.unit.support_weapon.ap }})</small> - {{ item.unit.support_weapon.points }} pts
+                                                                                        {% if item.unit.support_weapon.benefits %}
+                                                                                        <br><small class="text-info">➜ {{ item.unit.support_weapon.benefits }}</small>
+                                                                                        {% endif %}
+                                                                                    </li>
+                                                                                    {% endif %}
+                                                                                    {% if item.unit.heavy_weapon %}
+                                                                                    <li>💥 <strong>Heavy Weapon:</strong> {{ item.unit.heavy_weapon.name }} 
+                                                                                        <small class="text-muted">(Ra:{{ item.unit.heavy_weapon.range }}, DM:{{ item.unit.heavy_weapon.damage }}, FE:{{ item.unit.heavy_weapon.fire_effect }}, AP:{{ item.unit.heavy_weapon.ap }})</small> - {{ item.unit.heavy_weapon.points }} pts
+                                                                                        {% if item.unit.heavy_weapon.benefits %}
+                                                                                        <br><small class="text-info">➜ {{ item.unit.heavy_weapon.benefits }}</small>
+                                                                                        {% endif %}
+                                                                                    </li>
+                                                                                    {% endif %}
+                                                                                </ul>
+                                                                            </div>
+                                                                            {% endif %}
+                                            
+                                                                            <!-- Traits & Abilities -->
+                                                                            {% if item.unit.get_traits()|length > 0 %}
+                                                                            <div class="mb-2">
+                                                                                <strong><i class="bi bi-star-fill"></i> Traits & Abilities:</strong>
+                                                                                <ul class="list-unstyled mb-0 ms-3">
+                                                                                    {% for trait in item.unit.get_traits() %}
+                                                                                    <li class="mb-2">
+                                                                                        <span class="badge bg-success">{{ trait.name }}</span>
+                                                                                        <br><small class="text-secondary">{{ trait.description }}</small>
+                                                                                    </li>
+                                                                                    {% endfor %}
+                                                                                </ul>
+                                                                            </div>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -211,8 +299,23 @@ function fallbackCopy(text) {
 /* Print/PDF styles - optimized for single-page army list */
 @media print {
     /* Hide UI elements */
-    .navbar, .footer, .btn, .card-body h5, .text-muted.small { 
+    .navbar, .footer, .btn:not(.btn-outline-info), .card-body h5:not(h6), .text-muted.small { 
         display: none !important; 
+    
+        /* Show collapsed unit details in print */
+        .collapse {
+            display: table-row !important;
+            visibility: visible !important;
+        }
+    
+        .btn-outline-info {
+            display: none !important;
+        }
+    
+        .bg-light {
+            background-color: #f8f9fa !important;
+            border: 1px solid #dee2e6;
+        }
     }
     
     /* Optimize layout for printing */

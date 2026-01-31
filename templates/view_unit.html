@@ -4,6 +4,44 @@
 
 {% block content %}
 <div class="container mt-4">
+        <!-- Quick Reference Card -->
+        {% if unit.get_traits()|length > 0 or unit.basic_weapon.benefits or unit.secondary_weapon.benefits or unit.support_weapon.benefits or unit.heavy_weapon.benefits %}
+        <div class="alert alert-success mb-4">
+            <h5 class="mb-3"><i class="bi bi-lightning-charge-fill"></i> Quick Reference - Special Abilities</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    {% if unit.get_traits()|length > 0 %}
+                    <strong>Traits:</strong>
+                    <ul class="mb-2">
+                        {% for trait in unit.get_traits() %}
+                        <li><strong>{{ trait.name }}</strong> - {{ trait.description|truncate(60) }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    {% if unit.basic_weapon.benefits or unit.secondary_weapon.benefits or unit.support_weapon.benefits or unit.heavy_weapon.benefits %}
+                    <strong>Weapon Abilities:</strong>
+                    <ul class="mb-2">
+                        {% if unit.basic_weapon and unit.basic_weapon.benefits %}
+                        <li><strong>{{ unit.basic_weapon.name }}:</strong> {{ unit.basic_weapon.benefits }}</li>
+                        {% endif %}
+                        {% if unit.secondary_weapon and unit.secondary_weapon.benefits %}
+                        <li><strong>{{ unit.secondary_weapon.name }}:</strong> {{ unit.secondary_weapon.benefits }}</li>
+                        {% endif %}
+                        {% if unit.support_weapon and unit.support_weapon.benefits %}
+                        <li><strong>{{ unit.support_weapon.name }}:</strong> {{ unit.support_weapon.benefits }}</li>
+                        {% endif %}
+                        {% if unit.heavy_weapon and unit.heavy_weapon.benefits %}
+                        <li><strong>{{ unit.heavy_weapon.name }}:</strong> {{ unit.heavy_weapon.benefits }}</li>
+                        {% endif %}
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    
     <div class="row">
         <div class="col-lg-8">
             <div class="card">
@@ -43,34 +81,107 @@
                     <ul class="list-group mb-3">
                         {% if unit.armour %}
                         <li class="list-group-item">
-                            <strong>Armour:</strong> {{ unit.armour.name }} (Rating {{ unit.armour.rating }})
+                            <strong>🛡️ Armour:</strong> {{ unit.armour.name }} 
+                            <span class="badge bg-secondary">Rating {{ unit.armour.rating }}</span>
+                            <span class="badge bg-info">{{ unit.armour.points }} pts</span>
+                            {% if unit.armour.benefits %}
+                            <br><small class="text-muted">{{ unit.armour.benefits }}</small>
+                            {% endif %}
                         </li>
                         {% endif %}
                         {% if unit.basic_weapon %}
                         <li class="list-group-item">
-                            <strong>Basic Weapon:</strong> {{ unit.basic_weapon.name }}
+                            <strong>🔫 Basic Weapon:</strong> {{ unit.basic_weapon.name }}
+                            <span class="badge bg-info">{{ unit.basic_weapon.points }} pts</span>
+                            <br><small class="text-muted">
+                                Range: {{ unit.basic_weapon.range }}" | 
+                                Damage: {{ unit.basic_weapon.damage }} | 
+                                Fire Effect: +{{ unit.basic_weapon.fire_effect }} | 
+                                AP: {{ unit.basic_weapon.ap }}
+                            </small>
+                            {% if unit.basic_weapon.benefits %}
+                            <br><small class="text-info">➜ {{ unit.basic_weapon.benefits }}</small>
+                            {% endif %}
+                        </li>
+                        {% endif %}
+                        {% if unit.secondary_weapon %}
+                        <li class="list-group-item">
+                            <strong>🔫 Secondary Weapon:</strong> {{ unit.secondary_weapon.name }}
+                            <span class="badge bg-info">{{ unit.secondary_weapon.points }} pts</span>
+                            <br><small class="text-muted">
+                                Range: {{ unit.secondary_weapon.range }}" | 
+                                Damage: {{ unit.secondary_weapon.damage }} | 
+                                Fire Effect: +{{ unit.secondary_weapon.fire_effect }} | 
+                                AP: {{ unit.secondary_weapon.ap }}
+                            </small>
+                            {% if unit.secondary_weapon.benefits %}
+                            <br><small class="text-info">➜ {{ unit.secondary_weapon.benefits }}</small>
+                            {% endif %}
                         </li>
                         {% endif %}
                         {% if unit.support_weapon %}
                         <li class="list-group-item">
-                            <strong>Support Weapon:</strong> {{ unit.support_weapon.name }}
+                            <strong>⚡ Support Weapon:</strong> {{ unit.support_weapon.name }}
+                            <span class="badge bg-info">{{ unit.support_weapon.points }} pts</span>
+                            <br><small class="text-muted">
+                                Range: {{ unit.support_weapon.range }}" | 
+                                Damage: {{ unit.support_weapon.damage }} | 
+                                Fire Effect: +{{ unit.support_weapon.fire_effect }} | 
+                                AP: {{ unit.support_weapon.ap }}
+                            </small>
+                            {% if unit.support_weapon.benefits %}
+                            <br><small class="text-info">➜ {{ unit.support_weapon.benefits }}</small>
+                            {% endif %}
                         </li>
                         {% endif %}
                         {% if unit.heavy_weapon %}
                         <li class="list-group-item">
-                            <strong>Heavy Weapon:</strong> {{ unit.heavy_weapon.name }}
+                            <strong>💥 Heavy Weapon:</strong> {{ unit.heavy_weapon.name }}
+                            <span class="badge bg-info">{{ unit.heavy_weapon.points }} pts</span>
+                            <br><small class="text-muted">
+                                Range: {{ unit.heavy_weapon.range }}" | 
+                                Damage: {{ unit.heavy_weapon.damage }} | 
+                                Fire Effect: +{{ unit.heavy_weapon.fire_effect }} | 
+                                AP: {{ unit.heavy_weapon.ap }}
+                            </small>
+                            {% if unit.heavy_weapon.benefits %}
+                            <br><small class="text-info">➜ {{ unit.heavy_weapon.benefits }}</small>
+                            {% endif %}
                         </li>
                         {% endif %}
                     </ul>
                     
                     {% if unit.get_traits()|length > 0 %}
-                    <h4>Traits</h4>
+                    <h4><i class="bi bi-star-fill"></i> Traits & Abilities</h4>
                     <ul class="list-group mb-3">
                         {% for trait in unit.get_traits() %}
                         <li class="list-group-item">
-                            <strong>{{ trait.name }}</strong>: {{ trait.description }}
+                            <span class="badge bg-success me-2">{{ trait.name }}</span>
+                            <span class="badge bg-secondary">x{{ trait.multiplier }}</span>
+                            <br><span class="text-secondary">{{ trait.description }}</span>
                         </li>
                         {% endfor %}
+                    
+                                        {% if unit.unit_type == 'Squad' and unit.squad_size %}
+                                        <div class="alert alert-info">
+                                            <h5><i class="bi bi-people-fill"></i> Squad Composition</h5>
+                                            <p class="mb-1"><strong>Total Squad Members:</strong> {{ unit.squad_size }}</p>
+                                            {% if unit.get_squad_members()|length > 0 %}
+                                            <hr>
+                                            <strong>Roster:</strong>
+                                            <ul class="mb-0">
+                                                {% for member in unit.get_squad_members() %}
+                                                <li>{{ member.member_type }}: {{ member.get_primary_weapon_name() }}
+                                                    {% if member.secondary_weapon_id %} + {{ member.get_secondary_weapon_name() }}{% endif %}
+                                                    {% if member.notes %}<br><small class="text-muted">{{ member.notes }}</small>{% endif %}
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                            {% else %}
+                                            <p class="mb-0 text-muted">No individual squad members configured yet.</p>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
                     </ul>
                     {% endif %}
                     

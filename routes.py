@@ -14,6 +14,7 @@ import json
 import re
 import os
 import uuid
+from sqlalchemy import and_, or_
 
 
 # File upload configuration
@@ -62,6 +63,27 @@ PLAYSTYLE_TAGS = {
     'disruptive_tech': {'name': 'Disruptive Tech', 'icon': 'lightning-fill', 'description': 'EMP, jamming, and electronic warfare', 'category': 'scifi'},
     'quality_over_quantity': {'name': 'Quality over Quantity', 'icon': 'gem', 'description': 'Elite units with superior stats and equipment', 'category': 'scifi'},
 }
+
+# Official trait lists (from table files)
+OFFICIAL_INFANTRY_TRAITS = [
+    'Adaptive Camouflage', 'Aerial', 'Aggressive', 'Agile', 'Assault Troops', 'Berserk', 'Bestow Trait', 'Brave',
+    'Bug Hunter', 'Cautious', 'Combat Drugs', 'Dependant', 'Detection', 'Disruptive Charge', 'Droids (self-less)',
+    'Droids (self-preserving)', 'Drop Troop', 'Elusive', 'Engineer', 'Fanatic', 'Fast', 'Fearless', 'Fire Team',
+    'Flyer', 'Frail', 'Frenzied', 'Goon', 'Grav Mount', 'Grizzled', 'Gung Ho', 'Hardened', 'Hero', 'Hesitant',
+    'Hive mind (controller)', 'Hive Mind (unit)', 'HQ', 'Huge', 'Ignore Pain', 'Infect', 'Infilration',
+    'Inflexible', 'Jet Packs', 'Legend', 'Limited Teleport', 'Mechanized', 'Night Vision', 'No Grenades',
+    'Obvious Target', 'Recon', 'Regenerate', 'Relentless', 'Reserves', 'Resilient (2)', 'Resilient (3)',
+    'Resilient (4)', 'Resilient (5)', 'Resilient (6)', 'Save', 'Self Repairing', 'Shaky', 'Shock Troops',
+    'Slick', 'Slow', 'Slow Firing', 'Stealth', 'Zombie'
+]
+
+OFFICIAL_VEHICLE_TRAITS = [
+    'Advanced Targeting System', 'AI Controlled', 'Alternate Fire Weapons (2)', 'Alternate Fire Weapons (3)',
+    'Amphibious', 'Close - In Defense System', 'Command Vehicle', 'Electronic Countermeasures', 'Energy screen',
+    'Fast', 'Fixed Mount (1)', 'Fixed Mount (2)', 'Fixed Mount (3)', 'Forward Observer', 'Improved Weapons Control',
+    'Jump Jets', 'Linked Weapons', 'Medevac', 'Reactive Armour', 'Reserves', 'Slow', 'Smoke', 'Stealth',
+    'Supercharged', 'Under-Powered', 'Weapon Stabilizer'
+]
 
 def allowed_file(filename):
     """Check if file extension is allowed"""
@@ -654,7 +676,10 @@ def init_routes(app):
         ).order_by(Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
         # All infantry types share the same traits (per .TXT files)
-        traits = Trait.query.filter_by(category='Infantry').order_by(Trait.name).all()
+        traits = Trait.query.filter(
+            Trait.category == 'Infantry',
+            Trait.name.in_(OFFICIAL_INFANTRY_TRAITS)
+        ).order_by(Trait.name).all()
         my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
         
         if request.method == 'POST':
@@ -719,7 +744,10 @@ def init_routes(app):
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
         # All infantry types share the same traits (per .TXT files)
-        traits = Trait.query.filter_by(category='Infantry').order_by(Trait.name).all()
+        traits = Trait.query.filter(
+            Trait.category == 'Infantry',
+            Trait.name.in_(OFFICIAL_INFANTRY_TRAITS)
+        ).order_by(Trait.name).all()
         my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
         
         if request.method == 'POST':
@@ -785,7 +813,10 @@ def init_routes(app):
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
         # Heavy weapon teams are small infantry units - Infantry traits only
-        traits = Trait.query.filter_by(category='Infantry').order_by(Trait.name).all()
+        traits = Trait.query.filter(
+            Trait.category == 'Infantry',
+            Trait.name.in_(OFFICIAL_INFANTRY_TRAITS)
+        ).order_by(Trait.name).all()
         my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
         
         if request.method == 'POST':
@@ -845,7 +876,10 @@ def init_routes(app):
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
         # Snipers are individual infantry specialists - Infantry traits only
-        traits = Trait.query.filter_by(category='Infantry').order_by(Trait.name).all()
+        traits = Trait.query.filter(
+            Trait.category == 'Infantry',
+            Trait.name.in_(OFFICIAL_INFANTRY_TRAITS)
+        ).order_by(Trait.name).all()
         my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
         
         if request.method == 'POST':
@@ -906,7 +940,10 @@ def init_routes(app):
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
         # Psionics are individual infantry with special powers - Infantry traits only
-        traits = Trait.query.filter_by(category='Infantry').order_by(Trait.name).all()
+        traits = Trait.query.filter(
+            Trait.category == 'Infantry',
+            Trait.name.in_(OFFICIAL_INFANTRY_TRAITS)
+        ).order_by(Trait.name).all()
         my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
         
         if request.method == 'POST':
@@ -973,7 +1010,10 @@ def init_routes(app):
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
         # Vehicles have their own specific properties/traits
-        traits = Trait.query.filter_by(category='Vehicle').order_by(Trait.name).all()
+        traits = Trait.query.filter(
+            Trait.category == 'Vehicle',
+            Trait.name.in_(OFFICIAL_VEHICLE_TRAITS)
+        ).order_by(Trait.name).all()
         my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
         
         if request.method == 'POST':
@@ -1058,7 +1098,12 @@ def init_routes(app):
             (Weapon.name == 'Shotgun')
         ).order_by(Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
-        traits = Trait.query.order_by(Trait.category, Trait.name).all()
+        traits = Trait.query.filter(
+            or_(
+                and_(Trait.category == 'Infantry', Trait.name.in_(OFFICIAL_INFANTRY_TRAITS)),
+                and_(Trait.category == 'Vehicle', Trait.name.in_(OFFICIAL_VEHICLE_TRAITS))
+            )
+        ).order_by(Trait.category, Trait.name).all()
         
         if request.method == 'POST':
             try:
@@ -1391,7 +1436,12 @@ def init_routes(app):
     def armoury():
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
-        traits = Trait.query.order_by(Trait.category, Trait.name).all()
+        traits = Trait.query.filter(
+            or_(
+                and_(Trait.category == 'Infantry', Trait.name.in_(OFFICIAL_INFANTRY_TRAITS)),
+                and_(Trait.category == 'Vehicle', Trait.name.in_(OFFICIAL_VEHICLE_TRAITS))
+            )
+        ).order_by(Trait.category, Trait.name).all()
         return render_template('armoury.html', weapons=weapons, armours=armours, traits=traits)
     
     

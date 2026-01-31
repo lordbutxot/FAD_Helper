@@ -7,6 +7,40 @@ from app import app, db
 from models import Trait, Weapon, Armour, User, Faction, ArmyList, Unit, FactionRating
 import sys
 
+OFFICIAL_INFANTRY_TRAITS = [
+    'Adaptive Camouflage', 'Aerial', 'Aggressive', 'Agile', 'Assault Troops', 'Berserk', 'Bestow Trait', 'Brave',
+    'Bug Hunter', 'Cautious', 'Combat Drugs', 'Dependant', 'Detection', 'Disruptive Charge', 'Droids (self-less)',
+    'Droids (self-preserving)', 'Drop Troop', 'Elusive', 'Engineer', 'Fanatic', 'Fast', 'Fearless', 'Fire Team',
+    'Flyer', 'Frail', 'Frenzied', 'Goon', 'Grav Mount', 'Grizzled', 'Gung Ho', 'Hardened', 'Hero', 'Hesitant',
+    'Hive mind (controller)', 'Hive Mind (unit)', 'HQ', 'Huge', 'Ignore Pain', 'Infect', 'Infilration',
+    'Inflexible', 'Jet Packs', 'Legend', 'Limited Teleport', 'Mechanized', 'Night Vision', 'No Grenades',
+    'Obvious Target', 'Recon', 'Regenerate', 'Relentless', 'Reserves', 'Resilient (2)', 'Resilient (3)',
+    'Resilient (4)', 'Resilient (5)', 'Resilient (6)', 'Save', 'Self Repairing', 'Shaky', 'Shock Troops',
+    'Slick', 'Slow', 'Slow Firing', 'Stealth', 'Zombie'
+]
+
+OFFICIAL_VEHICLE_TRAITS = [
+    'Advanced Targeting System', 'AI Controlled', 'Alternate Fire Weapons (2)', 'Alternate Fire Weapons (3)',
+    'Amphibious', 'Close - In Defense System', 'Command Vehicle', 'Electronic Countermeasures', 'Energy screen',
+    'Fast', 'Fixed Mount (1)', 'Fixed Mount (2)', 'Fixed Mount (3)', 'Forward Observer', 'Improved Weapons Control',
+    'Jump Jets', 'Linked Weapons', 'Medevac', 'Reactive Armour', 'Reserves', 'Slow', 'Smoke', 'Stealth',
+    'Supercharged', 'Under-Powered', 'Weapon Stabilizer'
+]
+
+def cleanup_non_official_traits():
+    allowed = set(OFFICIAL_INFANTRY_TRAITS + OFFICIAL_VEHICLE_TRAITS)
+    existing = Trait.query.all()
+    to_delete = [t for t in existing if t.name not in allowed]
+    if not to_delete:
+        print("   ✅ No non-official traits to remove")
+        return
+
+    print(f"   ⚠️  Removing {len(to_delete)} non-official traits...")
+    for trait in to_delete:
+        print(f"     - Deleting: {trait.name} ({trait.category or 'Uncategorized'})")
+        db.session.delete(trait)
+    db.session.commit()
+
 def init_production_database():
     """Initialize production database with all official F.A.D. data
     
@@ -41,59 +75,86 @@ def init_production_database():
         if list_count > 0:
             print(f"✅ Found {list_count} existing army lists - preserving all lists")
         
+        # Cleanup non-official traits before any early exit
+        print("\n1b. Cleaning non-official traits...")
+        cleanup_non_official_traits()
+
         # Check if data already exists - if so, skip initialization
         if Trait.query.first() or Weapon.query.first() or Armour.query.first():
             print("\n✅ Database already initialized with data!")
             print("   Skipping data population to preserve existing data...")
             return
         
-        # Infantry Traits (44 traits)
+        # Infantry Traits (official table traits only)
         print("\n2. Populating Infantry Traits...")
         infantry_traits = [
-            ('Accurate', 'Unit gains +1 to shooting rolls', 1.2),
-            ('Aggressive', 'Must move toward enemy if in sight', 1.1),
-            ('Bestow Trait', 'Can grant a trait to nearby units', 1.3),
-            ('Brutal', '+1 damage in close combat', 1.2),
-            ('Camouflage', 'Harder to hit when in cover', 1.15),
-            ('Champion', 'Reroll failed morale tests', 1.25),
-            ('Coward', 'Must test to move toward enemy', 0.8),
-            ('Deadly Shot', 'Ignore cover modifiers when shooting', 1.3),
-            ('Defensive', 'Bonus when holding position', 1.15),
-            ('Disciplined', 'Reroll failed command tests', 1.2),
-            ('Elite Training', 'Improved combat effectiveness', 1.3),
-            ('Fast', '+2" movement', 1.15),
-            ('Fear', 'Enemies must test morale to approach', 1.25),
-            ('Fearless', 'Immune to fear and morale penalties', 1.3),
-            ('Fire Team', 'Coordinated fire bonus', 1.2),
-            ('First Strike', 'Always strikes first in close combat', 1.3),
-            ('Frenzy', 'Must charge enemy if able', 1.2),
-            ('Good Shot', 'Reroll 1s when shooting', 1.15),
-            ('Gung Ho', 'Can shoot and charge', 1.25),
-            ('Hardy', 'Ignore first wound taken', 1.3),
-            ('Hero', 'Can perform heroic actions', 1.4),
-            ('Hit and Run', 'Can disengage without penalty', 1.2),
-            ('Impetuous', 'Must move toward enemy', 1.1),
-            ('Inaccurate', '-1 to shooting rolls', 0.8),
-            ('Infiltrate', 'Deploy forward before game starts', 1.25),
-            ('Inspiring', 'Nearby units gain morale bonus', 1.3),
-            ('Jump Pack', 'Can move over terrain and units', 1.3),
-            ('Large', 'Easier to hit but more resilient', 1.15),
-            ('Leader', 'Extends command radius', 1.3),
-            ('Lucky', 'Reroll one die per turn', 1.2),
-            ('Marksman', 'Improved accuracy at long range', 1.25),
-            ('Medic', 'Can heal nearby wounded', 1.2),
-            ('Poor Shot', 'Reroll 6s when shooting', 0.9),
-            ('Psychic', 'Can use psychic powers', 1.4),
-            ('Rage', 'Bonus when wounded', 1.15),
-            ('Rapid Fire', 'Extra shots at short range', 1.25),
-            ('Regeneration', 'Recovers wounds over time', 1.35),
-            ('Scout', 'Can perform reconnaissance', 1.2),
-            ('Sharpshooter', 'Pick specific targets', 1.3),
-            ('Slow', '-2" movement', 0.85),
-            ('Stealth', 'Harder to detect', 1.25),
-            ('Stubborn', 'Ignores morale penalties', 1.2),
-            ('Tactical', 'Can use tactical abilities', 1.25),
-            ('Veteran', 'Reroll failed tests', 1.3)
+            ('Adaptive Camouflage', 'Outfit/armour disrupts appearance; shooting resolved one range band further if moved, or cannot be shot beyond long range if stationary.', 1.30),
+            ('Aerial', 'Hover movement that ignores obstacles up to the model height; lands after moving.', 1.30),
+            ('Aggressive', 'If Under Fire and moving, must move toward the enemy; ignores Command Response limits.', 1.10),
+            ('Agile', 'Ignores movement penalties when crossing Difficult Terrain.', 1.20),
+            ('Assault Troops', '+2 to all Close Assaults.', 1.30),
+            ('Berserk', 'Ignores Under Fire/Pinned when activating within close assault range; must charge nearest enemy and gains +2 Close Assault.', 1.30),
+            ('Bestow Trait', 'If this character joins a squad, may bestow one predefined trait upon them.', 1.40),
+            ('Brave', 'Automatically succeeds on one morale die; roll one fewer die and add one success.', 1.50),
+            ('Bug Hunter', '+1 to Close Assault and Fire Effect rolls when fighting alien races.', 1.20),
+            ('Cautious', 'Must test Quality to leave cover if Under Fire.', 0.90),
+            ('Combat Drugs', 'Once per game: gain Berserk, Fearless, Swift; must charge nearest enemy; roll 1d6 per survivor, 6 causes a wound.', 1.20),
+            ('Dependant', 'Automatically passes one Command Response die if led by officer; otherwise fails one.', 1.00),
+            ('Detection', 'Each activation removes/reveals all hidden markers within 12".', 1.10),
+            ('Disruptive Charge', 'Charging into close combat gives opponent -2 Fire Effect on free attack.', 1.20),
+            ('Droids (self-less)', 'No morale checks; never Elite; Relentless; save on draws; die instead of wounded.', 1.60),
+            ('Droids (self-preserving)', 'No morale checks; never Elite; save on draws; die instead of wounded.', 1.30),
+            ('Drop Troop', 'May deploy after battle starts using Drop Troops rule.', 1.30),
+            ('Elusive', 'Once per turn when fired upon, may fall back 4" before shooting is resolved.', 1.40),
+            ('Engineer', 'Auto-succeeds one die when rigging/detonating charges; +2 to minefield rolls.', 1.20),
+            ('Fanatic', 'Never checks Resolve; must be Steady Resolve.', 1.60),
+            ('Fast', '+2" base movement rate.', 1.20),
+            ('Fearless', 'Ignores Morale Tests caused by Terrifying units or psionic Terror.', 1.10),
+            ('Fire Team', 'Two squads act as linked Fire Teams per advanced rule.', 1.20),
+            ('Flyer', 'Considered airborne at all times; moves over obstacles and never receives terrain benefits.', 1.20),
+            ('Frail', '-1 Armour.', 0.90),
+            ('Frenzied', 'Each model receives +1 additional kill roll in assault combat.', 1.30),
+            ('Goon', 'May not fire beyond close range (except return fire); -1 Fire Effect; -1 Armour; may never Rush.', 0.70),
+            ('Grav Mount', 'Heavy weapon mount moves with crew; may move and fire light/medium heavy weapons; damage disables on failed Quality tests.', 1.40),
+            ('Grizzled', 'Check Resolve at one level higher than Quality.', 1.20),
+            ('Gung Ho', 'May ignore Under Fire any turn they Close Assault.', 1.10),
+            ('Hardened', 'Ignore Under Fire until first casualty; may leave wounded behind.', 1.10),
+            ('Hero', 'Character/Psionic only; shoots individually; can pick target at close range; Fearless and Shock Troops; non-heroes -2 Fire Effect to shoot them.', 1.50),
+            ('Hesitant', 'Unless within 15" of enemy, must pass Quality test to activate.', 0.80),
+            ('Hive mind (controller)', 'Controls hive mind units; also Fanatic and Relentless.', 1.50),
+            ('Hive Mind (unit)', 'Fanatic and Relentless within 12" of controller; otherwise must pass Quality test to activate.', 1.20),
+            ('HQ', 'Single-figure only; once per turn one unit may reroll failed Command Response.', 1.20),
+            ('Huge', 'May fire heavy weapons while moving; -2 Fire Effect; 4 kill rolls in assault; requires 2 hits in a volley if no AP; no cover benefits.', 1.50),
+            ('Ignore Pain', 'May continue if wounded; each activation pass Quality Test or be removed.', 1.20),
+            ('Infect', 'When killing in Close Assault, roll 1d6; on 5+ target is infected.', 1.00),
+            ('Infilration', 'After deployment, may make an additional Rush move; coherency checks at one level higher than Quality.', 1.30),
+            ('Inflexible', 'May not fire on a turn where it moved.', 0.70),
+            ('Jet Packs', 'Allows use of Jet Packs advanced rule.', 1.50),
+            ('Legend', 'Single-figure only; has Hero and Villain; always counts as rolling a 6 for Close Assaults and Shooting.', 2.00),
+            ('Limited Teleport', 'Can teleport instead of moving; must pass Quality Test; catastrophic failure removes a model.', 1.50),
+            ('Mechanized', 'Infantry partnered with a transport vehicle; if within 12", vehicle may activate with the squad.', 1.20),
+            ('Night Vision', 'May fire normally to specified range.', 1.10),
+            ('No Grenades', '-2 penalty in assault combat.', 0.80),
+            ('Obvious Target', 'Can always be chosen as a target; cannot hide.', 0.80),
+            ('Recon', '+1" coherency; auto-success one die when calling Indirect Artillery Fire.', 1.30),
+            ('Regenerate', 'Heals by remaining inactive for an activation; cannot move/shoot/assault during recovery.', 1.20),
+            ('Relentless', 'Ignores Under Fire or Pinned; never benefits from cover; leaves casualties behind.', 1.20),
+            ('Reserves', 'May be held in reserve and deployed later per Reserves rule.', 1.30),
+            ('Resilient (2)', 'Gain 2 wounds; each "wound" loses one point, each "kill" loses two.', 1.20),
+            # Multipliers for resilient 3-6 and traits below are unknown from table files; default to 1.0
+            ('Resilient (3)', 'Gain 3 wounds; each "wound" loses one point, each "kill" loses two.', 1.00),
+            ('Resilient (4)', 'Gain 4 wounds; each "wound" loses one point, each "kill" loses two.', 1.00),
+            ('Resilient (5)', 'Gain 5 wounds; each "wound" loses one point, each "kill" loses two.', 1.00),
+            ('Resilient (6)', 'Gain 6 wounds; each "wound" loses one point, each "kill" loses two.', 1.00),
+            ('Save', 'Roll 1d6 for each hit; on 5+ the hit is negated (Power Armour: only one save in close combat).', 1.00),
+            ('Self Repairing', 'Recover Wounded action as if an aid team is present.', 1.00),
+            ('Shaky', 'Automatically fails one morale die; roll 2d6 and add one failure.', 1.00),
+            ('Shock Troops', '+1 to all Close Assaults.', 1.00),
+            ('Slick', 'May only be engaged by two opponents in close combat.', 1.00),
+            ('Slow', '-2" base movement rate.', 1.00),
+            ('Slow Firing', 'If moved this activation, roll only 1d6 for Fire Effect.', 1.00),
+            ('Stealth', 'Always succeeds when going into hiding (Hidden Movement rule).', 1.00),
+            ('Zombie', 'Relentless and Fanatic; may never Rush; cannot shoot beyond close range and all fire suffers -2.', 1.00)
         ]
         
         added_infantry = 0
@@ -111,35 +172,35 @@ def init_production_database():
         db.session.commit()
         print(f"   ✅ Added {added_infantry} infantry traits")
         
-        # Vehicle Properties (26 properties)
+        # Vehicle Properties (official table properties only)
         print("\n3. Populating Vehicle Properties...")
         vehicle_properties = [
-            ('Advanced Targeting System', 'Enhanced weapon accuracy and fire control systems', 1.2),
-            ('AI Controlled', 'Operated by artificial intelligence, no crew required', 1.15),
-            ('Amphibious', 'Can move through water without penalty', 1.1),
-            ('Energy Screen', 'Force field provides additional protection against damage', 1.3),
-            ('Fast (Vehicle)', 'Higher than normal movement speed for vehicle type', 1.15),
-            ('Fixed Mount (1)', 'One weapon cannot traverse, limited firing arc', 0.9),
-            ('Fixed Mount (2)', 'Two weapons cannot traverse, limited firing arc', 0.85),
-            ('Fixed Mount (3)', 'Three weapons cannot traverse, limited firing arc', 0.8),
-            ('Forward Observer', 'Can call in artillery strikes or air support', 1.15),
-            ('Improved Weapons Control', 'All weapons can fire at different targets', 1.25),
-            ('Jump Jets', 'Can make short aerial jumps over terrain and obstacles', 1.3),
-            ('Linked Weapons', 'Multiple weapons fire as one coordinated system', 1.2),
-            ('Medevac', 'Medical evacuation vehicle, can treat wounded infantry', 1.1),
-            ('Open Topped', 'Crew vulnerable but embarked troops can fire out', 0.95),
-            ('Reactive Armour', 'Explosive plates detonate to deflect incoming rounds', 1.25),
-            ('Slow (Vehicle)', 'Lower than normal movement speed for vehicle type', 0.85),
-            ('Smoke', 'Can deploy smoke for concealment', 1.1),
-            ('Stealth (Vehicle)', 'Advanced camouflage and heat signature reduction', 1.3),
-            ('Supercharged', 'Enhanced engine allows burst of extra speed', 1.15),
-            ('Tough', 'Extra structural integrity, harder to destroy', 1.2),
-            ('Transport', 'Can carry infantry units into battle', 1.15),
-            ('Under-Powered', 'Weak engine results in sluggish performance', 0.9),
-            ('Walker', 'Legged vehicle, can traverse rough terrain easily', 1.2),
-            ('Weapon Stabilizer', 'Can fire accurately while moving at full speed', 1.2),
-            ('Heavy Armour', 'Exceptionally thick armor plating', 1.3),
-            ('Reconnaissance', 'Scouting vehicle with enhanced sensors', 1.15)
+            ('Advanced Targeting System', 'Adds +2 to Fire Effect rolls against vehicles and hard targets.', 1.00),
+            ('AI Controlled', 'No crew; immune to morale effects; re-roll one die when damaged; counts crew equal to weapons.', 1.00),
+            ('Alternate Fire Weapons (2)', 'Two weapons function as one with multiple fire modes; only one may fire per turn.', 1.00),
+            ('Alternate Fire Weapons (3)', 'Three weapons function as one with multiple fire modes; only one may fire per turn.', 1.00),
+            ('Amphibious', 'Can cross water at half Cautious speeds; firing in water suffers -3 Fire Effect.', 1.00),
+            ('Close - In Defense System', 'Blast weapon centered on vehicle (radius 4"); affects nearby troops.', 1.00),
+            ('Command Vehicle', 'Once per turn, one unit may re-roll failed Command Response; can call Indirect Artillery Fire.', 1.00),
+            ('Electronic Countermeasures', 'Negates Advanced Targeting System benefits if target has ECM.', 1.00),
+            ('Energy screen', 'Roll 1d6 per hit; on 5+ the hit is negated.', 1.00),
+            ('Fast', '+2" to Cautious and Standard movement rates.', 1.00),
+            ('Fixed Mount (1)', 'One weapon has a fixed firing direction.', 1.00),
+            ('Fixed Mount (2)', 'Two weapons have fixed firing directions.', 1.00),
+            ('Fixed Mount (3)', 'Three weapons have fixed firing directions.', 1.00),
+            ('Forward Observer', 'Can take a Command action to call Indirect Artillery Fire.', 1.00),
+            ('Improved Weapons Control', 'A single crew may fire two weapons instead of one.', 1.00),
+            ('Jump Jets', 'Walkers only; move 10" ignoring obstacles up to 6" height.', 1.00),
+            ('Linked Weapons', 'Choose a weapon; roll 2D6 and pick highest when firing; repeatable.', 1.00),
+            ('Medevac', 'Acts as two aid teams when recovering wounded; squads may leave wounded with vehicle.', 1.00),
+            ('Reactive Armour', 'When fired upon by AP 1+, defender may force attacker to re-roll damage dice.', 1.00),
+            ('Reserves', 'May be held in reserve and deployed later per Reserves rule.', 1.00),
+            ('Slow', '-2" to Cautious and Standard movement rates.', 1.00),
+            ('Smoke', 'Lay one smoke screen per game; follows Smoke Grenades rules.', 1.00),
+            ('Stealth', 'Shooting against this vehicle is resolved at one range band beyond actual distance.', 1.00),
+            ('Supercharged', '+4" to Cautious and Standard movement rates.', 1.00),
+            ('Under-Powered', '-4" to Cautious and Standard movement rates.', 1.00),
+            ('Weapon Stabilizer', 'May fire when moving at standard speeds; other modifiers apply.', 1.00)
         ]
         
         added_vehicles = 0
