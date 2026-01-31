@@ -166,7 +166,7 @@
                                     <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Number of crew members to operate vehicle. Set to 0 for AI-controlled vehicles"></i>
                                 </label>
                                 <input type="number" class="form-control" id="crew_size" name="crew_size" min="0" max="10" value="1" required>
-                                <small class="text-muted">Default 1 (0 for autonomous vehicles)</small>
+                                <small class="text-muted">Set to 0 for AI-controlled/autonomous vehicles</small>
                             </div>
                             
                             <div class="col-md-6 mb-3">
@@ -223,9 +223,9 @@
                                 </label>
                                 <select class="form-select" id="basic_weapon_id" name="basic_weapon_id">
                                     <option value="">No Primary Weapon</option>
-                                    {% for weapon in weapons %}
-                                    <option value="{{ weapon.id }}" data-points="{{ weapon.points }}">
-                                        {{ weapon.name }} (+{{ weapon.points }} pts) - Range: {{ weapon.range }}" | Damage: {{ weapon.damage }}
+                                    {% for weapon in weapons if weapon.category in ['Support', 'Heavy'] %}
+                                    <option value="{{ weapon.id }}" data-points="{{ weapon.points }}" data-category="{{ weapon.category }}">
+                                        {{ weapon.name }} [{{ weapon.category }}] (+{{ weapon.points }} pts) - Rng: {{ weapon.range_multiplier }}" | Dmg: {{ weapon.damage }}
                                     </option>
                                     {% endfor %}
                                 </select>
@@ -238,9 +238,9 @@
                                 </label>
                                 <select class="form-select" id="secondary_weapon_id" name="secondary_weapon_id">
                                     <option value="">No Secondary Weapon</option>
-                                    {% for weapon in weapons %}
-                                    <option value="{{ weapon.id }}" data-points="{{ weapon.points }}">
-                                        {{ weapon.name }} (+{{ weapon.points }} pts) - Range: {{ weapon.range }}" | Damage: {{ weapon.damage }}
+                                    {% for weapon in weapons if weapon.category in ['Basic', 'Support'] %}
+                                    <option value="{{ weapon.id }}" data-points="{{ weapon.points }}" data-category="{{ weapon.category }}">
+                                        {{ weapon.name }} [{{ weapon.category }}] (+{{ weapon.points }} pts) - Rng: {{ weapon.range_multiplier }}" | Dmg: {{ weapon.damage }}
                                     </option>
                                     {% endfor %}
                                 </select>

@@ -2,7 +2,8 @@
 
 **F.A.D. Helper** is a comprehensive web-based army list builder for the **F.A.D. (Fast and Dirty)** tabletop wargame. Build legal armies faster with official game data, intuitive UI, and real-time points calculation.
 
-🔗 **Live Site:** [https://fad-helper.onrender.com](https://fad-helper.onrender.com)
+🔗 **Live Site:** [https://fad-helper.onrender.com](https://fad-helper.onrender.com)  
+📦 **Version:** 1.1.0 (2026-01-31)
 
 ---
 
@@ -56,6 +57,7 @@
 - Public/private list visibility
 - Share lists for events and club play
 - Browse community lists
+- **PDF Export** - Professional PDF generation with unit stat tables (OPR Army Forge style)
 
 ### Live Preview & Points Calculator
 - Real-time unit preview while building

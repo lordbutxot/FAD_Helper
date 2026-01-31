@@ -105,7 +105,7 @@
                             </label>
                             <select class="form-select" id="heavy_weapon_id" name="heavy_weapon_id" required>
                                 <option value="">Select Heavy Weapon...</option>
-                                {% for weapon in weapons if weapon.weapon_class == 'Heavy' %}
+                                {% for weapon in weapons if weapon.category == 'Heavy' %}
                                 <option value="{{ weapon.id }}"
                                         data-bs-toggle="tooltip"
                                         data-bs-placement="right"

@@ -1435,6 +1435,48 @@ def init_routes(app):
         
         return jsonify({'success': True, 'message': 'List deleted successfully'})
     
+    @app.route('/list/<int:list_id>/export-pdf')
+    def export_list_pdf(list_id):
+        """Export army list as PDF with unit stats"""
+        army_list = ArmyList.query.get_or_404(list_id)
+        
+        # Check permissions
+        if not army_list.is_public and (not current_user.is_authenticated or army_list.user_id != current_user.id):
+            flash('This list is private', 'danger')
+            return redirect(url_for('index'))
+        
+        try:
+            from pdf_generator import generate_army_list_pdf
+            from flask import send_file
+            
+            # Get units with quantities
+            units_with_quantities = army_list.get_units()
+            
+            # Generate PDF
+            pdf_buffer = generate_army_list_pdf(army_list, units_with_quantities)
+            
+            # Create safe filename
+            safe_name = "".join(c for c in army_list.name if c.isalnum() or c in (' ', '-', '_')).rstrip()
+            filename = f"FAD_List_{safe_name}.pdf"
+            
+            return send_file(
+                pdf_buffer,
+                mimetype='application/pdf',
+                as_attachment=True,
+                download_name=filename
+            )
+        except Exception as e:
+            flash(f'Error generating PDF: {str(e)}', 'danger')
+            return redirect(url_for('view_list', list_id=list_id))
+        
+        if army_list.user_id != current_user.id:
+            return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+        
+        db.session.delete(army_list)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'List deleted successfully'})
+    
     @app.route('/browse')
     def browse_lists():
         faction = request.args.get('faction', '')
@@ -1581,12 +1623,14 @@ def calculate_points(data):
             if weapon:
                 total_points += weapon.points * squad_size
         
-        # Traits (flat cost, not multiplied)
+        # Traits (apply multipliers sequentially per game rules)
         if data.get('traits'):
+            multiplier = 1.0
             for trait_id in data['traits']:
                 trait = Trait.query.get(trait_id)
                 if trait:
-                    total_points += trait.points_modifier
+                    multiplier *= trait.points_multiplier
+            total_points *= multiplier
     
     # ==================== CHARACTER ====================
     elif unit_type == 'Character':
@@ -1617,12 +1661,14 @@ def calculate_points(data):
             if weapon:
                 total_points += weapon.points
         
-        # Traits
+        # Traits (apply multipliers sequentially per game rules)
         if data.get('traits'):
+            multiplier = 1.0
             for trait_id in data['traits']:
                 trait = Trait.query.get(trait_id)
                 if trait:
-                    total_points += trait.points_modifier
+                    multiplier *= trait.points_multiplier
+            total_points *= multiplier
     
     # ==================== HEAVY WEAPON ====================
     elif unit_type == 'HeavyWeapon':
@@ -1640,12 +1686,14 @@ def calculate_points(data):
             if armour:
                 total_points += armour.points
         
-        # Traits
+        # Traits (apply multipliers sequentially per game rules)
         if data.get('traits'):
+            multiplier = 1.0
             for trait_id in data['traits']:
                 trait = Trait.query.get(trait_id)
                 if trait:
-                    total_points += trait.points_modifier
+                    multiplier *= trait.points_multiplier
+            total_points *= multiplier
     
     # ==================== SNIPER ====================
     elif unit_type == 'Sniper':
@@ -1666,12 +1714,14 @@ def calculate_points(data):
             if armour:
                 total_points += armour.points
         
-        # Traits
+        # Traits (apply multipliers sequentially per game rules)
         if data.get('traits'):
+            multiplier = 1.0
             for trait_id in data['traits']:
                 trait = Trait.query.get(trait_id)
                 if trait:
-                    total_points += trait.points_modifier
+                    multiplier *= trait.points_multiplier
+            total_points *= multiplier
     
     # ==================== PSIONIC ====================
     elif unit_type == 'Psionic':
@@ -1706,12 +1756,14 @@ def calculate_points(data):
             if armour:
                 total_points += armour.points
         
-        # Traits
+        # Traits (apply multipliers sequentially per game rules)
         if data.get('traits'):
+            multiplier = 1.0
             for trait_id in data['traits']:
                 trait = Trait.query.get(trait_id)
                 if trait:
-                    total_points += trait.points_modifier
+                    multiplier *= trait.points_multiplier
+            total_points *= multiplier
     
     # ==================== VEHICLE ====================
     elif unit_type == 'Vehicle':
