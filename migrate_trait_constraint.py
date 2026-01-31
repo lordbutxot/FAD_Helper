@@ -16,11 +16,22 @@ def migrate_trait_constraint():
             print("   Dropping old unique constraint on 'name'...")
             db.session.execute(text("ALTER TABLE trait DROP CONSTRAINT IF EXISTS trait_name_key;"))
             
-            # Add new composite unique constraint on (name, category)
-            print("   Adding new composite unique constraint on (name, category)...")
-            db.session.execute(text(
-                "ALTER TABLE trait ADD CONSTRAINT uix_trait_name_category UNIQUE (name, category);"
-            ))
+            # Check if the composite constraint already exists
+            print("   Checking for existing composite unique constraint...")
+            result = db.session.execute(text("""
+                SELECT constraint_name FROM information_schema.table_constraints
+                WHERE table_name='trait' AND constraint_name='uix_trait_name_category'
+            """))
+            constraint_exists = result.fetchone() is not None
+            
+            if not constraint_exists:
+                # Add new composite unique constraint on (name, category)
+                print("   Adding new composite unique constraint on (name, category)...")
+                db.session.execute(text(
+                    "ALTER TABLE trait ADD CONSTRAINT uix_trait_name_category UNIQUE (name, category);"
+                ))
+            else:
+                print("   ℹ️  Composite unique constraint already exists, skipping...")
             
             db.session.commit()
             print("   ✅ Constraint migration successful!")
