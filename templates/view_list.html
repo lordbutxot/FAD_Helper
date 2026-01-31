@@ -98,7 +98,13 @@
                         <i class="bi bi-pencil"></i> Edit List
                     </a>
                     <button onclick="window.print()" class="btn btn-secondary w-100 mb-2">
-                        <i class="bi bi-printer"></i> Print List
+                        <i class="bi bi-printer"></i> Print/PDF
+                    </button>
+                    <button onclick="shareList()" class="btn btn-success w-100 mb-2">
+                        <i class="bi bi-share"></i> Share Link
+                    </button>
+                    <button onclick="copyToClipboard()" class="btn btn-info w-100 mb-2">
+                        <i class="bi bi-clipboard"></i> Copy URL
                     </button>
                     <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary w-100">
                         <i class="bi bi-arrow-left"></i> Back to Dashboard
@@ -109,7 +115,13 @@
             <div class="card">
                 <div class="card-body">
                     <button onclick="window.print()" class="btn btn-secondary w-100 mb-2">
-                        <i class="bi bi-printer"></i> Print List
+                        <i class="bi bi-printer"></i> Print/PDF
+                    </button>
+                    <button onclick="shareList()" class="btn btn-success w-100 mb-2">
+                        <i class="bi bi-share"></i> Share List
+                    </button>
+                    <button onclick="copyToClipboard()" class="btn btn-info w-100 mb-2">
+                        <i class="bi bi-clipboard"></i> Copy URL
                     </button>
                     <a href="{{ url_for('browse_lists') }}" class="btn btn-outline-secondary w-100">
                         <i class="bi bi-arrow-left"></i> Back to Browse
@@ -121,9 +133,189 @@
     </div>
 </div>
 
+<script>
+// Share list using Web Share API (mobile-friendly)
+async function shareList() {
+    const url = window.location.href;
+    const title = '{{ army_list.name }} - F.A.D. Army List';
+    const text = 'Check out my {{ army_list.total_points }} point F.A.D. army list!';
+    
+    // Check if Web Share API is available (mobile browsers)
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: title,
+                text: text,
+                url: url
+            });
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                copyToClipboard();
+            }
+        }
+    } else {
+        copyToClipboard();
+    }
+}
+
+// Copy list URL to clipboard
+function copyToClipboard() {
+    const url = window.location.href;
+    
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+            alert('✅ List URL copied to clipboard!\n\nShare this link with your opponent:\n' + url);
+        }).catch(() => {
+            fallbackCopy(url);
+        });
+    } else {
+        fallbackCopy(url);
+    }
+}
+
+// Fallback copy method for older browsers
+function fallbackCopy(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        alert('✅ List URL copied!\n\n' + text);
+    } catch (err) {
+        alert('Copy this URL:\n\n' + text);
+    }
+    document.body.removeChild(textArea);
+}
+</script>
+
 <style>
+/* Mobile-optimized styles */
+@media (max-width: 768px) {
+    .container {
+        padding: 0.5rem;
+    }
+    .card {
+        margin-bottom: 0.5rem;
+    }
+    table {
+        font-size: 0.85rem;
+    }
+    .display-3 {
+        font-size: 2rem;
+    }
+}
+
+/* Print/PDF styles - optimized for single-page army list */
 @media print {
-    .navbar, .footer, .card-body h5:contains('Actions'), .btn { display: none !important; }
+    /* Hide UI elements */
+    .navbar, .footer, .btn, .card-body h5, .text-muted.small { 
+        display: none !important; 
+    }
+    
+    /* Optimize layout for printing */
+    body {
+        font-size: 10pt;
+        line-height: 1.2;
+    }
+    
+    .container {
+        max-width: 100%;
+        padding: 0;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: none;
+        margin-bottom: 0.5rem;
+        page-break-inside: avoid;
+    }
+    
+    .card-body {
+        padding: 0.5rem;
+    }
+    
+    h1 {
+        font-size: 18pt;
+        margin-bottom: 0.5rem;
+    }
+    
+    h3, h4 {
+        font-size: 14pt;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .table {
+        font-size: 9pt;
+        margin-bottom: 0;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.25rem;
+    }
+    
+    .badge {
+        border: 1px solid #000;
+        color: #000 !important;
+        background: white !important;
+    }
+    
+    .points-display {
+        font-weight: bold;
+    }
+    
+    /* Ensure everything fits on one page if possible */
+    .row {
+        display: block;
+    }
+    
+    .col-lg-4,
+    .col-lg-8 {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    /* Hide sidebar in print, keep only essential info */
+    .col-lg-4 .card:not(:first-child) {
+        display: none;
+    }
+    
+    .display-3 {
+        font-size: 24pt;
+        margin: 0.5rem 0;
+    }
+    
+    /* Page break handling */
+    .table {
+        page-break-inside: auto;
+    }
+    
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+    
+    thead {
+        display: table-header-group;
+    }
+    
+    tfoot {
+        display: table-footer-group;
+    }
+}
+
+/* Dark mode friendly */
+@media (prefers-color-scheme: dark) {
+    @media print {
+        body {
+            background: white;
+            color: black;
+        }
+    }
 }
 </style>
 {% endblock %}
