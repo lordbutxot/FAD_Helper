@@ -646,6 +646,12 @@ def init_routes(app):
     @login_required
     def squad_builder():
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
+        # Secondary weapons: pistols, SMG, shotgun only
+        secondary_weapons = Weapon.query.filter(
+            (Weapon.name.ilike('%pistol%')) |
+            (Weapon.name == 'SMG') |
+            (Weapon.name == 'Shotgun')
+        ).order_by(Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
         # All infantry types share the same traits (per .TXT files)
         traits = Trait.query.filter_by(category='Infantry').order_by(Trait.name).all()
@@ -704,7 +710,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating squad: {str(e)}', 'danger')
         
-        return render_template('squad_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions)
+        return render_template('squad_builder.html', weapons=weapons, secondary_weapons=secondary_weapons, armours=armours, traits=traits, my_factions=my_factions)
     
     # ==================== CHARACTER BUILDER ====================
     @app.route('/unit/builder/character', methods=['GET', 'POST'])
@@ -1045,6 +1051,12 @@ def init_routes(app):
             return redirect(url_for('dashboard'))
         
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
+        # Secondary weapons: pistols, SMG, shotgun only
+        secondary_weapons = Weapon.query.filter(
+            (Weapon.name.ilike('%pistol%')) |
+            (Weapon.name == 'SMG') |
+            (Weapon.name == 'Shotgun')
+        ).order_by(Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
         traits = Trait.query.order_by(Trait.category, Trait.name).all()
         
@@ -1194,7 +1206,7 @@ def init_routes(app):
         }
         
         template = template_map.get(unit.unit_type, 'edit_squad.html')
-        return render_template(template, unit=unit, weapons=weapons, armours=armours, traits=traits)
+        return render_template(template, unit=unit, weapons=weapons, secondary_weapons=secondary_weapons, armours=armours, traits=traits)
     
     @app.route('/unit/save', methods=['POST'])
     @login_required

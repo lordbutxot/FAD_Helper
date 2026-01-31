@@ -91,6 +91,17 @@
                                 {% endfor %}
                             </select>
                         </div>
+                        
+                        <div class="mb-3">
+                            <label for="secondary_weapon_id" class="form-label">Default Secondary Weapon (Optional)</label>
+                            <select class="form-select" id="secondary_weapon_id" name="secondary_weapon_id">
+                                <option value="">No Secondary Weapon</option>
+                                {% for weapon in secondary_weapons %}
+                                <option value="{{ weapon.id }}" {% if unit.secondary_weapon_id == weapon.id %}selected{% endif %}>{{ weapon.name }} (+{{ weapon.points }} pts)</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Sidearms only: Pistols, SMG, Shotgun</small>
+                        </div>
                     </div>
                 </div>
 
