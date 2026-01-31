@@ -204,6 +204,7 @@ class Unit(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
+    faction = db.relationship('Faction', foreign_keys=[faction_id])
     armour = db.relationship('Armour', foreign_keys=[armour_id])
     basic_weapon = db.relationship('Weapon', foreign_keys=[basic_weapon_id])
     secondary_weapon = db.relationship('Weapon', foreign_keys=[secondary_weapon_id])
