@@ -835,6 +835,7 @@ def init_routes(app):
                 crew_count = int(request.form.get('crew_count', 2))
                 trait_ids = request.form.getlist('traits')
                 notes = request.form.get('notes', '').strip()
+                description = request.form.get('description', '').strip()
                 
                 # Calculate points
                 data = {
@@ -857,6 +858,7 @@ def init_routes(app):
                     armour_id=int(armour_id) if armour_id else None,
                     crew_count=crew_count,
                     traits_json=json.dumps([int(t) for t in trait_ids]),
+                    description=description,
                     notes=notes,
                     base_points=total_points,
                     total_points=total_points
@@ -898,6 +900,7 @@ def init_routes(app):
                 armour_id = request.form.get('armour_id') or None
                 trait_ids = request.form.getlist('traits')
                 notes = request.form.get('notes', '').strip()
+                description = request.form.get('description', '').strip()
                 
                 # Calculate points
                 data = {
@@ -921,6 +924,7 @@ def init_routes(app):
                     basic_weapon_id=int(basic_weapon_id) if basic_weapon_id else None,
                     armour_id=int(armour_id) if armour_id else None,
                     traits_json=json.dumps([int(t) for t in trait_ids]),
+                    description=description,
                     notes=notes,
                     base_points=total_points,
                     total_points=total_points
@@ -964,6 +968,7 @@ def init_routes(app):
                 armour_id = request.form.get('armour_id') or None
                 trait_ids = request.form.getlist('traits')
                 notes = request.form.get('notes', '').strip()
+                description = request.form.get('description', '').strip()
                 
                 # Calculate points
                 data = {
@@ -991,6 +996,7 @@ def init_routes(app):
                     basic_weapon_id=int(basic_weapon_id) if basic_weapon_id else None,
                     armour_id=int(armour_id) if armour_id else None,
                     traits_json=json.dumps([int(t) for t in trait_ids]),
+                    description=description,
                     notes=notes,
                     base_points=total_points,
                     total_points=total_points
@@ -1036,6 +1042,7 @@ def init_routes(app):
                 capacity = int(request.form.get('carrying_capacity', 0))
                 properties = request.form.get('vehicle_properties', '').strip()
                 notes = request.form.get('notes', '').strip()
+                description = request.form.get('description', '').strip()
                 
                 # Parse properties (comma-separated)
                 props_list = [p.strip() for p in properties.split(',') if p.strip()] if properties else []
@@ -1067,6 +1074,7 @@ def init_routes(app):
                     crew_size=crew_size,
                     carrying_capacity=capacity,
                     vehicle_properties_json=json.dumps(props_list),
+                    description=description,
                     notes=notes,
                     base_points=total_points,
                     total_points=total_points
