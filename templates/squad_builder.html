@@ -299,6 +299,17 @@
                             <span class="badge bg-secondary">None</span>
                         </div>
                     </div>
+
+                    <div class="mt-3">
+                        <small class="text-muted">Cost Breakdown:</small>
+                        <ul class="list-unstyled small mb-0">
+                            <li><span class="text-muted">Pre-multiplier:</span> <span id="preview-pre-multiplier">0.00</span></li>
+                            <li><span class="text-muted">Q/R Multiplier:</span> <span id="preview-qr-multiplier">×1.00</span></li>
+                            <li><span class="text-muted">Post-multiplier:</span> <span id="preview-post-multiplier">0.00</span></li>
+                            <li><span class="text-muted">Trait Multiplier:</span> <span id="preview-trait-multiplier">×1.00</span></li>
+                            <li class="fw-bold">Final: <span id="preview-final">0.00</span></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
@@ -396,6 +407,24 @@ const factionNames = {
     {% endfor %}
 };
 
+// Weapon distribution state (must be defined before calculatePoints)
+let weaponDistributionEnabled = false;
+let distributionEntries = [];
+
+function updateCostBreakdown(preMultiplier, qrMultiplier, postMultiplier, traitMultiplier, finalTotal) {
+    const preEl = document.getElementById('preview-pre-multiplier');
+    const qrEl = document.getElementById('preview-qr-multiplier');
+    const postEl = document.getElementById('preview-post-multiplier');
+    const traitEl = document.getElementById('preview-trait-multiplier');
+    const finalEl = document.getElementById('preview-final');
+
+    if (preEl) preEl.textContent = preMultiplier.toFixed(2);
+    if (qrEl) qrEl.textContent = `×${qrMultiplier.toFixed(2)}`;
+    if (postEl) postEl.textContent = postMultiplier.toFixed(2);
+    if (traitEl) traitEl.textContent = `×${traitMultiplier.toFixed(2)}`;
+    if (finalEl) finalEl.textContent = finalTotal.toFixed(2);
+}
+
 function updatePreview() {
     // Update name
     const name = document.getElementById('name').value || 'Unnamed Squad';
@@ -474,8 +503,6 @@ document.querySelectorAll('input[name="traits"]').forEach(checkbox => {
 updatePreview();
 
 // ==================== WEAPON DISTRIBUTION SYSTEM ====================
-let weaponDistributionEnabled = false;
-let distributionEntries = [];
 
 // Toggle weapon distribution section
 document.getElementById('toggleWeaponDistribution').addEventListener('click', function() {
@@ -594,6 +621,9 @@ function calculatePointsWithDistribution() {
     const armourPts = armourId ? (armourPoints[armourId] || 0) : 0;
     
     let totalCost = 0;
+    let preMultiplierTotal = 0;
+    const qrMultiplier = 1 + qualityMult + resolveMult;
+    let postMultiplierTotal = 0;
     
     // Check if weapon distribution is enabled and has valid data
     const distributionData = document.getElementById('weapon_distribution').value;
@@ -604,26 +634,31 @@ function calculatePointsWithDistribution() {
         for (const [weaponId, quantity] of Object.entries(distribution)) {
             const weaponPts = weaponPoints[weaponId] || 0;
             let costPerTrooper = 3 + armourPts + weaponPts;
-            costPerTrooper = costPerTrooper * (1 + qualityMult + resolveMult);
-            totalCost += costPerTrooper * quantity;
+            preMultiplierTotal += costPerTrooper * quantity;
         }
+        postMultiplierTotal = preMultiplierTotal * qrMultiplier;
+        totalCost = postMultiplierTotal;
     } else {
         // Use default weapon for all
         const weaponId = document.getElementById('basic_weapon_id').value;
         const weaponPts = weaponId ? (weaponPoints[weaponId] || 0) : 0;
         let costPerTrooper = 3 + armourPts + weaponPts;
-        costPerTrooper = costPerTrooper * (1 + qualityMult + resolveMult);
-        totalCost = costPerTrooper * squadSize;
+        preMultiplierTotal = costPerTrooper * squadSize;
+        postMultiplierTotal = preMultiplierTotal * qrMultiplier;
+        totalCost = postMultiplierTotal;
     }
     
     // Apply trait multipliers
+    let traitMultiplier = 1.0;
     document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
         const traitMult = traitPoints[checkbox.value] || 1.0;
-        totalCost = totalCost * traitMult;
+        traitMultiplier = traitMultiplier * traitMult;
     });
+    totalCost = totalCost * traitMultiplier;
     
     const finalPoints = Math.round(totalCost * 100) / 100;
     document.getElementById('preview-points').textContent = finalPoints;
+    updateCostBreakdown(preMultiplierTotal, qrMultiplier, postMultiplierTotal, traitMultiplier, finalPoints);
 }
 
 // Add weapon type button
