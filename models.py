@@ -144,25 +144,26 @@ class SquadMember(db.Model):
 
 
 class Unit(db.Model):
-        def get_inherited_traits(self):
-            """Return traits for this unit, inheriting from parent if not overridden."""
-            if self.traits_json and json.loads(self.traits_json):
-                return self.get_traits()
-            elif self.parent:
-                return self.parent.get_inherited_traits()
-            else:
-                return []
-
-        def get_inherited_weapon(self, weapon_type):
-            """Return weapon (basic, secondary, heavy, etc.) for this unit, inheriting from parent if not set."""
-            weapon = getattr(self, weapon_type, None)
-            if weapon:
-                return weapon
-            elif self.parent:
-                return self.parent.get_inherited_weapon(weapon_type)
-            else:
-                return None
     """Custom units created by users - Supports 6 unit types: Squad, Character, Sniper, Heavy Weapons, Psionic, Vehicle"""
+
+    def get_inherited_traits(self):
+        """Return traits for this unit, inheriting from parent if not overridden."""
+        if self.traits_json and json.loads(self.traits_json):
+            return self.get_traits()
+        elif self.parent:
+            return self.parent.get_inherited_traits()
+        else:
+            return []
+
+    def get_inherited_weapon(self, weapon_type):
+        """Return weapon (basic, secondary, heavy, etc.) for this unit, inheriting from parent if not set."""
+        weapon = getattr(self, weapon_type, None)
+        if weapon:
+            return weapon
+        elif self.parent:
+            return self.parent.get_inherited_weapon(weapon_type)
+        else:
+            return None
     id = db.Column(db.Integer, primary_key=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('unit.id'), nullable=True)  # For parent/variant relationship
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
