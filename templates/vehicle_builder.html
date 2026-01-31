@@ -238,12 +238,13 @@
                                 </label>
                                 <select class="form-select" id="secondary_weapon_id" name="secondary_weapon_id">
                                     <option value="">No Secondary Weapon</option>
-                                    {% for weapon in weapons if weapon.category in ['Basic', 'Support'] %}
+                                    {% for weapon in weapons if weapon.category == 'Support' %}
                                     <option value="{{ weapon.id }}" data-points="{{ weapon.points }}" data-category="{{ weapon.category }}">
                                         {{ weapon.name }} [{{ weapon.category }}] (+{{ weapon.points }} pts) - Rng: {{ weapon.range_multiplier }}" | Dmg: {{ weapon.damage }}
                                     </option>
                                     {% endfor %}
                                 </select>
+                                <small class="text-muted">Support weapons only (MGs, etc.)</small>
                             </div>
                         </div>
                     </div>
