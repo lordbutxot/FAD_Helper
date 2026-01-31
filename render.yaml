@@ -2,7 +2,7 @@
   - type: web
     name: fad-helper
     env: python
-    buildCommand: pip install -r requirements.txt; python -c "from app import app, db; app.app_context().push(); db.create_all(); print('✅ Database tables created')"
+    buildCommand: pip install -r requirements.txt && python init_db_simple.py
     startCommand: gunicorn app:app
     autoDeploy: true
     envVars:
