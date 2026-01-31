@@ -84,7 +84,7 @@
                             <label for="heavy_weapon_id" class="form-label">Heavy Weapon *</label>
                             <select class="form-select" id="heavy_weapon_id" name="heavy_weapon_id" required>
                                 <option value="">Select Heavy Weapon...</option>
-                                {% for weapon in weapons if weapon.weapon_class == 'Heavy' %}
+                                {% for weapon in weapons if weapon.category == 'Heavy' %}
                                 <option value="{{ weapon.id }}" {% if unit.heavy_weapon_id == weapon.id %}selected{% endif %}>{{ weapon.name }} ({{ weapon.range }}, FE:{{ weapon.fire_effect }}, +{{ weapon.points }} pts)</option>
                                 {% endfor %}
                             </select>
