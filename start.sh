@@ -1,8 +1,8 @@
 #!/bin/sh
 set -e
 
-echo "Initializing database..."
-python init_db_simple.py
+echo "Initializing database with game data..."
+python init_production_db.py
 
 echo "Starting gunicorn..."
 exec gunicorn app:app
