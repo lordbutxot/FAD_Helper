@@ -183,7 +183,7 @@
                             <div class="col-md-6 mb-2">
                                 <div class="form-check trait-option">
                                     <input class="form-check-input" type="checkbox" name="traits" value="{{ trait.id }}" id="trait_{{ trait.id }}" 
-                                        {% if trait.id in unit_trait_ids %}checked{% endif %}>
+                                        {% if trait.id in selected_trait_ids %}checked{% endif %}>
                                     <label class="form-check-label" for="trait_{{ trait.id }}">
                                         {{ trait.name }} 
                                         <small class="text-muted">(×{{ trait.points_multiplier }})</small>

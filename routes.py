@@ -1187,6 +1187,12 @@ def init_routes(app):
                 and_(Trait.category == 'Vehicle', Trait.name.in_(OFFICIAL_VEHICLE_TRAITS))
             )
         ).order_by(Trait.category, Trait.name).all()
+
+        # For display: use inherited traits if none are set
+        if not (unit.traits_json and json.loads(unit.traits_json)):
+            selected_trait_ids = [t.id for t in unit.get_inherited_traits()]
+        else:
+            selected_trait_ids = [t.id for t in unit.get_traits()]
         
         if request.method == 'POST':
             try:
@@ -1361,7 +1367,7 @@ def init_routes(app):
         }
 
         template = template_map.get(unit.unit_type, 'edit_squad.html')
-        return render_template(template, unit=unit, weapons=weapons, secondary_weapons=secondary_weapons, armours=armours, traits=traits, my_factions=my_factions, my_units=my_units)
+        return render_template(template, unit=unit, weapons=weapons, secondary_weapons=secondary_weapons, armours=armours, traits=traits, my_factions=my_factions, my_units=my_units, selected_trait_ids=selected_trait_ids)
     
     @app.route('/unit/save', methods=['POST'])
     @login_required

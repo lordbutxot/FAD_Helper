@@ -116,7 +116,7 @@
                                                                                     {% endif %}
                                                                                     {% if basic_weapon %}
                                                                                     <li>🔫 <strong>Basic Weapon:</strong> {{ basic_weapon.name }} 
-                                                                                        <small class="text-muted">(Range: {{ basic_weapon.range }}, DM:{{ basic_weapon.damage }}, FE:{{ basic_weapon.fire_effect }}, AP:{{ basic_weapon.ap }})</small> - {{ basic_weapon.points }} pts
+                                                                                        <small class="text-muted">(Range: {{ basic_weapon.range_multiplier }}, DM:{{ basic_weapon.damage }}, FE:{{ basic_weapon.fire_effect }}, AP:{{ basic_weapon.ap }})</small> - {{ basic_weapon.points }} pts
                                                                                         {% if basic_weapon.benefits %}
                                                                                         <br><small class="text-info">➜ {{ basic_weapon.benefits }}</small>
                                                                                         {% endif %}
@@ -124,7 +124,7 @@
                                                                                     {% endif %}
                                                                                     {% if secondary_weapon %}
                                                                                     <li>🔫 <strong>Secondary Weapon:</strong> {{ secondary_weapon.name }} 
-                                                                                        <small class="text-muted">(Range: {{ secondary_weapon.range }}, DM:{{ secondary_weapon.damage }}, FE:{{ secondary_weapon.fire_effect }}, AP:{{ secondary_weapon.ap }})</small> - {{ secondary_weapon.points }} pts
+                                                                                        <small class="text-muted">(Range: {{ secondary_weapon.range_multiplier }}, DM:{{ secondary_weapon.damage }}, FE:{{ secondary_weapon.fire_effect }}, AP:{{ secondary_weapon.ap }})</small> - {{ secondary_weapon.points }} pts
                                                                                         {% if secondary_weapon.benefits %}
                                                                                         <br><small class="text-info">➜ {{ secondary_weapon.benefits }}</small>
                                                                                         {% endif %}
@@ -132,7 +132,7 @@
                                                                                     {% endif %}
                                                                                     {% if support_weapon %}
                                                                                     <li>⚡ <strong>Support Weapon:</strong> {{ support_weapon.name }} 
-                                                                                        <small class="text-muted">(Range: {{ support_weapon.range }}, DM:{{ support_weapon.damage }}, FE:{{ support_weapon.fire_effect }}, AP:{{ support_weapon.ap }})</small> - {{ support_weapon.points }} pts
+                                                                                        <small class="text-muted">(Range: {{ support_weapon.range_multiplier }}, DM:{{ support_weapon.damage }}, FE:{{ support_weapon.fire_effect }}, AP:{{ support_weapon.ap }})</small> - {{ support_weapon.points }} pts
                                                                                         {% if support_weapon.benefits %}
                                                                                         <br><small class="text-info">➜ {{ support_weapon.benefits }}</small>
                                                                                         {% endif %}
@@ -140,7 +140,7 @@
                                                                                     {% endif %}
                                                                                     {% if heavy_weapon %}
                                                                                     <li>💥 <strong>Heavy Weapon:</strong> {{ heavy_weapon.name }} 
-                                                                                        <small class="text-muted">(Range: {{ heavy_weapon.range }}, DM:{{ heavy_weapon.damage }}, FE:{{ heavy_weapon.fire_effect }}, AP:{{ heavy_weapon.ap }})</small> - {{ heavy_weapon.points }} pts
+                                                                                        <small class="text-muted">(Range: {{ heavy_weapon.range_multiplier }}, DM:{{ heavy_weapon.damage }}, FE:{{ heavy_weapon.fire_effect }}, AP:{{ heavy_weapon.ap }})</small> - {{ heavy_weapon.points }} pts
                                                                                         {% if heavy_weapon.benefits %}
                                                                                         <br><small class="text-info">➜ {{ heavy_weapon.benefits }}</small>
                                                                                         {% endif %}

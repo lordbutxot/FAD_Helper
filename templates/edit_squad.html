@@ -122,7 +122,7 @@
                             <select class="form-select" id="basic_weapon_id" name="basic_weapon_id" required>
                                 <option value="">Select Weapon...</option>
                                 {% for weapon in weapons %}
-                                <option value="{{ weapon.id }}" {% if unit.basic_weapon_id == weapon.id %}selected{% endif %}>{{ weapon.name }} ({{ weapon.range }}, FE:{{ weapon.fire_effect }}, +{{ weapon.points }} pts)</option>
+                                <option value="{{ weapon.id }}" {% if unit.basic_weapon_id == weapon.id %}selected{% endif %}>{{ weapon.name }} ({{ weapon.range_multiplier }}, FE:{{ weapon.fire_effect }}, +{{ weapon.points }} pts)</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -184,7 +184,7 @@
                             {% for trait in traits %}
                             <div class="col-md-6 mb-2">
                                 <div class="form-check trait-option">
-                                    <input class="form-check-input" type="checkbox" name="traits" value="{{ trait.id }}" id="trait_{{ trait.id }}" {% if trait.id in unit.get_traits() %}checked{% endif %}>
+                                    <input class="form-check-input" type="checkbox" name="traits" value="{{ trait.id }}" id="trait_{{ trait.id }}" {% if trait.id in selected_trait_ids %}checked{% endif %}>
                                     <label class="form-check-label" for="trait_{{ trait.id }}">
                                         {{ trait.name }}
                                         <small class="text-muted">(×{{ trait.points_multiplier }})</small>
