@@ -204,12 +204,13 @@ def admin_required(f):
 
 
 def init_routes(app):
-        @app.route('/unit/<int:unit_id>/create-variant')
-        @login_required
-        def create_variant_route(unit_id):
-            return create_variant(unit_id)
     """Initialize all routes"""
-    
+
+    @app.route('/unit/<int:unit_id>/create-variant')
+    @login_required
+    def create_variant_route(unit_id):
+        return create_variant(unit_id)
+
     @app.route('/')
     def index():
         try:
