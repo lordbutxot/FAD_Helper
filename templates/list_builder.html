@@ -19,14 +19,26 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Faction</label>
-                            <select class="form-select" id="listFaction">
+                            <select class="form-select" id="listFaction" onchange="onFactionChange()">
                                 <option value="">No Faction</option>
                                 {% for faction in my_factions %}
-                                <option value="{{ faction.id }}">
+                                <option value="{{ faction.id }}" {% if selected_faction_id and faction.id == selected_faction_id %}selected{% endif %}>
                                     <i class="bi bi-{{ faction.icon }}"></i> {{ faction.name }}
                                 </option>
                                 {% endfor %}
                             </select>
+                            <script>
+                            function onFactionChange() {
+                                const factionId = document.getElementById('listFaction').value;
+                                const url = new URL(window.location.href);
+                                if (factionId) {
+                                    url.searchParams.set('faction_id', factionId);
+                                } else {
+                                    url.searchParams.delete('faction_id');
+                                }
+                                window.location.href = url.toString();
+                            }
+                            </script>
                             <small class="text-muted">
                                 <a href="{{ url_for('faction_creator') }}" target="_blank" class="text-decoration-none">
                                     Create a new faction

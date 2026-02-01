@@ -1425,10 +1425,16 @@ def init_routes(app):
     @app.route('/list/builder')
     @login_required
     def list_builder():
-        my_units = Unit.query.filter_by(user_id=current_user.id).order_by(Unit.faction_id, Unit.name).all()
-        public_units = Unit.query.filter_by(is_public=True).order_by(Unit.faction_id, Unit.name).all()
+        selected_faction_id = request.args.get('faction_id', type=int)
         my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
-        return render_template('list_builder.html', my_units=my_units, public_units=public_units, my_factions=my_factions)
+        my_units_query = Unit.query.filter_by(user_id=current_user.id)
+        public_units_query = Unit.query.filter_by(is_public=True)
+        if selected_faction_id:
+            my_units_query = my_units_query.filter_by(faction_id=selected_faction_id)
+            public_units_query = public_units_query.filter_by(faction_id=selected_faction_id)
+        my_units = my_units_query.order_by(Unit.faction_id, Unit.name).all()
+        public_units = public_units_query.order_by(Unit.faction_id, Unit.name).all()
+        return render_template('list_builder.html', my_units=my_units, public_units=public_units, my_factions=my_factions, selected_faction_id=selected_faction_id)
     
     @app.route('/list/save', methods=['POST'])
     @login_required
