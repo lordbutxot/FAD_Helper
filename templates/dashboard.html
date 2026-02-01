@@ -258,7 +258,7 @@
                         {% set parent_units = units|selectattr('parent_id', 'equalto', None)|list %}
                         {% for parent in parent_units %}
                         <tr style="background-color: #f8f9fa;">
-                            <td><strong>{{ parent.name }}</strong> <span class="badge bg-info">Parent</span></td>
+                            <td><strong>{{ parent.name }}</strong></td>
                             <td>
                                 {% if parent.unit_type == 'Squad' %}
                                     <span class="badge bg-primary">Infantry Squad</span>
@@ -351,7 +351,7 @@
                         {% set parent_inds = individuals|selectattr('parent_id', 'equalto', None)|list %}
                         {% for parent in parent_inds %}
                         <tr style="background-color: #f8f9fa;">
-                            <td><strong>{{ parent.name }}</strong> <span class="badge bg-info">Parent</span></td>
+                            <td><strong>{{ parent.name }}</strong></td>
                             <td>
                                 {% if parent.unit_type == 'Character' %}
                                     <span class="badge bg-warning text-dark">Character</span>
