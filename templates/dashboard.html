@@ -308,7 +308,7 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    {% block scripts %}
+                    {% block extra_js %}
                         {{ super() }}
                         <script src="{{ url_for('static', filename='sortable.js') }}"></script>
                     {% endblock %}
