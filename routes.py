@@ -1,3 +1,51 @@
+@app.route('/unit/<int:unit_id>/create-variant')
+@login_required
+def create_variant(unit_id):
+    original = Unit.query.get_or_404(unit_id)
+    if original.user_id != current_user.id:
+        flash('You can only create variants of your own units.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    # Copy all fields except id, created_at, updated_at, and set parent_id
+    variant = Unit(
+        user_id=current_user.id,
+        name=f"{original.name} Variant",
+        unit_type=original.unit_type,
+        faction_id=original.faction_id,
+        quality=original.quality,
+        resolve=original.resolve,
+        squad_size=original.squad_size,
+        armour_id=original.armour_id,
+        basic_weapon_id=original.basic_weapon_id,
+        secondary_weapon_id=getattr(original, 'secondary_weapon_id', None),
+        heavy_weapon_id=getattr(original, 'heavy_weapon_id', None),
+        psionic_level=getattr(original, 'psionic_level', None),
+        vehicle_type=getattr(original, 'vehicle_type', None),
+        movement_type=getattr(original, 'movement_type', None),
+        vehicle_armour_front=getattr(original, 'vehicle_armour_front', None),
+        vehicle_armour_side=getattr(original, 'vehicle_armour_side', None),
+        vehicle_armour_rear=getattr(original, 'vehicle_armour_rear', None),
+        crew_size=getattr(original, 'crew_size', None),
+        carrying_capacity=getattr(original, 'carrying_capacity', None),
+        traits_json=original.traits_json,
+        squad_members_json=getattr(original, 'squad_members_json', None),
+        weapon_options_json=getattr(original, 'weapon_options_json', None),
+        vehicle_weapons_json=getattr(original, 'vehicle_weapons_json', None),
+        vehicle_properties_json=getattr(original, 'vehicle_properties_json', None),
+        has_personality=getattr(original, 'has_personality', False),
+        leadership_rating=getattr(original, 'leadership_rating', None),
+        specialization=getattr(original, 'specialization', None),
+        base_points=original.base_points,
+        total_points=original.total_points,
+        description=original.description,
+        is_public=False,
+        notes=original.notes,
+        parent_id=original.id
+    )
+    db.session.add(variant)
+    db.session.commit()
+    flash(f'Variant created from {original.name}. You can now edit it.', 'success')
+    return redirect(url_for('edit_unit', unit_id=variant.id))
 """
 Application routes for F.A.D. List Builder
 """
