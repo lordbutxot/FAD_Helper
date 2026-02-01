@@ -255,23 +255,24 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for unit in units %}
-                        <tr>
-                            <td><strong>{{ unit.name }}</strong></td>
+                        {% set parent_units = units|selectattr('parent_id', 'equalto', None)|list %}
+                        {% for parent in parent_units %}
+                        <tr style="background-color: #f8f9fa;">
+                            <td><strong>{{ parent.name }}</strong> <span class="badge bg-info">Parent</span></td>
                             <td>
-                                {% if unit.unit_type == 'Squad' %}
+                                {% if parent.unit_type == 'Squad' %}
                                     <span class="badge bg-primary">Infantry Squad</span>
-                                {% elif unit.unit_type == 'HeavyWeapon' %}
+                                {% elif parent.unit_type == 'HeavyWeapon' %}
                                     <span class="badge bg-danger">Heavy Weapons</span>
-                                {% elif unit.unit_type == 'Vehicle' %}
+                                {% elif parent.unit_type == 'Vehicle' %}
                                     <span class="badge bg-secondary">Vehicle</span>
                                 {% endif %}
                             </td>
-                            <td>{{ unit.faction.name if unit.faction else '-' }}</td>
-                            <td>{{ unit.quality }}</td>
-                            <td class="points-display"><strong>{{ unit.total_points }}</strong> pts</td>
+                            <td>{{ parent.faction.name if parent.faction else '-' }}</td>
+                            <td>{{ parent.quality }}</td>
+                            <td class="points-display"><strong>{{ parent.total_points }}</strong> pts</td>
                             <td>
-                                {% if unit.is_public %}
+                                {% if parent.is_public %}
                                 <span class="badge bg-success">Public</span>
                                 {% else %}
                                 <span class="badge bg-secondary">Private</span>
@@ -279,12 +280,44 @@
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{{ url_for('view_unit', unit_id=unit.id) }}" class="btn btn-outline-primary">View</a>
-                                    <a href="{{ url_for('edit_unit', unit_id=unit.id) }}" class="btn btn-outline-secondary">Edit</a>
-                                    <button onclick="deleteUnit({{ unit.id }})" class="btn btn-outline-danger">Delete</button>
+                                    <a href="{{ url_for('view_unit', unit_id=parent.id) }}" class="btn btn-outline-primary">View</a>
+                                    <a href="{{ url_for('edit_unit', unit_id=parent.id) }}" class="btn btn-outline-secondary">Edit</a>
+                                    <button onclick="deleteUnit({{ parent.id }})" class="btn btn-outline-danger">Delete</button>
                                 </div>
                             </td>
                         </tr>
+                        {% set variants = units|selectattr('parent_id', 'equalto', parent.id)|list %}
+                        {% for variant in variants %}
+                        <tr>
+                            <td style="padding-left: 2em;">↳ <strong>{{ variant.name }}</strong> <span class="badge bg-secondary">Variant</span></td>
+                            <td>
+                                {% if variant.unit_type == 'Squad' %}
+                                    <span class="badge bg-primary">Infantry Squad</span>
+                                {% elif variant.unit_type == 'HeavyWeapon' %}
+                                    <span class="badge bg-danger">Heavy Weapons</span>
+                                {% elif variant.unit_type == 'Vehicle' %}
+                                    <span class="badge bg-secondary">Vehicle</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ variant.faction.name if variant.faction else '-' }}</td>
+                            <td>{{ variant.quality }}</td>
+                            <td class="points-display"><strong>{{ variant.total_points }}</strong> pts</td>
+                            <td>
+                                {% if variant.is_public %}
+                                <span class="badge bg-success">Public</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Private</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('view_unit', unit_id=variant.id) }}" class="btn btn-outline-primary">View</a>
+                                    <a href="{{ url_for('edit_unit', unit_id=variant.id) }}" class="btn btn-outline-secondary">Edit</a>
+                                    <button onclick="deleteUnit({{ variant.id }})" class="btn btn-outline-danger">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
                         {% endfor %}
                     </tbody>
                 </table>
@@ -313,23 +346,24 @@
                         <script src="{{ url_for('static', filename='sortable.js') }}"></script>
                     {% endblock %}
                     <tbody>
-                        {% for unit in individuals %}
-                        <tr>
-                            <td><strong>{{ unit.name }}</strong></td>
+                        {% set parent_inds = individuals|selectattr('parent_id', 'equalto', None)|list %}
+                        {% for parent in parent_inds %}
+                        <tr style="background-color: #f8f9fa;">
+                            <td><strong>{{ parent.name }}</strong> <span class="badge bg-info">Parent</span></td>
                             <td>
-                                {% if unit.unit_type == 'Character' %}
+                                {% if parent.unit_type == 'Character' %}
                                     <span class="badge bg-warning text-dark">Character</span>
-                                {% elif unit.unit_type == 'Sniper' %}
+                                {% elif parent.unit_type == 'Sniper' %}
                                     <span class="badge bg-success">Sniper</span>
-                                {% elif unit.unit_type == 'Psionic' %}
+                                {% elif parent.unit_type == 'Psionic' %}
                                     <span class="badge" style="background-color: #6f42c1;">Psionic</span>
                                 {% endif %}
                             </td>
-                            <td>{{ unit.faction.name if unit.faction else '-' }}</td>
-                            <td>{{ unit.quality }}</td>
-                            <td class="points-display"><strong>{{ unit.total_points }}</strong> pts</td>
+                            <td>{{ parent.faction.name if parent.faction else '-' }}</td>
+                            <td>{{ parent.quality }}</td>
+                            <td class="points-display"><strong>{{ parent.total_points }}</strong> pts</td>
                             <td>
-                                {% if unit.is_public %}
+                                {% if parent.is_public %}
                                 <span class="badge bg-success">Public</span>
                                 {% else %}
                                 <span class="badge bg-secondary">Private</span>
@@ -337,12 +371,44 @@
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{{ url_for('view_unit', unit_id=unit.id) }}" class="btn btn-outline-primary">View</a>
-                                    <a href="{{ url_for('edit_unit', unit_id=unit.id) }}" class="btn btn-outline-secondary">Edit</a>
-                                    <button onclick="deleteUnit({{ unit.id }})" class="btn btn-outline-danger">Delete</button>
+                                    <a href="{{ url_for('view_unit', unit_id=parent.id) }}" class="btn btn-outline-primary">View</a>
+                                    <a href="{{ url_for('edit_unit', unit_id=parent.id) }}" class="btn btn-outline-secondary">Edit</a>
+                                    <button onclick="deleteUnit({{ parent.id }})" class="btn btn-outline-danger">Delete</button>
                                 </div>
                             </td>
                         </tr>
+                        {% set variants = individuals|selectattr('parent_id', 'equalto', parent.id)|list %}
+                        {% for variant in variants %}
+                        <tr>
+                            <td style="padding-left: 2em;">↳ <strong>{{ variant.name }}</strong> <span class="badge bg-secondary">Variant</span></td>
+                            <td>
+                                {% if variant.unit_type == 'Character' %}
+                                    <span class="badge bg-warning text-dark">Character</span>
+                                {% elif variant.unit_type == 'Sniper' %}
+                                    <span class="badge bg-success">Sniper</span>
+                                {% elif variant.unit_type == 'Psionic' %}
+                                    <span class="badge" style="background-color: #6f42c1;">Psionic</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ variant.faction.name if variant.faction else '-' }}</td>
+                            <td>{{ variant.quality }}</td>
+                            <td class="points-display"><strong>{{ variant.total_points }}</strong> pts</td>
+                            <td>
+                                {% if variant.is_public %}
+                                <span class="badge bg-success">Public</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Private</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('view_unit', unit_id=variant.id) }}" class="btn btn-outline-primary">View</a>
+                                    <a href="{{ url_for('edit_unit', unit_id=variant.id) }}" class="btn btn-outline-secondary">Edit</a>
+                                    <button onclick="deleteUnit({{ variant.id }})" class="btn btn-outline-danger">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
                         {% endfor %}
                     </tbody>
                 </table>
