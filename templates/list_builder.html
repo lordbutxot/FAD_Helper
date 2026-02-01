@@ -63,104 +63,106 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h3>Available Units</h3>
-                    <ul class="nav nav-tabs mb-3">
-                        <li class="nav-item">
-                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#myUnits">My Units</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#publicUnits">Public Units</button>
-                        </li>
-                    </ul>
-
-                    <div class="tab-content">
-                        <div class="tab-pane fade show active" id="myUnits">
-                            {% if my_units %}
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Type</th>
-                                            <th>Points</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {# Group units by parent: show only parentless units as main rows, and their variants as indented rows #}
-                                        {% for unit in my_units if not unit.parent_id %}
-                                        <tr>
-                                            <td><strong>{{ unit.name }}</strong> {% if unit.variants|length > 0 %}<span class="badge bg-info">Parent</span>{% endif %}</td>
-                                            <td>{{ unit.unit_type }}</td>
-                                            <td class="points-display">{{ unit.total_points }}</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-primary" onclick="addUnitToList({{ unit.id }}, '{{ unit.name }}', {{ unit.total_points }}, '{{ unit.unit_type }}')">
-                                                    <i class="bi bi-plus"></i> Add
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        {# Show variants indented under parent #}
-                                        {% for variant in unit.variants %}
-                                        <tr>
-                                            <td style="padding-left: 2em;">
-                                                <span class="text-secondary"><i class="bi bi-arrow-return-right"></i> Variant:</span> <strong>{{ variant.name }}</strong>
-                                            </td>
-                                            <td>{{ variant.unit_type }}</td>
-                                            <td class="points-display">{{ variant.total_points }}</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-primary" onclick="addUnitToList({{ variant.id }}, '{{ variant.name }}', {{ variant.total_points }}, '{{ variant.unit_type }}')">
-                                                    <i class="bi bi-plus"></i> Add
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+                    {% if not selected_faction_id %}
+                        <div class="alert alert-warning">Please select a faction to view available units.</div>
+                    {% else %}
+                        <ul class="nav nav-tabs mb-3">
+                            <li class="nav-item">
+                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#myUnits">My Units</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#publicUnits">Public Units</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="myUnits">
+                                {% if my_units %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Type</th>
+                                                <th>Points</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {# Group units by parent: show only parentless units as main rows, and their variants as indented rows #}
+                                            {% for unit in my_units if not unit.parent_id %}
+                                            <tr>
+                                                <td><strong>{{ unit.name }}</strong> {% if unit.variants|length > 0 %}<span class="badge bg-info">Parent</span>{% endif %}</td>
+                                                <td>{{ unit.unit_type }}</td>
+                                                <td class="points-display">{{ unit.total_points }}</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-primary" onclick="addUnitToList({{ unit.id }}, '{{ unit.name }}', {{ unit.total_points }}, '{{ unit.unit_type }}')">
+                                                        <i class="bi bi-plus"></i> Add
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {# Show variants indented under parent #}
+                                            {% for variant in unit.variants %}
+                                            <tr>
+                                                <td style="padding-left: 2em;">
+                                                    <span class="text-secondary"><i class="bi bi-arrow-return-right"></i> Variant:</span> <strong>{{ variant.name }}</strong>
+                                                </td>
+                                                <td>{{ variant.unit_type }}</td>
+                                                <td class="points-display">{{ variant.total_points }}</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-primary" onclick="addUnitToList({{ variant.id }}, '{{ variant.name }}', {{ variant.total_points }}, '{{ variant.unit_type }}')">
+                                                        <i class="bi bi-plus"></i> Add
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-info">
+                                    No units found for this faction. <a href="{{ url_for('unit_builder') }}">Create a unit first</a>!
+                                </div>
+                                {% endif %}
                             </div>
-                            {% else %}
-                            <div class="alert alert-info">
-                                No units found. <a href="{{ url_for('unit_builder') }}">Create a unit first</a>!
+                            <div class="tab-pane fade" id="publicUnits">
+                                {% if public_units %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Type</th>
+                                                <th>Points</th>
+                                                <th>Creator</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for unit in public_units %}
+                                            <tr>
+                                                <td><strong>{{ unit.name }}</strong></td>
+                                                <td>{{ unit.unit_type }}</td>
+                                                <td class="points-display">{{ unit.total_points }}</td>
+                                                <td>{{ unit.creator.username }}</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-primary" onclick="addUnitToList({{ unit.id }}, '{{ unit.name }}', {{ unit.total_points }})">
+                                                        <i class="bi bi-plus"></i> Add
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-info">
+                                    No public units available for this faction yet.
+                                </div>
+                                {% endif %}
                             </div>
-                            {% endif %}
                         </div>
-
-                        <div class="tab-pane fade" id="publicUnits">
-                            {% if public_units %}
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Type</th>
-                                            <th>Points</th>
-                                            <th>Creator</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for unit in public_units %}
-                                        <tr>
-                                            <td><strong>{{ unit.name }}</strong></td>
-                                            <td>{{ unit.unit_type }}</td>
-                                            <td class="points-display">{{ unit.total_points }}</td>
-                                            <td>{{ unit.creator.username }}</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-primary" onclick="addUnitToList({{ unit.id }}, '{{ unit.name }}', {{ unit.total_points }})">
-                                                    <i class="bi bi-plus"></i> Add
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                            {% else %}
-                            <div class="alert alert-info">
-                                No public units available yet.
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

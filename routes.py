@@ -1427,13 +1427,12 @@ def init_routes(app):
     def list_builder():
         selected_faction_id = request.args.get('faction_id', type=int)
         my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
-        my_units_query = Unit.query.filter_by(user_id=current_user.id)
-        public_units_query = Unit.query.filter_by(is_public=True)
         if selected_faction_id:
-            my_units_query = my_units_query.filter_by(faction_id=selected_faction_id)
-            public_units_query = public_units_query.filter_by(faction_id=selected_faction_id)
-        my_units = my_units_query.order_by(Unit.faction_id, Unit.name).all()
-        public_units = public_units_query.order_by(Unit.faction_id, Unit.name).all()
+            my_units = Unit.query.filter_by(user_id=current_user.id, faction_id=selected_faction_id).order_by(Unit.faction_id, Unit.name).all()
+            public_units = Unit.query.filter_by(is_public=True, faction_id=selected_faction_id).order_by(Unit.faction_id, Unit.name).all()
+        else:
+            my_units = []
+            public_units = []
         return render_template('list_builder.html', my_units=my_units, public_units=public_units, my_factions=my_factions, selected_faction_id=selected_faction_id)
     
     @app.route('/list/save', methods=['POST'])
