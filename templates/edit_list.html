@@ -273,11 +273,17 @@ function updateListDisplay() {
                 <div>
                     <strong>${unitName}</strong>
                     ${unitType ? `<span class="text-muted small">(${unitType})</span>` : ''}
-                    <div class="text-muted small">Qty: ${quantity}</div>
+                    <div class="d-flex align-items-center gap-2 mt-1">
+                        <span class="badge bg-secondary">Qty: ${quantity}</span>
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Quantity controls">
+                            <button class="btn btn-outline-secondary" onclick="removeUnitFromList(${item.unit_id})">-</button>
+                            <button class="btn btn-outline-secondary" onclick="addUnitToList(${item.unit_id})">+</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="text-end">
                     <div class="points-display">${subtotal}</div>
-                    <button class="btn btn-sm btn-outline-danger mt-1" onclick="removeUnitFromList(${item.unit_id})">
+                    <button class="btn btn-sm btn-outline-danger mt-1" onclick="removeAllFromList(${item.unit_id})">
                         <i class="bi bi-x"></i>
                     </button>
                 </div>
@@ -308,6 +314,11 @@ function removeUnitFromList(unitId) {
     } else {
         listUnits.splice(index, 1);
     }
+    updateListDisplay();
+}
+
+function removeAllFromList(unitId) {
+    listUnits = listUnits.filter(u => u.unit_id !== unitId);
     updateListDisplay();
 }
 
