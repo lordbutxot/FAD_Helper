@@ -1504,6 +1504,29 @@ def init_routes(app):
         
         return render_template('view_list.html', army_list=army_list)
     
+    def _serialize_unit_for_list(unit, include_variants=True):
+        unit_data = {
+            'id': unit.id,
+            'name': unit.name,
+            'unit_type': unit.unit_type,
+            'total_points': unit.total_points,
+            'quality': unit.quality,
+            'parent_id': unit.parent_id,
+            'squad_size': unit.squad_size,
+            'movement_type': unit.movement_type,
+        }
+        if unit.creator:
+            unit_data['creator'] = {
+                'id': unit.creator.id,
+                'username': unit.creator.username,
+            }
+        if include_variants:
+            unit_data['variants'] = [
+                _serialize_unit_for_list(variant, include_variants=False)
+                for variant in unit.variants
+            ]
+        return unit_data
+
     @app.route('/list/<int:list_id>/edit')
     @login_required
     def edit_list(list_id):
@@ -1513,10 +1536,21 @@ def init_routes(app):
             flash('You can only edit your own lists', 'danger')
             return redirect(url_for('dashboard'))
         
+        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
         my_units = Unit.query.filter_by(user_id=current_user.id).order_by(Unit.faction_id, Unit.name).all()
         public_units = Unit.query.filter_by(is_public=True).order_by(Unit.faction_id, Unit.name).all()
+        my_units_json = [_serialize_unit_for_list(unit) for unit in my_units]
+        public_units_json = [_serialize_unit_for_list(unit) for unit in public_units]
         
-        return render_template('edit_list.html', army_list=army_list, my_units=my_units, public_units=public_units)
+        return render_template(
+            'edit_list.html',
+            army_list=army_list,
+            my_units=my_units,
+            public_units=public_units,
+            my_units_json=my_units_json,
+            public_units_json=public_units_json,
+            my_factions=my_factions,
+        )
     
     @app.route('/list/<int:list_id>/delete', methods=['POST'])
     @login_required

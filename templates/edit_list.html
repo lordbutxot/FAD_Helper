@@ -209,11 +209,11 @@ let sortOrder = 'asc';
 listUnits = JSON.parse({{ army_list.units_json|tojson|safe }});
 {% endif %}
 // Pre-populate myUnits and publicUnits from backend
-{% if my_units %}
-myUnits = JSON.parse({{ my_units|tojson|safe }});
+{% if my_units_json %}
+myUnits = {{ my_units_json|tojson|safe }};
 {% endif %}
-{% if public_units %}
-publicUnits = JSON.parse({{ public_units|tojson|safe }});
+{% if public_units_json %}
+publicUnits = {{ public_units_json|tojson|safe }};
 {% endif %}
 window.addEventListener('DOMContentLoaded', function() {
     updateListDisplay();
