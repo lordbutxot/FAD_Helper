@@ -72,6 +72,7 @@
                                         <tr>
                                             <th>Name</th>
                                             <th>Type</th>
+                                            <th>Details</th>
                                             <th>Points</th>
                                             <th>Action</th>
                                         </tr>
@@ -81,6 +82,15 @@
                                         <tr>
                                             <td><strong>{{ unit.name }}</strong> {% if unit.variants|length > 0 %}<span class="badge bg-info">Parent</span>{% endif %}</td>
                                             <td>{{ unit.unit_type }}</td>
+                                            <td>
+                                                {% if unit.unit_type == 'Squad' and unit.squad_size %}
+                                                    <small class="text-muted"><i class="bi bi-people"></i> {{ unit.squad_size }} troops</small>
+                                                {% elif unit.unit_type == 'Vehicle' and unit.movement_type %}
+                                                    <small class="text-muted"><i class="bi bi-arrow-right"></i> {{ unit.movement_type }}</small>
+                                                {% else %}
+                                                    <small class="text-muted">-</small>
+                                                {% endif %}
+                                            </td>
                                             <td class="points-display">{{ unit.total_points }}</td>
                                             <td>
                                                 <button class="btn btn-sm btn-primary" onclick="addUnitToList({{ unit.id }}, '{{ unit.name }}', {{ unit.total_points }}, '{{ unit.unit_type }}')">
@@ -94,6 +104,14 @@
                                                 <span class="text-secondary"><i class="bi bi-arrow-return-right"></i> Variant:</span> <strong>{{ variant.name }}</strong>
                                             </td>
                                             <td>{{ variant.unit_type }}</td>
+                                            <td>
+                                                {% if variant.unit_type == 'Squad' and variant.squad_size %}
+                                                    <small class="text-muted"><i class="bi bi-people"></i> {{ variant.squad_size }} troops</small>
+                                                {% elif variant.unit_type == 'Vehicle' and variant.movement_type %}
+                                                    <small class="text-muted"><i class="bi bi-arrow-right"></i> {{ variant.movement_type }}</small>
+                                                {% else %}\n                                                    <small class="text-muted">-</small>
+                                                {% endif %}
+                                            </td>
                                             <td class="points-display">{{ variant.total_points }}</td>
                                             <td>
                                                 <button class="btn btn-sm btn-primary" onclick="addUnitToList({{ variant.id }}, '{{ variant.name }}', {{ variant.total_points }}, '{{ variant.unit_type }}')">

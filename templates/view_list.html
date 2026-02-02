@@ -47,6 +47,7 @@
                                 <tr>
                                     <th>Unit Name</th>
                                     <th>Type</th>
+                                    <th>Details</th>
                                     <th>Quantity</th>
                                     <th>Points Each</th>
                                     <th>Subtotal</th>
@@ -75,6 +76,15 @@
                                         </button>
                                     </td>
                                     <td>{{ item.unit.unit_type }}</td>
+                                    <td>
+                                        {% if item.unit.unit_type == 'Squad' and item.unit.squad_size %}
+                                            <small class="text-muted"><i class="bi bi-people"></i> {{ item.unit.squad_size }} troops</small>
+                                        {% elif item.unit.unit_type == 'Vehicle' and item.unit.movement_type %}
+                                            <small class="text-muted"><i class="bi bi-arrow-right"></i> {{ item.unit.movement_type }}</small>
+                                        {% else %}
+                                            <small class="text-muted">-</small>
+                                        {% endif %}
+                                    </td>
                                     <td>{{ item.quantity }}</td>
                                     <td class="points-display">{{ item.unit.total_points }}</td>
                                     <td class="points-display">{{ (item.unit.total_points * item.quantity)|round(2) }}</td>

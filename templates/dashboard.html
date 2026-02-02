@@ -62,9 +62,6 @@
                         </div>
                     </div>
                 </div>
-                        </div>
-                    </div>
-                </div>
                 {% endfor %}
             </div>
             {% else %}
@@ -249,6 +246,7 @@
                             <th class="sortable-col">Type</th>
                             <th class="sortable-col">Faction</th>
                             <th class="sortable-col">Quality</th>
+                            <th class="sortable-col">Details</th>
                             <th class="sortable-col">Points</th>
                             <th>Visibility</th>
                             <th>Actions</th>
@@ -270,6 +268,15 @@
                             </td>
                             <td>{{ parent.faction.name if parent.faction else '-' }}</td>
                             <td>{{ parent.quality }}</td>
+                            <td>
+                                {% if parent.unit_type == 'Squad' and parent.squad_size %}
+                                    <small class="text-muted"><i class="bi bi-people"></i> Squad: {{ parent.squad_size }}</small>
+                                {% elif parent.unit_type == 'Vehicle' and parent.movement_type %}
+                                    <small class="text-muted"><i class="bi bi-arrow-right"></i> {{ parent.movement_type }}</small>
+                                {% else %}
+                                    <small class="text-muted">-</small>
+                                {% endif %}
+                            </td>
                             <td class="points-display"><strong>{{ parent.total_points }}</strong> pts</td>
                             <td>
                                 {% if parent.is_public %}
@@ -302,6 +309,15 @@
                             </td>
                             <td>{{ variant.faction.name if variant.faction else '-' }}</td>
                             <td>{{ variant.quality }}</td>
+                            <td>
+                                {% if variant.unit_type == 'Squad' and variant.squad_size %}
+                                    <small class="text-muted"><i class="bi bi-people"></i> Squad: {{ variant.squad_size }}</small>
+                                {% elif variant.unit_type == 'Vehicle' and variant.movement_type %}
+                                    <small class="text-muted"><i class="bi bi-arrow-right"></i> {{ variant.movement_type }}</small>
+                                {% else %}
+                                    <small class="text-muted">-</small>
+                                {% endif %}
+                            </td>
                             <td class="points-display"><strong>{{ variant.total_points }}</strong> pts</td>
                             <td>
                                 {% if variant.is_public %}
