@@ -46,6 +46,15 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h3>Available Units</h3>
+                    <div class="mb-2">
+                        <label class="form-label me-2">Sort by:</label>
+                        <select id="unitSort" class="form-select form-select-sm d-inline-block w-auto" onchange="sortUnits()">
+                            <option value="name">Name</option>
+                            <option value="points">Points</option>
+                            <option value="quality">Quality</option>
+                        </select>
+                        <button class="btn btn-sm btn-outline-secondary ms-2" onclick="toggleSortOrder()" id="sortOrderBtn">Ascending</button>
+                    </div>
                     <ul class="nav nav-tabs mb-3">
                         <li class="nav-item">
                             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#myUnits">My Units</button>
@@ -174,15 +183,100 @@
 <script>
 
 let listUnits = [];
+let myUnits = [];
+let publicUnits = [];
+let sortOrder = 'asc';
 // Pre-populate listUnits from army_list.units_json
 {% if army_list.units_json %}
 listUnits = JSON.parse({{ army_list.units_json|tojson|safe }});
+{% endif %}
+// Pre-populate myUnits and publicUnits from backend
+{% if my_units %}
+myUnits = JSON.parse({{ my_units|tojson|safe }});
+{% endif %}
+{% if public_units %}
+publicUnits = JSON.parse({{ public_units|tojson|safe }});
+{% endif %}
 window.addEventListener('DOMContentLoaded', function() {
     updateListDisplay();
+    renderUnitsTable();
 });
-{% endif %}
 
-// ...existing JS from list_builder.html (addUnitToList, removeUnitFromList, updateQuantity, updateListDisplay, isUnitAttached, attachUnit, detachUnit)...
+
+function sortUnits() {
+    const sortBy = document.getElementById('unitSort').value;
+    const order = sortOrder;
+    const compare = (a, b) => {
+        let valA, valB;
+        if (sortBy === 'points') {
+            valA = a.total_points;
+            valB = b.total_points;
+        } else if (sortBy === 'quality') {
+            valA = a.quality || '';
+            valB = b.quality || '';
+        } else {
+            valA = a.name.toLowerCase();
+            valB = b.name.toLowerCase();
+        }
+        if (valA < valB) return order === 'asc' ? -1 : 1;
+        if (valA > valB) return order === 'asc' ? 1 : -1;
+        return 0;
+    };
+    myUnits.sort(compare);
+    publicUnits.sort(compare);
+    renderUnitsTable();
+}
+
+function toggleSortOrder() {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+    document.getElementById('sortOrderBtn').textContent = sortOrder === 'asc' ? 'Ascending' : 'Descending';
+    sortUnits();
+}
+
+function renderUnitsTable() {
+    // Render myUnits table
+    const myUnitsTable = document.querySelector('#myUnits .table tbody');
+    if (myUnitsTable) {
+        myUnitsTable.innerHTML = '';
+        myUnits.forEach(unit => {
+            if (!unit.parent_id) {
+                myUnitsTable.innerHTML += `
+                <tr>
+                    <td><strong>${unit.name}</strong> ${unit.variants && unit.variants.length > 0 ? '<span class="badge bg-info">Parent</span>' : ''}</td>
+                    <td>${unit.unit_type}</td>
+                    <td class="points-display">${unit.total_points}</td>
+                    <td><button class="btn btn-sm btn-primary" onclick="addUnitToList(${unit.id}, '${unit.name}', ${unit.total_points}, '${unit.unit_type}')"><i class="bi bi-plus"></i> Add</button></td>
+                </tr>`;
+                if (unit.variants) {
+                    unit.variants.forEach(variant => {
+                        myUnitsTable.innerHTML += `
+                        <tr>
+                            <td style="padding-left: 2em;"><span class="text-secondary"><i class="bi bi-arrow-return-right"></i> Variant:</span> <strong>${variant.name}</strong></td>
+                            <td>${variant.unit_type}</td>
+                            <td class="points-display">${variant.total_points}</td>
+                            <td><button class="btn btn-sm btn-primary" onclick="addUnitToList(${variant.id}, '${variant.name}', ${variant.total_points}, '${variant.unit_type}')"><i class="bi bi-plus"></i> Add</button></td>
+                        </tr>`;
+                    });
+                }
+            }
+        });
+    }
+    // Render publicUnits table
+    const publicUnitsTable = document.querySelector('#publicUnits .table tbody');
+    if (publicUnitsTable) {
+        publicUnitsTable.innerHTML = '';
+        publicUnits.forEach(unit => {
+            publicUnitsTable.innerHTML += `
+            <tr>
+                <td><strong>${unit.name}</strong></td>
+                <td>${unit.unit_type}</td>
+                <td class="points-display">${unit.total_points}</td>
+                <td>${unit.creator ? unit.creator.username : ''}</td>
+                <td><button class="btn btn-sm btn-primary" onclick="addUnitToList(${unit.id}, '${unit.name}', ${unit.total_points})"><i class="bi bi-plus"></i> Add</button></td>
+            </tr>`;
+        });
+    }
+}
 
 async function saveList(listId) {
     const name = document.getElementById('listName').value;
