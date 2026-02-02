@@ -204,6 +204,7 @@ let listUnits = [];
 let myUnits = [];
 let publicUnits = [];
 let sortOrder = 'asc';
+const unitIndex = {};
 // Pre-populate listUnits from army_list.units_json
 {% if army_list.units_json %}
 listUnits = JSON.parse({{ army_list.units_json|tojson|safe }});
@@ -215,10 +216,100 @@ myUnits = {{ my_units_json|tojson|safe }};
 {% if public_units_json %}
 publicUnits = {{ public_units_json|tojson|safe }};
 {% endif %}
+function indexUnits(units) {
+    units.forEach(unit => {
+        unitIndex[unit.id] = unit;
+        if (unit.variants && unit.variants.length) {
+            unit.variants.forEach(variant => {
+                unitIndex[variant.id] = variant;
+            });
+        }
+    });
+}
+if (myUnits.length) {
+    indexUnits(myUnits);
+}
+if (publicUnits.length) {
+    indexUnits(publicUnits);
+}
 window.addEventListener('DOMContentLoaded', function() {
     updateListDisplay();
     renderUnitsTable();
 });
+
+function updateListDisplay() {
+    const listUnitsContainer = document.getElementById('listUnits');
+    const totalUnitsEl = document.getElementById('totalUnits');
+    const totalPointsEl = document.getElementById('totalPoints');
+
+    if (!listUnitsContainer || !totalUnitsEl || !totalPointsEl) {
+        return;
+    }
+
+    if (!Array.isArray(listUnits) || listUnits.length === 0) {
+        listUnitsContainer.innerHTML = '<p class="text-muted">No units added yet</p>';
+        totalUnitsEl.textContent = '0';
+        totalPointsEl.textContent = '0';
+        return;
+    }
+
+    let totalUnits = 0;
+    let totalPoints = 0;
+    listUnitsContainer.innerHTML = '';
+
+    listUnits.forEach(item => {
+        const unit = unitIndex[item.unit_id];
+        const quantity = item.quantity || 1;
+        const unitPoints = unit ? unit.total_points : 0;
+        totalUnits += quantity;
+        totalPoints += unitPoints * quantity;
+
+        const unitName = unit ? unit.name : `Unit #${item.unit_id}`;
+        const unitType = unit ? unit.unit_type : '';
+        const subtotal = (unitPoints * quantity).toFixed(2);
+
+        listUnitsContainer.innerHTML += `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <strong>${unitName}</strong>
+                    ${unitType ? `<span class="text-muted small">(${unitType})</span>` : ''}
+                    <div class="text-muted small">Qty: ${quantity}</div>
+                </div>
+                <div class="text-end">
+                    <div class="points-display">${subtotal}</div>
+                    <button class="btn btn-sm btn-outline-danger mt-1" onclick="removeUnitFromList(${item.unit_id})">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+    totalUnitsEl.textContent = totalUnits.toString();
+    totalPointsEl.textContent = totalPoints.toFixed(2);
+}
+
+function addUnitToList(unitId) {
+    const existing = listUnits.find(u => u.unit_id === unitId);
+    if (existing) {
+        existing.quantity = (existing.quantity || 1) + 1;
+    } else {
+        listUnits.push({ unit_id: unitId, quantity: 1, attached_units: [] });
+    }
+    updateListDisplay();
+}
+
+function removeUnitFromList(unitId) {
+    const index = listUnits.findIndex(u => u.unit_id === unitId);
+    if (index === -1) return;
+    const item = listUnits[index];
+    if ((item.quantity || 1) > 1) {
+        item.quantity -= 1;
+    } else {
+        listUnits.splice(index, 1);
+    }
+    updateListDisplay();
+}
 
 
 function sortUnits() {

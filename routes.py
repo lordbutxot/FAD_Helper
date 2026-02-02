@@ -1181,12 +1181,14 @@ def init_routes(app):
             (Weapon.name == 'Shotgun')
         ).order_by(Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
-        traits = Trait.query.filter(
-            or_(
-                and_(Trait.category == 'Infantry', Trait.name.in_(OFFICIAL_INFANTRY_TRAITS)),
+        if unit.unit_type == 'Vehicle':
+            traits = Trait.query.filter(
                 and_(Trait.category == 'Vehicle', Trait.name.in_(OFFICIAL_VEHICLE_TRAITS))
-            )
-        ).order_by(Trait.category, Trait.name).all()
+            ).order_by(Trait.category, Trait.name).all()
+        else:
+            traits = Trait.query.filter(
+                and_(Trait.category == 'Infantry', Trait.name.in_(OFFICIAL_INFANTRY_TRAITS))
+            ).order_by(Trait.category, Trait.name).all()
 
         # For display: use inherited traits if none are set
         if not (unit.traits_json and json.loads(unit.traits_json)):
