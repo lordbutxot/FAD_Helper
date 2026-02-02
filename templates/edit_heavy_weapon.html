@@ -270,20 +270,24 @@ function calculatePoints() {
     // Armour points
     const armourPts = armourId ? (armourPoints[armourId] || 0) : 0;
     
-    // Traits
-    let traitsPoints = 0;
+    // Calculate subtotal before traits
+    const subtotal = basePoints + weaponPts + armourPts;
+    
+    // Apply trait multipliers sequentially (per game rules)
+    let traitMultiplier = 1.0;
     document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
-        traitsPoints += traitPoints[checkbox.value] || 0;
+        const traitMult = traitPoints[checkbox.value] || 1.0;
+        traitMultiplier = traitMultiplier * traitMult;
     });
     
-    const totalPoints = basePoints + weaponPts + armourPts + traitsPoints;
+    const totalPoints = subtotal * traitMultiplier;
     
     // Update display
     document.getElementById('calc_base_points').textContent = basePoints;
     document.getElementById('calc_weapon').textContent = weaponPts;
     document.getElementById('calc_armour').textContent = armourPts;
-    document.getElementById('calc_traits').textContent = traitsPoints;
-    document.getElementById('calc_total').textContent = totalPoints;
+    document.getElementById('calc_traits').textContent = `×${traitMultiplier.toFixed(2)}`;
+    document.getElementById('calc_total').textContent = totalPoints.toFixed(2);
 }
 
 // Initialize Bootstrap tooltips
