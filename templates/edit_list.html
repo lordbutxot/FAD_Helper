@@ -172,11 +172,14 @@
 </div>
 
 <script>
-let listUnits = [];
 
+let listUnits = [];
 // Pre-populate listUnits from army_list.units_json
 {% if army_list.units_json %}
 listUnits = JSON.parse({{ army_list.units_json|tojson|safe }});
+window.addEventListener('DOMContentLoaded', function() {
+    updateListDisplay();
+});
 {% endif %}
 
 // ...existing JS from list_builder.html (addUnitToList, removeUnitFromList, updateQuantity, updateListDisplay, isUnitAttached, attachUnit, detachUnit)...
