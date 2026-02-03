@@ -9,7 +9,7 @@
         <div class="card-header text-white text-center py-5" style="background-color: {{ faction.color }};">
             <div class="d-flex flex-column align-items-center">
                 {% if faction.logo_filename %}
-                <img src="{{ url_for('static', filename='faction_logos/' + faction.logo_filename) }}" alt="{{ faction.name }}" style="width: 120px; height: 120px; object-fit: contain; margin-bottom: 15px; background: white; padding: 10px; border-radius: 12px;">
+                <img src="{% if faction.logo_url %}{{ faction.logo_url }}{% else %}{{ url_for('static', filename='faction_logos/' + faction.logo_filename) }}{% endif %}" alt="{{ faction.name }}" style="width: 120px; height: 120px; object-fit: contain; margin-bottom: 15px; background: white; padding: 10px; border-radius: 12px;">
                 {% else %}
                 <i class="bi bi-{{ faction.icon }}-fill" style="font-size: 100px; margin-bottom: 15px;"></i>
                 {% endif %}

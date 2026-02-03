@@ -12,3 +12,4 @@ markdown==3.5.1
 bleach==6.1.0
 reportlab==4.0.9
 Pillow==10.2.0
+supabase==2.3.4

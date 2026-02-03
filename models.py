@@ -36,7 +36,8 @@ class Faction(db.Model):
     description = db.Column(db.Text)
     color = db.Column(db.String(7), default='#0d6efd')  # Hex color for UI display
     icon = db.Column(db.String(50), default='shield')  # Bootstrap icon name
-    logo_filename = db.Column(db.String(255))  # Uploaded logo image filename
+    logo_filename = db.Column(db.String(255))  # Uploaded logo image filename (for Supabase)
+    logo_url = db.Column(db.String(500))  # Public URL for logo (Supabase Storage URL)
     playstyle_tags = db.Column(db.Text)  # JSON list of tactical playstyle tags
     background = db.Column(db.Text)  # Lore/background information
     special_rules = db.Column(db.Text)  # Faction-wide special rules

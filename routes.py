@@ -63,6 +63,7 @@ import re
 import os
 import uuid
 from sqlalchemy import and_, or_
+from storage_utils import upload_faction_logo, delete_faction_logo, get_logo_url
 
 
 # File upload configuration
@@ -410,6 +411,7 @@ def init_routes(app):
                 
                 # Handle logo upload
                 logo_filename = None
+                logo_url = None
                 if 'logo' in request.files:
                     file = request.files['logo']
                     if file and file.filename:
@@ -423,7 +425,7 @@ def init_routes(app):
                         elif not allowed_file(file.filename):
                             flash('Invalid file type. Only PNG, JPG, JPEG, and GIF are allowed.', 'warning')
                         else:
-                            logo_filename = save_faction_logo(file)
+                            logo_filename, logo_url = upload_faction_logo(file)
                             if not logo_filename:
                                 flash('Error uploading logo. Please try again.', 'warning')
                 
@@ -434,6 +436,7 @@ def init_routes(app):
                     color=color,
                     icon=icon,
                     logo_filename=logo_filename,
+                    logo_url=logo_url,
                     playstyle_tags=playstyle_tags_json,
                     background=background,
                     special_rules=special_rules,
@@ -653,9 +656,10 @@ def init_routes(app):
                             if faction.logo_filename:
                                 delete_faction_logo(faction.logo_filename)
                             
-                            logo_filename = save_faction_logo(file)
+                            logo_filename, logo_url = upload_faction_logo(file)
                             if logo_filename:
                                 faction.logo_filename = logo_filename
+                                faction.logo_url = logo_url
                             else:
                                 flash('Error uploading logo. Please try again.', 'warning')
                 
@@ -682,21 +686,9 @@ def init_routes(app):
             if not original_faction.is_public and original_faction.user_id != current_user.id:
                 return jsonify({'success': False, 'error': 'Cannot copy private faction'}), 403
             
-            # Copy logo file if exists
-            new_logo_filename = None
-            if original_faction.logo_filename:
-                try:
-                    import shutil
-                    old_path = os.path.join(UPLOAD_FOLDER, original_faction.logo_filename)
-                    if os.path.exists(old_path):
-                        # Generate new filename
-                        ext = original_faction.logo_filename.rsplit('.', 1)[1].lower()
-                        new_logo_filename = f"{uuid.uuid4()}.{ext}"
-                        new_path = os.path.join(UPLOAD_FOLDER, new_logo_filename)
-                        shutil.copy2(old_path, new_path)
-                except Exception as e:
-                    print(f"Error copying logo: {e}")
-                    # Continue without logo
+            # Copy logo reference (Supabase URLs are shareable)
+            new_logo_filename = original_faction.logo_filename
+            new_logo_url = original_faction.logo_url
             
             # Create new faction
             new_faction = Faction(  # type: ignore
@@ -706,6 +698,7 @@ def init_routes(app):
                 color=original_faction.color,
                 icon=original_faction.icon,
                 logo_filename=new_logo_filename,
+                logo_url=new_logo_url,
                 playstyle_tags=original_faction.playstyle_tags,
                 background=original_faction.background,
                 special_rules=original_faction.special_rules,

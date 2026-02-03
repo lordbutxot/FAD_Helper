@@ -56,7 +56,7 @@
                             <label for="logo" class="form-label">Faction Logo</label>
                             {% if faction.logo_filename %}
                             <div class="mb-2">
-                                <img src="{{ url_for('static', filename='faction_logos/' + faction.logo_filename) }}" alt="Current logo" style="max-width: 100px; border: 2px solid #dee2e6; border-radius: 4px;">
+                                <img src="{% if faction.logo_url %}{{ faction.logo_url }}{% else %}{{ url_for('static', filename='faction_logos/' + faction.logo_filename) }}{% endif %}" alt="Current logo" style="max-width: 100px; border: 2px solid #dee2e6; border-radius: 4px;">
                                 <small class="text-muted d-block">Current logo</small>
                             </div>
                             {% endif %}
@@ -184,7 +184,7 @@
                 <div class="card-body text-center">
                     <div class="mb-3">
                         {% if faction.logo_filename %}
-                        <img id="preview-logo-img" src="{{ url_for('static', filename='faction_logos/' + faction.logo_filename) }}" alt="Faction logo" style="max-width: 100px; max-height: 100px; border-radius: 8px; margin-bottom: 10px;">
+                        <img id="preview-logo-img" src="{% if faction.logo_url %}{{ faction.logo_url }}{% else %}{{ url_for('static', filename='faction_logos/' + faction.logo_filename) }}{% endif %}" alt="Faction logo" style="max-width: 100px; max-height: 100px; border-radius: 8px; margin-bottom: 10px;">
                         {% else %}
                         <img id="preview-logo-img" src="" alt="Faction logo" style="max-width: 100px; max-height: 100px; display: none; border-radius: 8px; margin-bottom: 10px;">
                         {% endif %}

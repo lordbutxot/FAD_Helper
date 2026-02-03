@@ -49,6 +49,11 @@ class Config:
     MAX_CONTENT_LENGTH = 2 * 1024 * 1024  # 2MB max file size
     UPLOAD_FOLDER = 'static/faction_logos'
     
+    # Supabase Storage (for persistent file uploads)
+    SUPABASE_URL = os.environ.get('SUPABASE_URL', '')
+    SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '')
+    SUPABASE_STORAGE_BUCKET = 'faction-logos'
+    
     # Application
     FLASK_ENV = os.environ.get('FLASK_ENV', 'production')
 

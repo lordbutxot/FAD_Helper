@@ -89,7 +89,7 @@
                 <div class="card-header text-white" style="background-color: {{ faction.color }};">
                     <h5 class="mb-0">
                         {% if faction.logo_filename %}
-                        <img src="{{ url_for('static', filename='faction_logos/' + faction.logo_filename) }}" 
+                        <img src="{% if faction.logo_url %}{{ faction.logo_url }}{% else %}{{ url_for('static', filename='faction_logos/' + faction.logo_filename) }}{% endif %}" 
                              alt="{{ faction.name }}" 
                              style="width: 30px; height: 30px; object-fit: contain; margin-right: 8px; background: white; padding: 3px; border-radius: 4px;">
                         {% else %}
