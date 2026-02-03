@@ -76,45 +76,43 @@ def init_production_database():
         if list_count > 0:
             print(f"✅ Found {list_count} existing army lists - preserving all lists")
         
+        # First ensure is_repeatable column exists
+        print("\n1a. Ensuring is_repeatable column exists...")
+        try:
+            from sqlalchemy import text, inspect
+        
+            # Check if column exists using SQLAlchemy Inspector
+            inspector = inspect(db.engine)
+            trait_columns = [col['name'] for col in inspector.get_columns('trait')]
+        
+            if 'is_repeatable' not in trait_columns:
+                print("   📝 Adding is_repeatable column...")
+                with db.engine.connect() as conn:
+                    # Detect database type
+                    db_url = str(db.engine.url)
+                    if 'postgresql' in db_url or 'postgres' in db_url:
+                        # PostgreSQL
+                        conn.execute(text("""
+                            ALTER TABLE trait 
+                            ADD COLUMN is_repeatable BOOLEAN DEFAULT FALSE
+                        """))
+                    else:
+                        # SQLite
+                        conn.execute(text("""
+                            ALTER TABLE trait 
+                            ADD COLUMN is_repeatable BOOLEAN DEFAULT 0
+                        """))
+                    conn.commit()
+                print("   ✅ Column added successfully")
+            else:
+                print("   ✅ Column already exists")
+        except Exception as e:
+            print(f"   ⚠️  Error: {e}")
+            print("   Continuing with initialization...")
+        
         # Cleanup non-official traits before any early exit
         print("\n1b. Cleaning non-official traits...")
-           # First ensure is_repeatable column exists
-           print("\n1a. Ensuring is_repeatable column exists...")
-           try:
-               from sqlalchemy import text, inspect
-           
-               # Check if column exists using SQLAlchemy Inspector
-               inspector = inspect(db.engine)
-               trait_columns = [col['name'] for col in inspector.get_columns('trait')]
-           
-               if 'is_repeatable' not in trait_columns:
-                   print("   📝 Adding is_repeatable column...")
-                   with db.engine.connect() as conn:
-                       # Detect database type
-                       db_url = str(db.engine.url)
-                       if 'postgresql' in db_url or 'postgres' in db_url:
-                           # PostgreSQL
-                           conn.execute(text("""
-                               ALTER TABLE trait 
-                               ADD COLUMN is_repeatable BOOLEAN DEFAULT FALSE
-                           """))
-                       else:
-                           # SQLite
-                           conn.execute(text("""
-                               ALTER TABLE trait 
-                               ADD COLUMN is_repeatable BOOLEAN DEFAULT 0
-                           """))
-                       conn.commit()
-                   print("   ✅ Column added successfully")
-               else:
-                   print("   ✅ Column already exists")
-           except Exception as e:
-               print(f"   ⚠️  Error: {e}")
-               print("   Continuing with initialization...")
-       
-           # Cleanup non-official traits
-           print("\n1b. Cleaning non-official traits...")
-           cleanup_non_official_traits()
+        cleanup_non_official_traits()
 
         # Note: We do NOT skip if data exists - we UPDATE existing traits to match Traits.TXT
         
