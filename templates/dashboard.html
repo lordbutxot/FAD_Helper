@@ -256,7 +256,7 @@
                     <tbody>
                         {% set parent_units = units|selectattr('parent_id', 'equalto', None)|list %}
                         {% for parent in parent_units %}
-                        <tr style="background-color: #f8f9fa;">
+                        <tr style="background-color: #f8f9fa; font-weight: 500;">
                             <td><strong>{{ parent.name }}</strong></td>
                             <td>
                                 {% if parent.unit_type == 'Squad' %}
@@ -295,17 +295,17 @@
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{{ url_for('view_unit', unit_id=parent.id) }}" class="btn btn-outline-primary">View</a>
-                                    <a href="{{ url_for('edit_unit', unit_id=parent.id) }}" class="btn btn-outline-secondary">Edit</a>
-                                    <a href="{{ url_for('create_variant_route', unit_id=parent.id) }}" class="btn btn-outline-info">Create Variant</a>
-                                    <button onclick="deleteUnit({{ parent.id }})" class="btn btn-outline-danger">Delete</button>
+                                    <a href="{{ url_for('view_unit', unit_id=parent.id) }}" class="btn btn-outline-primary btn-sm">View</a>
+                                    <a href="{{ url_for('edit_unit', unit_id=parent.id) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                                    <a href="{{ url_for('create_variant_route', unit_id=parent.id) }}" class="btn btn-outline-info btn-sm">+Var</a>
+                                    <button onclick="deleteUnit({{ parent.id }})" class="btn btn-outline-danger btn-sm">Delete</button>
                                 </div>
                             </td>
                         </tr>
                         {% set variants = units|selectattr('parent_id', 'equalto', parent.id)|list %}
                         {% for variant in variants %}
-                        <tr>
-                            <td style="padding-left: 2em;">↳ <strong>{{ variant.name }}</strong> <span class="badge bg-secondary">Variant</span></td>
+                        <tr style="background-color: #fff; border-left: 3px solid #0d6efd;">
+                            <td style="padding-left: 2em;"><small class="text-muted">↳</small> <strong>{{ variant.name }}</strong> <span class="badge bg-secondary" style="font-size: 0.7rem;">Variant</span></td>
                             <td>
                                 {% if variant.unit_type == 'Squad' %}
                                     <span class="badge bg-primary">Infantry Squad</span>
@@ -314,13 +314,8 @@
                                 {% elif variant.unit_type == 'Vehicle' %}
                                     <span class="badge bg-secondary">Vehicle</span>
                                 {% endif %}
-                            </td>                            <td>
-                                {% if parent.role %}
-                                    <span class="badge bg-info"><i class="bi bi-tag"></i> {{ parent.role }}</span>
-                                {% else %}
-                                    <span class="text-muted">-</span>
-                                {% endif %}
-                            </td>                            <td>
+                            </td>
+                            <td>
                                 {% if variant.role %}
                                     <span class="badge bg-info"><i class="bi bi-tag"></i> {{ variant.role }}</span>
                                 {% else %}
@@ -348,10 +343,10 @@
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{{ url_for('view_unit', unit_id=variant.id) }}" class="btn btn-outline-primary">View</a>
-                                    <a href="{{ url_for('edit_unit', unit_id=variant.id) }}" class="btn btn-outline-secondary">Edit</a>
-                                    <a href="{{ url_for('create_variant_route', unit_id=variant.id) }}" class="btn btn-outline-info">Create Variant</a>
-                                    <button onclick="deleteUnit({{ variant.id }})" class="btn btn-outline-danger">Delete</button>
+                                    <a href="{{ url_for('view_unit', unit_id=variant.id) }}" class="btn btn-outline-primary btn-sm">View</a>
+                                    <a href="{{ url_for('edit_unit', unit_id=variant.id) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                                    <a href="{{ url_for('create_variant_route', unit_id=variant.id) }}" class="btn btn-outline-info btn-sm">Variant</a>
+                                    <button onclick="deleteUnit({{ variant.id }})" class="btn btn-outline-danger btn-sm">Delete</button>
                                 </div>
                             </td>
                         </tr>
@@ -366,13 +361,12 @@
             {% set individuals = my_units|selectattr('unit_type', 'in', ['Character', 'Sniper', 'Psionic'])|list %}
             {% if individuals %}
             <h4 class="mb-3"><i class="bi bi-person-fill text-warning"></i> Individuals ({{ individuals|length }})</h4>
-            <div class="table-responsive">
+            <div class="table-responsive mb-4">
                 <table class="table table-hover sortable">
                     <thead>
                         <tr>
                             <th class="sortable-col">Name</th>
                             <th class="sortable-col">Type</th>
-                            <th class="sortable-col">Role</th>
                             <th class="sortable-col">Role</th>
                             <th class="sortable-col">Faction</th>
                             <th class="sortable-col">Quality</th>
@@ -388,7 +382,7 @@
                     <tbody>
                         {% set parent_inds = individuals|selectattr('parent_id', 'equalto', None)|list %}
                         {% for parent in parent_inds %}
-                        <tr style="background-color: #f8f9fa;">
+                        <tr style="background-color: #f8f9fa; font-weight: 500;">
                             <td><strong>{{ parent.name }}</strong></td>
                             <td>
                                 {% if parent.unit_type == 'Character' %}
@@ -418,16 +412,16 @@
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{{ url_for('view_unit', unit_id=parent.id) }}" class="btn btn-outline-primary">View</a>
-                                    <a href="{{ url_for('edit_unit', unit_id=parent.id) }}" class="btn btn-outline-secondary">Edit</a>
-                                    <button onclick="deleteUnit({{ parent.id }})" class="btn btn-outline-danger">Delete</button>
+                                    <a href="{{ url_for('view_unit', unit_id=parent.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                    <a href="{{ url_for('edit_unit', unit_id=parent.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    <button onclick="deleteUnit({{ parent.id }})" class="btn btn-sm btn-outline-danger">Delete</button>
                                 </div>
                             </td>
                         </tr>
                         {% set variants = individuals|selectattr('parent_id', 'equalto', parent.id)|list %}
                         {% for variant in variants %}
-                        <tr>
-                            <td style="padding-left: 2em;">↳ <strong>{{ variant.name }}</strong> <span class="badge bg-secondary">Variant</span></td>
+                        <tr style="background-color: #fff; border-left: 3px solid #0d6efd;">
+                            <td style="padding-left: 2em;"><small class="text-muted">↳</small> <strong>{{ variant.name }}</strong> <span class="badge bg-secondary" style="font-size: 0.7rem;">Variant</span></td>
                             <td>
                                 {% if variant.unit_type == 'Character' %}
                                     <span class="badge bg-warning text-dark">Character</span>
@@ -456,9 +450,9 @@
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{{ url_for('view_unit', unit_id=variant.id) }}" class="btn btn-outline-primary">View</a>
-                                    <a href="{{ url_for('edit_unit', unit_id=variant.id) }}" class="btn btn-outline-secondary">Edit</a>
-                                    <button onclick="deleteUnit({{ variant.id }})" class="btn btn-outline-danger">Delete</button>
+                                    <a href="{{ url_for('view_unit', unit_id=variant.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                    <a href="{{ url_for('edit_unit', unit_id=variant.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    <button onclick="deleteUnit({{ variant.id }})" class="btn btn-sm btn-outline-danger">Delete</button>
                                 </div>
                             </td>
                         </tr>
