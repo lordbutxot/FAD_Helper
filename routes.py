@@ -1112,6 +1112,19 @@ def init_routes(app):
                 notes = request.form.get('notes', '').strip()
                 description = request.form.get('description', '').strip()
                 
+                # Build trait counts dict for repeatable traits
+                trait_counts = {}
+                for trait_id in property_ids:
+                    # Check if this trait has a count field (repeatable)
+                    count_field = f'trait_count_{trait_id}'
+                    if count_field in request.form:
+                        count = int(request.form.get(count_field, 1))
+                        if count > 0:
+                            trait_counts[trait_id] = count
+                    else:
+                        # Regular non-repeatable trait
+                        trait_counts[trait_id] = 1
+                
                 # Calculate points
                 data = {
                     'unit_type': 'Vehicle',
@@ -1123,7 +1136,7 @@ def init_routes(app):
                     'carrying_capacity': capacity,
                     'basic_weapon_id': int(basic_weapon_id) if basic_weapon_id else None,
                     'secondary_weapon_id': int(secondary_weapon_id) if secondary_weapon_id else None,
-                    'traits': [int(t) for t in property_ids]
+                    'trait_counts': trait_counts  # Pass the dict with counts
                 }
                 total_points = calculate_points(data)
                 
@@ -1143,7 +1156,7 @@ def init_routes(app):
                     carrying_capacity=capacity,
                     basic_weapon_id=int(basic_weapon_id) if basic_weapon_id else None,
                     secondary_weapon_id=int(secondary_weapon_id) if secondary_weapon_id else None,
-                    traits_json=json.dumps([int(t) for t in property_ids]),
+                    traits_json=json.dumps(trait_counts),  # Store as dict with counts
                     description=description,
                     notes=notes,
                     base_points=total_points,
@@ -1619,6 +1632,7 @@ def init_routes(app):
     def browse_lists():
         faction = request.args.get('faction', '')
         search = request.args.get('search', '')
+        sort = request.args.get('sort', 'newest')  # newest, oldest, points_asc, points_desc
         
         query = ArmyList.query.filter_by(is_public=True)
         
@@ -1629,13 +1643,23 @@ def init_routes(app):
         if search:
             query = query.filter(ArmyList.name.contains(search) | ArmyList.description.contains(search))
         
-        lists = query.order_by(ArmyList.created_at.desc()).all()
+        # Apply sorting
+        if sort == 'points_asc':
+            query = query.order_by(ArmyList.points.asc())
+        elif sort == 'points_desc':
+            query = query.order_by(ArmyList.points.desc())
+        elif sort == 'oldest':
+            query = query.order_by(ArmyList.created_at.asc())
+        else:  # newest (default)
+            query = query.order_by(ArmyList.created_at.desc())
+        
+        lists = query.all()
         
         # Get list of public factions that have public lists
         factions = db.session.query(Faction.name).join(ArmyList).filter(ArmyList.is_public == True).distinct().all()
         factions = [f[0] for f in factions if f[0]]
         
-        return render_template('browse.html', lists=lists, factions=factions, selected_faction=faction, search=search)
+        return render_template('browse.html', lists=lists, factions=factions, selected_faction=faction, search=search, current_sort=sort)
     
     @app.route('/armoury')
     def armoury():
@@ -1819,11 +1843,19 @@ def calculate_points(data):
             total_points = cost_per_trooper * squad_size
         
         # Step 6: Apply trait multipliers sequentially (per game rules)
-        if data.get('traits'):
-            for trait_id in data['traits']:
-                trait = Trait.query.get(trait_id)
-                if trait:
-                    total_points *= trait.points_multiplier
+        trait_data = data.get('trait_counts') or data.get('traits')
+        if trait_data:
+            if isinstance(trait_data, dict):
+                for trait_id_str, count in trait_data.items():
+                    trait = Trait.query.get(int(trait_id_str))
+                    if trait:
+                        for _ in range(int(count)):
+                            total_points *= trait.points_multiplier
+            else:
+                for trait_id in trait_data:
+                    trait = Trait.query.get(trait_id)
+                    if trait:
+                        total_points *= trait.points_multiplier
     
     # ==================== CHARACTER ====================
     elif unit_type == 'Character':
@@ -1860,11 +1892,19 @@ def calculate_points(data):
         total_points = total_points * (1 + quality_mult + resolve_mult)
         
         # Step 7: Apply trait multipliers sequentially (per game rules)
-        if data.get('traits'):
-            for trait_id in data['traits']:
-                trait = Trait.query.get(trait_id)
-                if trait:
-                    total_points *= trait.points_multiplier
+        trait_data = data.get('trait_counts') or data.get('traits')
+        if trait_data:
+            if isinstance(trait_data, dict):
+                for trait_id_str, count in trait_data.items():
+                    trait = Trait.query.get(int(trait_id_str))
+                    if trait:
+                        for _ in range(int(count)):
+                            total_points *= trait.points_multiplier
+            else:
+                for trait_id in trait_data:
+                    trait = Trait.query.get(trait_id)
+                    if trait:
+                        total_points *= trait.points_multiplier
     
     # ==================== HEAVY WEAPON ====================
     elif unit_type == 'HeavyWeapon':
@@ -1888,11 +1928,19 @@ def calculate_points(data):
         total_points = total_points * (1 + quality_mult + resolve_mult)
         
         # Step 5: Apply trait multipliers sequentially (per game rules)
-        if data.get('traits'):
-            for trait_id in data['traits']:
-                trait = Trait.query.get(trait_id)
-                if trait:
-                    total_points *= trait.points_multiplier
+        trait_data = data.get('trait_counts') or data.get('traits')
+        if trait_data:
+            if isinstance(trait_data, dict):
+                for trait_id_str, count in trait_data.items():
+                    trait = Trait.query.get(int(trait_id_str))
+                    if trait:
+                        for _ in range(int(count)):
+                            total_points *= trait.points_multiplier
+            else:
+                for trait_id in trait_data:
+                    trait = Trait.query.get(trait_id)
+                    if trait:
+                        total_points *= trait.points_multiplier
     
     # ==================== SNIPER ====================
     elif unit_type == 'Sniper':
@@ -1919,11 +1967,19 @@ def calculate_points(data):
         total_points = total_points * (1 + quality_mult + resolve_mult)
         
         # Step 6: Apply trait multipliers sequentially (per game rules)
-        if data.get('traits'):
-            for trait_id in data['traits']:
-                trait = Trait.query.get(trait_id)
-                if trait:
-                    total_points *= trait.points_multiplier
+        trait_data = data.get('trait_counts') or data.get('traits')
+        if trait_data:
+            if isinstance(trait_data, dict):
+                for trait_id_str, count in trait_data.items():
+                    trait = Trait.query.get(int(trait_id_str))
+                    if trait:
+                        for _ in range(int(count)):
+                            total_points *= trait.points_multiplier
+            else:
+                for trait_id in trait_data:
+                    trait = Trait.query.get(trait_id)
+                    if trait:
+                        total_points *= trait.points_multiplier
     
     # ==================== PSIONIC ====================
     elif unit_type == 'Psionic':
@@ -1966,11 +2022,19 @@ def calculate_points(data):
         total_points += strength * 2
         
         # Step 8: Apply trait multipliers sequentially (per game rules)
-        if data.get('traits'):
-            for trait_id in data['traits']:
-                trait = Trait.query.get(trait_id)
-                if trait:
-                    total_points *= trait.points_multiplier
+        trait_data = data.get('trait_counts') or data.get('traits')
+        if trait_data:
+            if isinstance(trait_data, dict):
+                for trait_id_str, count in trait_data.items():
+                    trait = Trait.query.get(int(trait_id_str))
+                    if trait:
+                        for _ in range(int(count)):
+                            total_points *= trait.points_multiplier
+            else:
+                for trait_id in trait_data:
+                    trait = Trait.query.get(trait_id)
+                    if trait:
+                        total_points *= trait.points_multiplier
     
     # ==================== VEHICLE ====================
     elif unit_type == 'Vehicle':
@@ -2014,11 +2078,22 @@ def calculate_points(data):
         total_points = total_points * (1 + quality_mult + resolve_mult)
         
         # Step 7: Apply trait/property multipliers sequentially (per game rules)
-        if data.get('traits'):
-            for trait_id in data['traits']:
-                trait = Trait.query.get(trait_id)
-                if trait:
-                    total_points *= trait.points_multiplier
+        trait_data = data.get('trait_counts') or data.get('traits')
+        if trait_data:
+            if isinstance(trait_data, dict):
+                # New format with counts for repeatable traits
+                for trait_id_str, count in trait_data.items():
+                    trait = Trait.query.get(int(trait_id_str))
+                    if trait:
+                        # Apply the multiplier once for each count
+                        for _ in range(int(count)):
+                            total_points *= trait.points_multiplier
+            else:
+                # Old format (array)
+                for trait_id in trait_data:
+                    trait = Trait.query.get(trait_id)
+                    if trait:
+                        total_points *= trait.points_multiplier
     
     return round(total_points, 2)
 

@@ -191,6 +191,38 @@
                         <div class="row">
                             {% for trait in traits %}
                             <div class="col-md-6 mb-2">
+                                {% if trait.is_repeatable %}
+                                <!-- Repeatable trait with counter -->
+                                <div class="trait-option repeatable-trait" data-trait-id="{{ trait.id }}">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1">
+                                            <strong>{{ trait.name }}</strong>
+                                            <small class="text-muted">(×{{ trait.points_multiplier }} each)</small>
+                                            <span class="badge bg-warning text-dark">Repeatable</span>
+                                            <i class="bi bi-info-circle info-icon" 
+                                               data-bs-toggle="tooltip" 
+                                               data-bs-placement="right"
+                                               title="{{ trait.description }} | Multiplier: ×{{ trait.points_multiplier }}"></i>
+                                        </div>
+                                        <div class="btn-group btn-group-sm ms-2" role="group">
+                                            <button type="button" class="btn btn-outline-secondary trait-count-minus" data-trait-id="{{ trait.id }}">
+                                                <i class="bi bi-dash"></i>
+                                            </button>
+                                            <input type="number" class="form-control trait-count-input" 
+                                                   id="trait_count_{{ trait.id }}" 
+                                                   name="trait_count_{{ trait.id }}" 
+                                                   value="0" min="0" max="10" 
+                                                   style="width: 60px; text-align: center;"
+                                                   data-trait-id="{{ trait.id }}">
+                                            <button type="button" class="btn btn-outline-secondary trait-count-plus" data-trait-id="{{ trait.id }}">
+                                                <i class="bi bi-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="traits" value="{{ trait.id }}" class="trait-hidden-input" data-trait-id="{{ trait.id }}" disabled>
+                                </div>
+                                {% else %}
+                                <!-- Regular trait with checkbox -->
                                 <div class="form-check trait-option">
                                     <input class="form-check-input" type="checkbox" name="traits" value="{{ trait.id }}" id="trait_{{ trait.id }}">
                                     <label class="form-check-label" for="trait_{{ trait.id }}">
@@ -202,6 +234,7 @@
                                            title="{{ trait.description }} | Multiplier: ×{{ trait.points_multiplier }}"></i>
                                     </label>
                                 </div>
+                                {% endif %}
                             </div>
                             {% endfor %}
                         </div>
@@ -574,10 +607,25 @@ function calculatePoints() {
 
     // Step 7: Apply each trait/property multiplier sequentially (per game rules)
     let traitMultiplier = 1.0;
-    document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
+    // Regular checkboxes
+    document.querySelectorAll('input[name="traits"]:checked:not([disabled])').forEach(checkbox => {
         const traitMult = traitPoints[checkbox.value] || 1.0;
         traitMultiplier = traitMultiplier * traitMult;
     });
+    
+    // Repeatable traits with counts
+    document.querySelectorAll('.trait-count-input').forEach(input => {
+        const count = parseInt(input.value) || 0;
+        if (count > 0) {
+            const traitId = input.dataset.traitId;
+            const traitMult = traitPoints[traitId] || 1.0;
+            // Apply multiplier once for each count
+            for (let i = 0; i < count; i++) {
+                traitMultiplier = traitMultiplier * traitMult;
+            }
+        }
+    });
+    
     cost = cost * traitMultiplier;
 
     // Round to 2 decimal places
@@ -607,6 +655,53 @@ document.getElementById('secondary_weapon_id').addEventListener('change', update
 document.querySelectorAll('input[name="traits"]').forEach(checkbox => {
     checkbox.addEventListener('change', updatePreview);
 });
+
+// Repeatable trait counter handlers
+document.querySelectorAll('.trait-count-plus').forEach(button => {
+    button.addEventListener('click', function() {
+        const traitId = this.dataset.traitId;
+        const input = document.getElementById(`trait_count_${traitId}`);
+        const currentValue = parseInt(input.value) || 0;
+        const maxValue = parseInt(input.max) || 10;
+        if (currentValue < maxValue) {
+            input.value = currentValue + 1;
+            updateRepeatableTraitHidden(traitId, currentValue + 1);
+            updatePreview();
+        }
+    });
+});
+
+document.querySelectorAll('.trait-count-minus').forEach(button => {
+    button.addEventListener('click', function() {
+        const traitId = this.dataset.traitId;
+        const input = document.getElementById(`trait_count_${traitId}`);
+        const currentValue = parseInt(input.value) || 0;
+        if (currentValue > 0) {
+            input.value = currentValue - 1;
+            updateRepeatableTraitHidden(traitId, currentValue - 1);
+            updatePreview();
+        }
+    });
+});
+
+document.querySelectorAll('.trait-count-input').forEach(input => {
+    input.addEventListener('input', function() {
+        const traitId = this.dataset.traitId;
+        const value = parseInt(this.value) || 0;
+        updateRepeatableTraitHidden(traitId, value);
+        updatePreview();
+    });
+});
+
+// Helper function to enable/disable hidden inputs for repeatable traits
+function updateRepeatableTraitHidden(traitId, count) {
+    const hiddenInput = document.querySelector(`.trait-hidden-input[data-trait-id="${traitId}"]`);
+    if (hiddenInput) {
+        hiddenInput.disabled = count === 0;
+        // Store the count as a data attribute for form submission
+        hiddenInput.setAttribute('data-count', count);
+    }
+}
 
 // Initial update
 updatePreview();

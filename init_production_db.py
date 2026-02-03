@@ -219,12 +219,19 @@ def init_production_database():
         
         added_vehicles = 0
         updated_vehicles = 0
+        
+        # List of repeatable traits
+        repeatable_traits = ['Weapon Stabilizer', 'Linked Weapons']
+        
         for name, desc, mult in vehicle_properties:
             existing = Trait.query.filter_by(name=name, category='Vehicle').first()
+            is_repeatable = name in repeatable_traits
+            
             if existing:
                 # Update existing trait with correct values from Traits.TXT
                 existing.description = desc
                 existing.points_multiplier = mult
+                existing.is_repeatable = is_repeatable
                 updated_vehicles += 1
             else:
                 # Insert new trait
@@ -232,13 +239,15 @@ def init_production_database():
                     name=name,
                     description=desc,
                     points_multiplier=mult,
-                    category='Vehicle'
+                    category='Vehicle',
+                    is_repeatable=is_repeatable
                 )
                 db.session.add(trait)
                 added_vehicles += 1
         
         db.session.commit()
         print(f"   ✅ Added {added_vehicles} vehicle properties, updated {updated_vehicles}")
+        print(f"   ℹ️  Marked {len(repeatable_traits)} traits as repeatable")
         
         # Weapons (46 weapons total)
         print("\n4. Populating Weapons...")

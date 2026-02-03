@@ -116,6 +116,7 @@ class Trait(db.Model):
     description = db.Column(db.Text, nullable=False)
     points_multiplier = db.Column(db.Float, nullable=False)
     category = db.Column(db.String(50))  # Infantry, Vehicle, Character, etc.
+    is_repeatable = db.Column(db.Boolean, default=False)  # Can be taken multiple times (e.g., Weapon Stabilizer)
     
     def __repr__(self):
         return f'<Trait {self.name}>'
@@ -236,8 +237,23 @@ class Unit(db.Model):
         """Get list of trait objects for this unit"""
         if not self.traits_json:
             return []
-        trait_ids = json.loads(self.traits_json)
+        data = json.loads(self.traits_json)
+        # Handle both old format [1,5,12] and new format {"1":1,"5":1,"12":2}
+        if isinstance(data, list):
+            trait_ids = data
+        else:
+            trait_ids = [int(k) for k in data.keys()]
         return Trait.query.filter(Trait.id.in_(trait_ids)).all()
+    
+    def get_trait_counts(self):
+        """Get dict of trait ID to count for this unit"""
+        if not self.traits_json:
+            return {}
+        data = json.loads(self.traits_json)
+        # Handle both old format [1,5,12] and new format {"1":1,"5":1,"12":2}
+        if isinstance(data, list):
+            return {str(trait_id): 1 for trait_id in data}
+        return {k: int(v) for k, v in data.items()}
     
     def get_squad_members(self):
         """Get list of squad members (for Squad type only)"""
@@ -253,10 +269,24 @@ class Unit(db.Model):
         return Weapon.query.filter(Weapon.id.in_(weapon_ids)).all()
     
     def get_vehicle_properties(self):
-        """Get list of vehicle properties/traits (for Vehicle type only)"""
+        """Get list of vehicle property IDs (for Vehicle type only)"""
         if not self.vehicle_properties_json or self.unit_type != 'Vehicle':
             return []
-        return json.loads(self.vehicle_properties_json)
+        data = json.loads(self.vehicle_properties_json)
+        # Handle both old format [1,5,12] and new format {"1":1,"5":1,"12":2}
+        if isinstance(data, list):
+            return data
+        return [int(k) for k in data.keys()]
+    
+    def get_vehicle_property_counts(self):
+        """Get dict of property ID to count (for Vehicle type only)"""
+        if not self.vehicle_properties_json or self.unit_type != 'Vehicle':
+            return {}
+        data = json.loads(self.vehicle_properties_json)
+        # Handle both old format [1,5,12] and new format {"1":1,"5":1,"12":2}
+        if isinstance(data, list):
+            return {str(prop_id): 1 for prop_id in data}
+        return {k: int(v) for k, v in data.items()}
     
     def __repr__(self):
         return f'<Unit {self.name} ({self.unit_type})>'
