@@ -1417,7 +1417,13 @@ def init_routes(app):
             flash('This unit is private', 'danger')
             return redirect(url_for('index'))
         
-        return render_template('view_unit.html', unit=unit)
+        # Get vehicle properties as Trait objects if this is a vehicle
+        vehicle_properties = []
+        if unit.unit_type == 'Vehicle' and unit.get_vehicle_properties():
+            prop_ids = unit.get_vehicle_properties()
+            vehicle_properties = Trait.query.filter(Trait.id.in_(prop_ids)).all()
+        
+        return render_template('view_unit.html', unit=unit, vehicle_properties=vehicle_properties)
     
     @app.route('/unit/<int:unit_id>/delete', methods=['POST'])
     @login_required
