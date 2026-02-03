@@ -208,5 +208,138 @@
     const allUnits = {{ all_units|tojson|safe }};
     const unitData = {};
     allUnits.forEach(u => unitData[u.id] = u);
+    
+    let listItems = {}; // Track units in list: { unit_id: { name, points, quantity, unit_type } }
+    
+    function addUnitToList(unitId, unitName, points, unitType) {
+        if (listItems[unitId]) {
+            listItems[unitId].quantity += 1;
+        } else {
+            listItems[unitId] = {
+                name: unitName,
+                points: points,
+                quantity: 1,
+                unit_type: unitType,
+                id: unitId
+            };
+        }
+        updateListDisplay();
+    }
+    
+    function removeUnitFromList(unitId) {
+        delete listItems[unitId];
+        updateListDisplay();
+    }
+    
+    function updateQuantity(unitId, newQuantity) {
+        const qty = parseInt(newQuantity) || 0;
+        if (qty <= 0) {
+            removeUnitFromList(unitId);
+        } else {
+            listItems[unitId].quantity = qty;
+            updateListDisplay();
+        }
+    }
+    
+    function updateListDisplay() {
+        const listContainer = document.getElementById('listUnits');
+        const totalPointsEl = document.getElementById('totalPoints');
+        const totalUnitsEl = document.getElementById('totalUnits');
+        
+        if (Object.keys(listItems).length === 0) {
+            listContainer.innerHTML = '<p class="text-muted">No units added yet</p>';
+            totalPointsEl.textContent = '0';
+            totalUnitsEl.textContent = '0';
+            return;
+        }
+        
+        let html = '<ul class="list-group">';
+        let totalPoints = 0;
+        let totalUnits = 0;
+        
+        for (const unitId in listItems) {
+            const item = listItems[unitId];
+            const itemTotal = item.points * item.quantity;
+            totalPoints += itemTotal;
+            totalUnits += item.quantity;
+            
+            html += `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${item.name}</strong>
+                        <br>
+                        <small class="text-muted">${item.points} pts × 
+                        <input type="number" min="1" max="99" value="${item.quantity}" 
+                               style="width: 45px;" 
+                               onchange="updateQuantity(${unitId}, this.value)" 
+                               class="form-control form-control-sm d-inline-block" style="width: 45px;"> = 
+                        ${itemTotal} pts</small>
+                    </div>
+                    <button class="btn btn-sm btn-danger" onclick="removeUnitFromList(${unitId})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </li>
+            `;
+        }
+        
+        html += '</ul>';
+        listContainer.innerHTML = html;
+        totalPointsEl.textContent = totalPoints;
+        totalUnitsEl.textContent = totalUnits;
+    }
+    
+    function saveList() {
+        const listName = document.getElementById('listName').value.trim();
+        const listFaction = document.getElementById('listFaction').value || null;
+        const listDescription = document.getElementById('listDescription').value;
+        const isPublic = document.getElementById('isPublic').checked;
+        
+        if (!listName) {
+            alert('Please enter a list name');
+            return;
+        }
+        
+        if (Object.keys(listItems).length === 0) {
+            alert('Please add at least one unit to the list');
+            return;
+        }
+        
+        const units = [];
+        for (const unitId in listItems) {
+            units.push({
+                unit_id: parseInt(unitId),
+                quantity: listItems[unitId].quantity
+            });
+        }
+        
+        const data = {
+            name: listName,
+            faction_id: listFaction ? parseInt(listFaction) : null,
+            description: listDescription,
+            is_public: isPublic,
+            units: units
+        };
+        
+        fetch('/list/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('List saved successfully!');
+                window.location.href = '/list/' + data.list_id;
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while saving the list');
+        });
+    }
 </script>
 {% endblock %}
