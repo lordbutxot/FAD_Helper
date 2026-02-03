@@ -172,6 +172,7 @@ class Unit(db.Model):
     faction_id = db.Column(db.Integer, db.ForeignKey('faction.id'), nullable=True)  # Optional: can be unassigned
     name = db.Column(db.String(100), nullable=False)
     unit_type = db.Column(db.String(50), nullable=False)  # Squad, Character, Sniper, HeavyWeapon, Psionic, Vehicle
+    role = db.Column(db.String(50))  # Battlefield role tag (e.g., "Line Infantry", "Fire Support", "Main Battle")
     
     # Base stats (all units)
     quality = db.Column(db.String(20), nullable=False)  # Rabble, Conscript, Regular, Elite

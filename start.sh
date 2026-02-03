@@ -4,6 +4,7 @@ set -e
 echo "Running all migrations..."
 python migrate_all.py
 python migrate_logo_url.py
+python migrate_unit_role.py
 
 echo "Ensuring parent_id column exists in unit table..."
 if [ -n "$DATABASE_URL" ]; then

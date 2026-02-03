@@ -135,6 +135,73 @@ OFFICIAL_VEHICLE_TRAITS = [
     'Supercharged', 'Under-Powered', 'Weapon Stabilizer'
 ]
 
+# Battlefield role tags for quick unit identification
+UNIT_ROLES = {
+    'Squad': [
+        'Line Infantry',
+        'Elite Assault',
+        'Assault / Urban',
+        'Fire Support',
+        'Recon',
+        'Internal Security',
+        'Frontline Support',
+        'Drop Troops',
+        'Mechanized Infantry',
+        'Heavy Infantry'
+    ],
+    'Character': [
+        'Elite Leadership',
+        'Strategic Command',
+        'Combat Support',
+        'EWAR Command',
+        'Tactical Command',
+        'Infantry Commander',
+        'Armored Commander',
+        'Special Operations'
+    ],
+    'HeavyWeapon': [
+        'Fire Support',
+        'Anti-Armor',
+        'Saturation',
+        'Indirect Support',
+        'Anti-Air',
+        'Area Denial',
+        'Direct Fire Support'
+    ],
+    'Sniper': [
+        'Precision Strikes',
+        'Recon',
+        'Hit & Run',
+        'Anti-Personnel',
+        'Target Elimination',
+        'Forward Observer'
+    ],
+    'Psionic': [
+        'Combat Support',
+        'EWAR / EMS',
+        'Elite Leadership',
+        'Psychic Warfare',
+        'Mind Control',
+        'Force Multiplier'
+    ],
+    'Vehicle': [
+        'Main Battle',
+        'Medium Tank',
+        'Light Tank',
+        'Assault IFV / Hybrid Tank',
+        'Transport',
+        'Support / Troop Delivery',
+        'Strike-Fighter',
+        'CAS / Transport',
+        'Saturation Artillery',
+        'Recon',
+        'Command Vehicle',
+        'Fire Support',
+        'Anti-Air',
+        'Engineering'
+    ]
+}
+
 def allowed_file(filename):
     """Check if file extension is allowed"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -743,6 +810,7 @@ def init_routes(app):
                 # Get form data
                 name = request.form.get('name', '').strip()
                 faction_id = request.form.get('faction_id') or None
+                role = request.form.get('role', '').strip() or None
                 quality = request.form.get('quality')
                 resolve = request.form.get('resolve')
                 squad_size = int(request.form.get('squad_size', 5))
@@ -773,6 +841,7 @@ def init_routes(app):
                     name=name,
                     unit_type='Squad',
                     faction_id=int(faction_id) if faction_id else None,
+                    role=role,
                     quality=quality,
                     resolve=resolve,
                     squad_size=squad_size,
@@ -797,7 +866,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating squad: {str(e)}', 'danger')
         
-        return render_template('squad_builder.html', weapons=weapons, secondary_weapons=secondary_weapons, armours=armours, traits=traits, my_factions=my_factions)
+        return render_template('squad_builder.html', weapons=weapons, secondary_weapons=secondary_weapons, armours=armours, traits=traits, my_factions=my_factions, roles=UNIT_ROLES['Squad'])
     
     # ==================== CHARACTER BUILDER ====================
     @app.route('/unit/builder/character', methods=['GET', 'POST'])
@@ -823,6 +892,7 @@ def init_routes(app):
                 specialization = request.form.get('specialization')
                 armour_id = request.form.get('armour_id') or None
                 basic_weapon_id = request.form.get('basic_weapon_id') or None
+                role = request.form.get('role', '').strip() or None
                 trait_ids = request.form.getlist('traits')
                 notes = request.form.get('notes', '').strip()
                 description = request.form.get('description', '').strip()
@@ -846,6 +916,7 @@ def init_routes(app):
                     faction_id=int(faction_id) if faction_id else None,
                     quality=quality,
                     resolve=resolve,
+                    role=role,
                     has_personality=has_personality,
                     leadership_rating=leadership_rating,
                     specialization=specialization,
@@ -868,7 +939,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating character: {str(e)}', 'danger')
         
-        return render_template('character_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions)
+        return render_template('character_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions, roles=UNIT_ROLES['Character'])
     
     # ==================== HEAVY WEAPONS TEAM BUILDER ====================
     @app.route('/unit/builder/heavy-weapon', methods=['GET', 'POST'])
@@ -892,6 +963,7 @@ def init_routes(app):
                 heavy_weapon_id = request.form.get('heavy_weapon_id') or None
                 armour_id = request.form.get('armour_id') or None
                 crew_count = int(request.form.get('crew_count', 2))
+                role = request.form.get('role', '').strip() or None
                 trait_ids = request.form.getlist('traits')
                 notes = request.form.get('notes', '').strip()
                 description = request.form.get('description', '').strip()
@@ -913,6 +985,7 @@ def init_routes(app):
                     faction_id=int(faction_id) if faction_id else None,
                     quality=quality,
                     resolve=resolve,
+                    role=role,
                     heavy_weapon_id=int(heavy_weapon_id) if heavy_weapon_id else None,
                     armour_id=int(armour_id) if armour_id else None,
                     crew_count=crew_count,
@@ -933,7 +1006,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating heavy weapons team: {str(e)}', 'danger')
         
-        return render_template('heavy_weapon_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions)
+        return render_template('heavy_weapon_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions, roles=UNIT_ROLES['HeavyWeapon'])
     
     # ==================== SNIPER BUILDER ====================
     @app.route('/unit/builder/sniper', methods=['GET', 'POST'])
@@ -957,6 +1030,7 @@ def init_routes(app):
                 has_personality = request.form.get('has_personality') == 'true'
                 basic_weapon_id = request.form.get('basic_weapon_id') or None
                 armour_id = request.form.get('armour_id') or None
+                role = request.form.get('role', '').strip() or None
                 trait_ids = request.form.getlist('traits')
                 notes = request.form.get('notes', '').strip()
                 description = request.form.get('description', '').strip()
@@ -979,6 +1053,7 @@ def init_routes(app):
                     faction_id=int(faction_id) if faction_id else None,
                     quality=quality,
                     resolve=resolve,
+                    role=role,
                     has_personality=has_personality,
                     basic_weapon_id=int(basic_weapon_id) if basic_weapon_id else None,
                     armour_id=int(armour_id) if armour_id else None,
@@ -999,7 +1074,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating sniper: {str(e)}', 'danger')
         
-        return render_template('sniper_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions)
+        return render_template('sniper_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions, roles=UNIT_ROLES['Sniper'])
     
     # ==================== PSIONIC BUILDER ====================
     @app.route('/unit/builder/psionic', methods=['GET', 'POST'])
@@ -1025,6 +1100,7 @@ def init_routes(app):
                 psionic_strength = int(request.form.get('psionic_strength', 3))
                 basic_weapon_id = request.form.get('basic_weapon_id') or None
                 armour_id = request.form.get('armour_id') or None
+                role = request.form.get('role', '').strip() or None
                 trait_ids = request.form.getlist('traits')
                 notes = request.form.get('notes', '').strip()
                 description = request.form.get('description', '').strip()
@@ -1049,6 +1125,7 @@ def init_routes(app):
                     faction_id=int(faction_id) if faction_id else None,
                     quality=quality,
                     resolve=resolve,
+                    role=role,
                     has_personality=has_personality,
                     psionic_aptitude=psionic_aptitude,
                     psionic_strength=psionic_strength,
@@ -1071,7 +1148,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating psionic: {str(e)}', 'danger')
         
-        return render_template('psionic_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions)
+        return render_template('psionic_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions, roles=UNIT_ROLES['Psionic'])
     
     # ==================== VEHICLE BUILDER ====================
     @app.route('/unit/builder/vehicle', methods=['GET', 'POST'])
@@ -1101,6 +1178,7 @@ def init_routes(app):
                 capacity = int(request.form.get('carrying_capacity', 0))
                 basic_weapon_id = request.form.get('basic_weapon_id') or None
                 secondary_weapon_id = request.form.get('secondary_weapon_id') or None
+                role = request.form.get('role', '').strip() or None
                 property_ids = request.form.getlist('traits')  # Vehicle properties use the trait checkboxes
                 notes = request.form.get('notes', '').strip()
                 description = request.form.get('description', '').strip()
@@ -1141,6 +1219,7 @@ def init_routes(app):
                     vehicle_type=vehicle_type,
                     quality=quality,
                     resolve=resolve,
+                    role=role,
                     movement_type=movement_type,
                     vehicle_armour_front=front_armour,
                     vehicle_armour_side=side_armour,
@@ -1166,7 +1245,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating vehicle: {str(e)}', 'danger')
         
-        return render_template('vehicle_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions)
+        return render_template('vehicle_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions, roles=UNIT_ROLES['Vehicle'])
     
     # ==================== UNIT EDIT ====================
     @app.route('/unit/<int:unit_id>/edit', methods=['GET', 'POST'])
@@ -1251,6 +1330,8 @@ def init_routes(app):
                     unit.specialization = request.form.get('specialization') or unit.specialization
                     unit.armour_id = request.form.get('armour_id') or unit.armour_id
                     unit.basic_weapon_id = request.form.get('basic_weapon_id') or unit.basic_weapon_id
+                    role = request.form.get('role', '').strip() or None
+                    unit.role = role
                     trait_ids = get_trait_ids('traits', unit.traits_json)
                     unit.traits_json = json.dumps(trait_ids)
 
@@ -1269,6 +1350,8 @@ def init_routes(app):
                     unit.heavy_weapon_id = request.form.get('heavy_weapon_id') or unit.heavy_weapon_id
                     unit.armour_id = request.form.get('armour_id') or unit.armour_id
                     unit.crew_count = int(request.form.get('crew_count', unit.crew_count or 2))
+                    role = request.form.get('role', '').strip() or None
+                    unit.role = role
                     trait_ids = get_trait_ids('traits', unit.traits_json)
                     unit.traits_json = json.dumps(trait_ids)
 
@@ -1284,6 +1367,8 @@ def init_routes(app):
                     unit.has_personality = request.form.get('has_personality') == 'true' if 'has_personality' in request.form else unit.has_personality
                     unit.basic_weapon_id = request.form.get('basic_weapon_id') or unit.basic_weapon_id
                     unit.armour_id = request.form.get('armour_id') or unit.armour_id
+                    role = request.form.get('role', '').strip() or None
+                    unit.role = role
                     trait_ids = get_trait_ids('traits', unit.traits_json)
                     unit.traits_json = json.dumps(trait_ids)
 
@@ -1301,6 +1386,8 @@ def init_routes(app):
                     unit.psionic_level = request.form.get('psionic_level') or getattr(unit, 'psionic_level', None)
                     unit.armour_id = request.form.get('armour_id') or unit.armour_id
                     unit.basic_weapon_id = request.form.get('basic_weapon_id') or unit.basic_weapon_id
+                    role = request.form.get('role', '').strip() or None
+                    unit.role = role
                     trait_ids = get_trait_ids('traits', unit.traits_json)
                     unit.traits_json = json.dumps(trait_ids)
 
@@ -1329,6 +1416,8 @@ def init_routes(app):
                     unit.basic_weapon_id = int(basic_weapon_id) if basic_weapon_id else None
                     unit.secondary_weapon_id = int(secondary_weapon_id) if secondary_weapon_id else None
 
+                    role = request.form.get('role', '').strip() or None
+                    unit.role = role
                     property_ids = get_trait_ids('traits', unit.traits_json)
                     unit.traits_json = json.dumps(property_ids)
 
@@ -1375,7 +1464,9 @@ def init_routes(app):
         }
 
         template = template_map.get(unit.unit_type, 'edit_squad.html')
-        return render_template(template, unit=unit, weapons=weapons, secondary_weapons=secondary_weapons, armours=armours, traits=traits, my_factions=my_factions, my_units=my_units, selected_trait_ids=selected_trait_ids)
+        # Get roles for the unit type
+        roles = UNIT_ROLES.get(unit.unit_type, [])
+        return render_template(template, unit=unit, weapons=weapons, secondary_weapons=secondary_weapons, armours=armours, traits=traits, my_factions=my_factions, my_units=my_units, selected_trait_ids=selected_trait_ids, roles=roles)
     
     @app.route('/unit/save', methods=['POST'])
     @login_required

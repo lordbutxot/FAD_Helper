@@ -51,6 +51,20 @@
                             <input type="number" class="form-control" id="squad_size" name="squad_size" min="1" max="20" value="5" required>
                             <small class="text-muted">Number of soldiers in the squad</small>
                         </div>
+                        
+                        <div class="mb-3">
+                            <label for="role" class="form-label">
+                                <i class="bi bi-tag"></i> Battlefield Role
+                                <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" title="Quick identification tag for this unit's primary battlefield function"></i>
+                            </label>
+                            <select class="form-select" id="role" name="role">
+                                <option value="">-- No Role --</option>
+                                {% for role_option in roles %}
+                                <option value="{{ role_option }}">{{ role_option }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Optional: Helps identify unit purpose at a glance</small>
+                        </div>
                     </div>
                 </div>
 

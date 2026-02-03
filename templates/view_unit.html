@@ -46,6 +46,9 @@
                     <h1 class="card-title">{{ unit.name }}</h1>
                     <p class="text-muted">
                         <span class="badge bg-primary">{{ unit.unit_type }}</span>
+                        {% if unit.role %}
+                        <span class="badge bg-info"><i class="bi bi-tag"></i> {{ unit.role }}</span>
+                        {% endif %}
                         {% if unit.faction %}
                         <span class="badge bg-secondary">{{ unit.faction }}</span>
                         {% endif %}

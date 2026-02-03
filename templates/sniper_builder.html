@@ -47,6 +47,20 @@
                         </div>
                         
                         <div class="mb-3">
+                            <label for="role" class="form-label">
+                                <i class="bi bi-tag"></i> Battlefield Role
+                                <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" title="Quick identification tag for this unit's primary battlefield function"></i>
+                            </label>
+                            <select class="form-select" id="role" name="role">
+                                <option value="">-- No Role --</option>
+                                {% for role_option in roles %}
+                                <option value="{{ role_option }}">{{ role_option }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Optional: Helps identify unit purpose at a glance</small>
+                        </div>
+                        
+                        <div class="mb-3">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="has_personality" name="has_personality" value="true">
                                 <label class="form-check-label" for="has_personality">

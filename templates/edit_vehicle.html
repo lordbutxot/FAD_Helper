@@ -54,11 +54,25 @@
                             </select>
                             {% if my_factions|length == 0 %}
                             <small class="text-muted">
-                                <a href="{{ url_for('faction_creator') }}" class="text-decoration-none">
+                                <a href="{{ url_for('faction_creator') }}
+" class="text-decoration-none">
                                     <i class="bi bi-plus-circle"></i> Create your first faction
                                 </a>
                             </small>
                             {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="role" class="form-label">
+                                <i class="bi bi-tag"></i> Battlefield Role
+                            </label>
+                            <select class="form-select" id="role" name="role">
+                                <option value="">-- No Role --</option>
+                                {% for role_option in roles %}
+                                <option value="{{ role_option }}" {% if unit.role == role_option %}selected{% endif %}>{{ role_option }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Optional tag for quick identification</small>
                         </div>
                         
                         <div class="mb-3">
