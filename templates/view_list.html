@@ -79,8 +79,15 @@
                                     <td>
                                         {% if item.unit.unit_type == 'Squad' and item.unit.squad_size %}
                                             <small class="text-muted"><i class="bi bi-people"></i> {{ item.unit.squad_size }} troops</small>
-                                        {% elif item.unit.unit_type == 'Vehicle' and item.unit.movement_type %}
-                                            <small class="text-muted"><i class="bi bi-arrow-right"></i> {{ item.unit.movement_type }}</small>
+                                        {% elif item.unit.unit_type == 'Vehicle' %}
+                                            <small class="text-muted">
+                                                {% if item.unit.movement_type %}<i class="bi bi-arrow-right"></i> {{ item.unit.movement_type }}{% endif %}
+                                                {% if item.unit.carrying_capacity %}
+                                                    {% if item.unit.movement_type %} · {% endif %}
+                                                    <i class="bi bi-truck"></i> Transport {{ item.unit.carrying_capacity }}
+                                                {% endif %}
+                                                {% if not item.unit.movement_type and not item.unit.carrying_capacity %}-{% endif %}
+                                            </small>
                                         {% else %}
                                             <small class="text-muted">-</small>
                                         {% endif %}
@@ -107,6 +114,9 @@
                                                                                     {% endif %}
                                                                                     {% if item.unit.unit_type == 'Vehicle' and item.unit.crew_count %}
                                                                                     <li><span class="badge bg-primary">Crew:</span> {{ item.unit.crew_count }}</li>
+                                                                                    {% endif %}
+                                                                                    {% if item.unit.unit_type == 'Vehicle' and item.unit.carrying_capacity %}
+                                                                                    <li><span class="badge bg-primary">Transport Capacity:</span> {{ item.unit.carrying_capacity }}</li>
                                                                                     {% endif %}
                                                                                 </ul>
                                                                             </div>
