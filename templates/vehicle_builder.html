@@ -207,27 +207,31 @@
                             <div class="col-md-6 mb-2">
                                 {% if trait.is_repeatable %}
                                 <!-- Repeatable trait with counter -->
-                                <div class="trait-option repeatable-trait" data-trait-id="{{ trait.id }}">
-                                    <div class="d-flex align-items-center">
+                                <div class="form-check trait-option repeatable-trait" data-trait-id="{{ trait.id }}">
+                                    <div class="d-flex align-items-center justify-content-between">
                                         <div class="flex-grow-1">
-                                            <strong>{{ trait.name }}</strong>
-                                            <small class="text-muted">(×{{ trait.points_multiplier }} each)</small>
-                                            <span class="badge bg-warning text-dark">Repeatable</span>
-                                            <i class="bi bi-info-circle info-icon" 
-                                               data-bs-toggle="tooltip" 
-                                               data-bs-placement="right"
-                                               title="{{ trait.description }} | Multiplier: ×{{ trait.points_multiplier }}"></i>
+                                            <label class="form-check-label">
+                                                <strong>{{ trait.name }}</strong>
+                                                <small class="text-muted">(×{{ trait.points_multiplier }} each)</small>
+                                                <span class="badge bg-warning text-dark" style="font-size: 0.7rem; padding: 2px 6px;">
+                                                    <i class="bi bi-arrow-repeat"></i> Repeatable
+                                                </span>
+                                                <i class="bi bi-info-circle info-icon" 
+                                                   data-bs-toggle="tooltip" 
+                                                   data-bs-placement="right"
+                                                   title="{{ trait.description }} | Multiplier: ×{{ trait.points_multiplier }}"></i>
+                                            </label>
                                         </div>
-                                        <div class="btn-group btn-group-sm ms-2" role="group">
+                                        <div class="input-group input-group-sm ms-2" style="width: 110px;">
                                             <button type="button" class="btn btn-outline-secondary trait-count-minus" data-trait-id="{{ trait.id }}">
                                                 <i class="bi bi-dash"></i>
                                             </button>
-                                            <input type="number" class="form-control trait-count-input" 
+                                            <input type="number" class="form-control trait-count-input text-center" 
                                                    id="trait_count_{{ trait.id }}" 
                                                    name="trait_count_{{ trait.id }}" 
-                                                   value="0" min="0" max="10" 
-                                                   style="width: 60px; text-align: center;"
-                                                   data-trait-id="{{ trait.id }}">
+                                                   value="0" min="0" max="10"
+                                                   data-trait-id="{{ trait.id }}"
+                                                   style="font-weight: 600;">
                                             <button type="button" class="btn btn-outline-secondary trait-count-plus" data-trait-id="{{ trait.id }}">
                                                 <i class="bi bi-plus"></i>
                                             </button>
@@ -720,4 +724,47 @@ function updateRepeatableTraitHidden(traitId, count) {
 // Initial update
 updatePreview();
 </script>
+
+<style>
+/* Repeatable trait styling */
+.repeatable-trait {
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.repeatable-trait:hover {
+    background-color: #f8f9fa;
+}
+
+.repeatable-trait .form-check-label {
+    margin-bottom: 0;
+    cursor: default;
+    width: 100%;
+}
+
+.repeatable-trait .input-group {
+    flex-shrink: 0;
+}
+
+.repeatable-trait .trait-count-input {
+    border-left: 0;
+    border-right: 0;
+}
+
+.repeatable-trait .btn {
+    padding: 0.25rem 0.5rem;
+}
+
+/* Ensure both regular and repeatable traits have similar spacing */
+.trait-option {
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+}
+
+.form-check.trait-option {
+    padding: 0.5rem;
+}
+</style>
 {% endblock %}

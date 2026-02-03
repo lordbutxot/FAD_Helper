@@ -192,9 +192,46 @@
                         <p class="text-muted">Select special vehicle properties and abilities (each affects points multiplier)</p>
                         <div class="row">
                             {% set unit_trait_ids = unit.get_traits()|map(attribute='id')|list %}
+                            {% set trait_counts = unit.get_vehicle_property_counts() %}
                             {% for trait in traits %}
                             {% if trait.category == 'Vehicle' %}
                             <div class="col-md-6 mb-2">
+                                {% if trait.is_repeatable %}
+                                <!-- Repeatable trait with counter -->
+                                <div class="form-check trait-option repeatable-trait" data-trait-id="{{ trait.id }}">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="flex-grow-1">
+                                            <label class="form-check-label">
+                                                <strong>{{ trait.name }}</strong>
+                                                <small class="text-muted">(×{{ trait.points_multiplier }} each)</small>
+                                                <span class="badge bg-warning text-dark" style="font-size: 0.7rem; padding: 2px 6px;">
+                                                    <i class="bi bi-arrow-repeat"></i> Repeatable
+                                                </span>
+                                                <i class="bi bi-info-circle info-icon" 
+                                                   data-bs-toggle="tooltip" 
+                                                   data-bs-placement="right"
+                                                   title="{{ trait.description }} | Multiplier: ×{{ trait.points_multiplier }}"></i>
+                                            </label>
+                                        </div>
+                                        <div class="input-group input-group-sm ms-2" style="width: 110px;">
+                                            <button type="button" class="btn btn-outline-secondary trait-count-minus" data-trait-id="{{ trait.id }}">
+                                                <i class="bi bi-dash"></i>
+                                            </button>
+                                            <input type="number" class="form-control trait-count-input text-center" 
+                                                   id="trait_count_{{ trait.id }}" 
+                                                   name="trait_count_{{ trait.id }}" 
+                                                   value="{{ trait_counts.get(trait.id|string, 0) }}" min="0" max="10"
+                                                   data-trait-id="{{ trait.id }}"
+                                                   style="font-weight: 600;">
+                                            <button type="button" class="btn btn-outline-secondary trait-count-plus" data-trait-id="{{ trait.id }}">
+                                                <i class="bi bi-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="traits" value="{{ trait.id }}" class="trait-hidden-input" data-trait-id="{{ trait.id }}" {% if trait_counts.get(trait.id|string, 0) == 0 %}disabled{% endif %}>
+                                </div>
+                                {% else %}
+                                <!-- Regular trait with checkbox -->
                                 <div class="form-check trait-option">
                                     <input class="form-check-input" type="checkbox" name="traits" value="{{ trait.id }}" id="trait_{{ trait.id }}" 
                                         {% if trait.id in selected_trait_ids %}checked{% endif %}>
@@ -207,6 +244,7 @@
                                            title="{{ trait.description }} | Multiplier: ×{{ trait.points_multiplier }}"></i>
                                     </label>
                                 </div>
+                                {% endif %}
                             </div>
                             {% endif %}
                             {% endfor %}
@@ -411,5 +449,94 @@ document.getElementById('carrying_capacity').addEventListener('input', calculate
 
 // Initial calculation
 calculatePoints();
+
+// Repeatable trait counter handlers
+document.querySelectorAll('.trait-count-plus').forEach(button => {
+    button.addEventListener('click', function() {
+        const traitId = this.dataset.traitId;
+        const input = document.getElementById(`trait_count_${traitId}`);
+        const currentValue = parseInt(input.value) || 0;
+        const maxValue = parseInt(input.max) || 10;
+        if (currentValue < maxValue) {
+            input.value = currentValue + 1;
+            updateRepeatableTraitHidden(traitId, currentValue + 1);
+            calculatePoints();
+        }
+    });
+});
+
+document.querySelectorAll('.trait-count-minus').forEach(button => {
+    button.addEventListener('click', function() {
+        const traitId = this.dataset.traitId;
+        const input = document.getElementById(`trait_count_${traitId}`);
+        const currentValue = parseInt(input.value) || 0;
+        if (currentValue > 0) {
+            input.value = currentValue - 1;
+            updateRepeatableTraitHidden(traitId, currentValue - 1);
+            calculatePoints();
+        }
+    });
+});
+
+document.querySelectorAll('.trait-count-input').forEach(input => {
+    input.addEventListener('input', function() {
+        const traitId = this.dataset.traitId;
+        const value = parseInt(this.value) || 0;
+        updateRepeatableTraitHidden(traitId, value);
+        calculatePoints();
+    });
+});
+
+// Helper function to enable/disable hidden inputs for repeatable traits
+function updateRepeatableTraitHidden(traitId, count) {
+    const hiddenInput = document.querySelector(`.trait-hidden-input[data-trait-id="${traitId}"]`);
+    if (hiddenInput) {
+        hiddenInput.disabled = count === 0;
+        hiddenInput.setAttribute('data-count', count);
+    }
+}
 </script>
+
+<style>
+/* Repeatable trait styling */
+.repeatable-trait {
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.repeatable-trait:hover {
+    background-color: #f8f9fa;
+}
+
+.repeatable-trait .form-check-label {
+    margin-bottom: 0;
+    cursor: default;
+    width: 100%;
+}
+
+.repeatable-trait .input-group {
+    flex-shrink: 0;
+}
+
+.repeatable-trait .trait-count-input {
+    border-left: 0;
+    border-right: 0;
+}
+
+.repeatable-trait .btn {
+    padding: 0.25rem 0.5rem;
+}
+
+/* Ensure both regular and repeatable traits have similar spacing */
+.trait-option {
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+}
+
+.form-check.trait-option {
+    padding: 0.5rem;
+}
+</style>
 {% endblock %}
