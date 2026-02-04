@@ -4,7 +4,7 @@ Initializes database with all official F.A.D. data for production deployment
 This script is SAFE to run multiple times - it preserves all user data
 """
 from app import app, db
-from models import Trait, Weapon, Armour, User, Faction, ArmyList, Unit, FactionRating
+from models import Trait, Weapon, Armour, User, Faction, ArmyList, Unit
 import sys
 
 OFFICIAL_INFANTRY_TRAITS = [
