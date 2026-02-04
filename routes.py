@@ -969,6 +969,7 @@ def init_routes(app):
                 properties = request.form.get('vehicle_properties', '').strip()
                 primary_weapon_id = request.form.get('primary_weapon_id') or None
                 secondary_weapon_id = request.form.get('secondary_weapon_id') or None
+                tertiary_weapon_id = request.form.get('tertiary_weapon_id') or None
                 notes = request.form.get('notes', '').strip()
                 
                 # Parse properties (comma-separated)
@@ -984,7 +985,8 @@ def init_routes(app):
                     'vehicle_armour_rear': rear_armour,
                     'carrying_capacity': capacity,
                     'primary_weapon_id': int(primary_weapon_id) if primary_weapon_id else None,
-                    'secondary_weapon_id': int(secondary_weapon_id) if secondary_weapon_id else None
+                    'secondary_weapon_id': int(secondary_weapon_id) if secondary_weapon_id else None,
+                    'tertiary_weapon_id': int(tertiary_weapon_id) if tertiary_weapon_id else None
                 }
                 total_points = calculate_points(data)
                 
@@ -1003,7 +1005,7 @@ def init_routes(app):
                     crew_size=crew_size,
                     carrying_capacity=capacity,
                     vehicle_weapons_json=json.dumps([
-                        int(w) for w in [primary_weapon_id, secondary_weapon_id] if w
+                        int(w) for w in [primary_weapon_id, secondary_weapon_id, tertiary_weapon_id] if w
                     ]),
                     vehicle_properties_json=json.dumps(props_list),
                     notes=notes,
@@ -1149,8 +1151,9 @@ def init_routes(app):
 
                     primary_weapon_id = request.form.get('primary_weapon_id') or None
                     secondary_weapon_id = request.form.get('secondary_weapon_id') or None
+                    tertiary_weapon_id = request.form.get('tertiary_weapon_id') or None
                     unit.vehicle_weapons_json = json.dumps([
-                        int(w) for w in [primary_weapon_id, secondary_weapon_id] if w
+                        int(w) for w in [primary_weapon_id, secondary_weapon_id, tertiary_weapon_id] if w
                     ])
                     
                     properties = request.form.get('vehicle_properties', '').strip()
@@ -1166,7 +1169,8 @@ def init_routes(app):
                         'vehicle_armour_rear': unit.vehicle_armour_rear,
                         'carrying_capacity': unit.carrying_capacity,
                         'primary_weapon_id': int(primary_weapon_id) if primary_weapon_id else None,
-                        'secondary_weapon_id': int(secondary_weapon_id) if secondary_weapon_id else None
+                        'secondary_weapon_id': int(secondary_weapon_id) if secondary_weapon_id else None,
+                        'tertiary_weapon_id': int(tertiary_weapon_id) if tertiary_weapon_id else None
                     }
                 
                 # Recalculate points
@@ -1661,7 +1665,8 @@ def calculate_points(data):
         # Vehicle weapons
         primary_weapon_id = data.get('primary_weapon_id')
         secondary_weapon_id = data.get('secondary_weapon_id')
-        for weapon_id in [primary_weapon_id, secondary_weapon_id]:
+        tertiary_weapon_id = data.get('tertiary_weapon_id')
+        for weapon_id in [primary_weapon_id, secondary_weapon_id, tertiary_weapon_id]:
             if weapon_id:
                 weapon = Weapon.query.get(weapon_id)
                 if weapon:

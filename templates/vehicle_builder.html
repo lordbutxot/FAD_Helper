@@ -422,7 +422,7 @@
                         <h5 class="mb-0">Vehicle Weapons</h5>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted">Select primary and secondary weapons from the vehicle weapon list.</p>
+                        <p class="text-muted">Select up to 3 weapons from the vehicle weapon list.</p>
 
                         <div class="mb-3">
                             <label for="primary_weapon_id" class="form-label">Primary Weapon</label>
@@ -437,6 +437,16 @@
                         <div class="mb-3">
                             <label for="secondary_weapon_id" class="form-label">Secondary Weapon</label>
                             <select class="form-select" id="secondary_weapon_id" name="secondary_weapon_id">
+                                <option value="">None</option>
+                                {% for weapon in vehicle_weapons %}
+                                <option value="{{ weapon.id }}">{{ weapon.name }} ({{ weapon.range }}, FE:{{ weapon.fire_effect }}, +{{ weapon.points }} pts)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="tertiary_weapon_id" class="form-label">Tertiary Weapon</label>
+                            <select class="form-select" id="tertiary_weapon_id" name="tertiary_weapon_id">
                                 <option value="">None</option>
                                 {% for weapon in vehicle_weapons %}
                                 <option value="{{ weapon.id }}">{{ weapon.name }} ({{ weapon.range }}, FE:{{ weapon.fire_effect }}, +{{ weapon.points }} pts)</option>
@@ -558,6 +568,7 @@ function calculatePoints() {
     const capacity = parseInt(document.getElementById('carrying_capacity').value) || 0;
     const primaryWeaponId = document.getElementById('primary_weapon_id').value;
     const secondaryWeaponId = document.getElementById('secondary_weapon_id').value;
+    const tertiaryWeaponId = document.getElementById('tertiary_weapon_id').value;
     
     // Base points (quality)
     const basePoints = qualityPoints[quality] || 0;
@@ -576,8 +587,9 @@ function calculatePoints() {
     // Weapon points
     const primaryWeaponPts = primaryWeaponId ? (weaponPoints[primaryWeaponId] || 0) : 0;
     const secondaryWeaponPts = secondaryWeaponId ? (weaponPoints[secondaryWeaponId] || 0) : 0;
+    const tertiaryWeaponPts = tertiaryWeaponId ? (weaponPoints[tertiaryWeaponId] || 0) : 0;
     
-    const totalPoints = basePoints + frontPts + sidePts + rearPts + movementPts + capacityPts + primaryWeaponPts + secondaryWeaponPts;
+    const totalPoints = basePoints + frontPts + sidePts + rearPts + movementPts + capacityPts + primaryWeaponPts + secondaryWeaponPts + tertiaryWeaponPts;
     
     // Update display
     document.getElementById('calc_base_points').textContent = basePoints;
@@ -598,6 +610,7 @@ document.getElementById('vehicle_armour_rear').addEventListener('input', calcula
 document.getElementById('carrying_capacity').addEventListener('input', calculatePoints);
 document.getElementById('primary_weapon_id').addEventListener('change', calculatePoints);
 document.getElementById('secondary_weapon_id').addEventListener('change', calculatePoints);
+document.getElementById('tertiary_weapon_id').addEventListener('change', calculatePoints);
 
 // Weapon property toggles
 document.querySelectorAll('.weapon-prop-toggle').forEach(checkbox => {
