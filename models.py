@@ -101,6 +101,7 @@ class Trait(db.Model):
     description = db.Column(db.Text, nullable=False)
     points_multiplier = db.Column(db.Float, nullable=False)
     category = db.Column(db.String(50))  # Infantry, Vehicle, Character, etc.
+    is_repeatable = db.Column(db.Boolean, default=False)  # Can this trait be taken multiple times?
     
     def __repr__(self):
         return f'<Trait {self.name}>'

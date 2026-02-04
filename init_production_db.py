@@ -273,26 +273,31 @@ def init_production_database():
         repeatable_traits = ['Weapon Stabilizer', 'Linked Weapons']
         
         for name, desc, mult in vehicle_properties:
-            existing = Trait.query.filter_by(name=name, category='Vehicle').first()
-            is_repeatable = name in repeatable_traits
-            
-            if existing:
-                # Update existing trait with correct values from Traits.TXT
-                existing.description = desc
-                existing.points_multiplier = mult
-                existing.is_repeatable = is_repeatable
-                updated_vehicles += 1
-            else:
-                # Insert new trait
-                trait = Trait(
-                    name=name,
-                    description=desc,
-                    points_multiplier=mult,
-                    category='Vehicle',
-                    is_repeatable=is_repeatable
-                )
-                db.session.add(trait)
-                added_vehicles += 1
+            try:
+                existing = Trait.query.filter_by(name=name, category='Vehicle').first()
+                is_repeatable = name in repeatable_traits
+                
+                if existing:
+                    # Update existing trait with correct values from Traits.TXT
+                    existing.description = desc
+                    existing.points_multiplier = mult
+                    existing.is_repeatable = is_repeatable
+                    updated_vehicles += 1
+                else:
+                    # Insert new trait
+                    trait = Trait(
+                        name=name,
+                        description=desc,
+                        points_multiplier=mult,
+                        category='Vehicle',
+                        is_repeatable=is_repeatable
+                    )
+                    db.session.add(trait)
+                    added_vehicles += 1
+            except Exception as e:
+                print(f"   ⚠️  Error processing vehicle property '{name}': {e}")
+                db.session.rollback()
+                continue
         
         db.session.commit()
         print(f"   ✅ Added {added_vehicles} vehicle properties, updated {updated_vehicles}")
