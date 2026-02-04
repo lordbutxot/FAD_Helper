@@ -141,10 +141,277 @@
                         <h5 class="mb-0">Vehicle Properties</h5>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted">Special vehicle properties and abilities</p>
-                        <div class="mb-3">
-                            <textarea class="form-control" id="vehicle_properties" name="vehicle_properties" rows="3" placeholder="e.g., Amphibious, Smoke Launchers, Active Protection System"></textarea>
-                            <small class="text-muted">Enter properties separated by commas</small>
+                        <p class="text-muted">Select special vehicle properties and abilities</p>
+                        
+                        <!-- Standard Properties (not weapon-specific) -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Advanced Targeting System" id="prop_ats">
+                                    <label class="form-check-label" for="prop_ats">
+                                        <strong>Advanced Targeting System</strong>
+                                        <small class="d-block text-muted">+2 Fire Effect vs vehicles/hard targets</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="AI Controlled" id="prop_ai">
+                                    <label class="form-check-label" for="prop_ai">
+                                        <strong>AI Controlled</strong>
+                                        <small class="d-block text-muted">Immune to morale, Steady only</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Amphibious" id="prop_amphi">
+                                    <label class="form-check-label" for="prop_amphi">
+                                        <strong>Amphibious</strong>
+                                        <small class="d-block text-muted">Cross water at half speed</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Close-In Defense System" id="prop_cids">
+                                    <label class="form-check-label" for="prop_cids">
+                                        <strong>Close-In Defense System</strong>
+                                        <small class="d-block text-muted">4" blast defense system</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Command Vehicle" id="prop_cmd">
+                                    <label class="form-check-label" for="prop_cmd">
+                                        <strong>Command Vehicle</strong>
+                                        <small class="d-block text-muted">Reroll command response</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Electronic Countermeasures" id="prop_ecm">
+                                    <label class="form-check-label" for="prop_ecm">
+                                        <strong>Electronic Countermeasures</strong>
+                                        <small class="d-block text-muted">Negates ATS</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Energy Screen" id="prop_energy">
+                                    <label class="form-check-label" for="prop_energy">
+                                        <strong>Energy Screen</strong>
+                                        <small class="d-block text-muted">5+ to negate hits</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Fast" id="prop_fast">
+                                    <label class="form-check-label" for="prop_fast">
+                                        <strong>Fast</strong>
+                                        <small class="d-block text-muted">+2" movement</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Forward Observer" id="prop_fo">
+                                    <label class="form-check-label" for="prop_fo">
+                                        <strong>Forward Observer</strong>
+                                        <small class="d-block text-muted">Call artillery fire</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Improved Weapons Control" id="prop_iwc">
+                                    <label class="form-check-label" for="prop_iwc">
+                                        <strong>Improved Weapons Control</strong>
+                                        <small class="d-block text-muted">1 crew fires 2 weapons</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Jump Jets" id="prop_jets">
+                                    <label class="form-check-label" for="prop_jets">
+                                        <strong>Jump Jets</strong>
+                                        <small class="d-block text-muted">Walkers only: 10" jump</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Medevac" id="prop_medevac">
+                                    <label class="form-check-label" for="prop_medevac">
+                                        <strong>Medevac</strong>
+                                        <small class="d-block text-muted">Transport casualties</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Reactive Armour" id="prop_reactive">
+                                    <label class="form-check-label" for="prop_reactive">
+                                        <strong>Reactive Armour</strong>
+                                        <small class="d-block text-muted">Force AP reroll</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Reserves" id="prop_reserves">
+                                    <label class="form-check-label" for="prop_reserves">
+                                        <strong>Reserves</strong>
+                                        <small class="d-block text-muted">Deploy during battle</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Slow" id="prop_slow">
+                                    <label class="form-check-label" for="prop_slow">
+                                        <strong>Slow</strong>
+                                        <small class="d-block text-muted">-2" movement</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Smoke" id="prop_smoke">
+                                    <label class="form-check-label" for="prop_smoke">
+                                        <strong>Smoke</strong>
+                                        <small class="d-block text-muted">1 smoke screen/game</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Stealth" id="prop_stealth">
+                                    <label class="form-check-label" for="prop_stealth">
+                                        <strong>Stealth</strong>
+                                        <small class="d-block text-muted">+1 range band penalty</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Supercharged" id="prop_super">
+                                    <label class="form-check-label" for="prop_super">
+                                        <strong>Supercharged</strong>
+                                        <small class="d-block text-muted">+4" movement</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Under-Powered" id="prop_under">
+                                    <label class="form-check-label" for="prop_under">
+                                        <strong>Under-Powered</strong>
+                                        <small class="d-block text-muted">-4" movement</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vehicle_properties" value="Weapon Stabilizer" id="prop_stab">
+                                    <label class="form-check-label" for="prop_stab">
+                                        <strong>Weapon Stabilizer</strong>
+                                        <small class="d-block text-muted">Fire while moving</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+                        
+                        <!-- Weapon-Specific Properties (Repeatable) -->
+                        <h6 class="mb-3">Weapon-Specific Properties <small class="text-muted">(Select weapons after choosing)</small></h6>
+                        <p class="small text-muted">Note: Save the vehicle first, then these can be configured for specific weapons.</p>
+                        
+                        <div id="weapon-properties-container">
+                            <!-- Linked Weapons -->
+                            <div class="border rounded p-3 mb-3 bg-light">
+                                <div class="form-check">
+                                    <input class="form-check-input weapon-prop-toggle" type="checkbox" id="prop_linked_toggle" data-target="linked-weapons-section">
+                                    <label class="form-check-label" for="prop_linked_toggle">
+                                        <strong>Linked Weapons</strong> <span class="badge bg-secondary">Repeatable</span>
+                                        <small class="d-block text-muted">Roll 2d6, pick highest. Can be taken multiple times for different weapons.</small>
+                                    </label>
+                                </div>
+                                <div id="linked-weapons-section" class="mt-2 ms-4" style="display: none;">
+                                    <small class="text-muted d-block mb-2">Select weapon(s) to link:</small>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="linked_weapon_primary" value="primary" id="linked_primary">
+                                        <label class="form-check-label" for="linked_primary">Primary Weapon</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="linked_weapon_secondary" value="secondary" id="linked_secondary">
+                                        <label class="form-check-label" for="linked_secondary">Secondary Weapon</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Fixed Mount -->
+                            <div class="border rounded p-3 mb-3 bg-light">
+                                <div class="form-check">
+                                    <input class="form-check-input weapon-prop-toggle" type="checkbox" id="prop_fixed_toggle" data-target="fixed-mount-section">
+                                    <label class="form-check-label" for="prop_fixed_toggle">
+                                        <strong>Fixed Mount</strong> <span class="badge bg-secondary">Repeatable</span>
+                                        <small class="d-block text-muted">Weapon fires in one direction only. Can be taken multiple times for different weapons.</small>
+                                    </label>
+                                </div>
+                                <div id="fixed-mount-section" class="mt-2 ms-4" style="display: none;">
+                                    <small class="text-muted d-block mb-2">Select weapon and direction:</small>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="fixed_mount_primary" value="primary" id="fixed_primary">
+                                                <label class="form-check-label" for="fixed_primary">Primary Weapon</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="fixed_mount_secondary" value="secondary" id="fixed_secondary">
+                                                <label class="form-check-label" for="fixed_secondary">Secondary Weapon</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <select class="form-select form-select-sm" name="fixed_mount_direction" id="fixed_direction">
+                                                <option value="">Direction...</option>
+                                                <option value="front">Front</option>
+                                                <option value="left">Left Side</option>
+                                                <option value="right">Right Side</option>
+                                                <option value="rear">Rear</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Alternate Fire Weapons -->
+                            <div class="border rounded p-3 mb-3 bg-light">
+                                <div class="form-check">
+                                    <input class="form-check-input weapon-prop-toggle" type="checkbox" id="prop_altfire_toggle" data-target="altfire-section">
+                                    <label class="form-check-label" for="prop_altfire_toggle">
+                                        <strong>Alternate Fire Weapons</strong> <span class="badge bg-secondary">Repeatable</span>
+                                        <small class="d-block text-muted">Multiple fire modes, only 1 crew required, only one mode fires per turn.</small>
+                                    </label>
+                                </div>
+                                <div id="altfire-section" class="mt-2 ms-4" style="display: none;">
+                                    <small class="text-muted d-block mb-2">Group these weapons together:</small>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="altfire_primary" value="primary" id="altfire_primary">
+                                        <label class="form-check-label" for="altfire_primary">Primary Weapon</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="altfire_secondary" value="secondary" id="altfire_secondary">
+                                        <label class="form-check-label" for="altfire_secondary">Secondary Weapon</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -331,6 +598,17 @@ document.getElementById('vehicle_armour_rear').addEventListener('input', calcula
 document.getElementById('carrying_capacity').addEventListener('input', calculatePoints);
 document.getElementById('primary_weapon_id').addEventListener('change', calculatePoints);
 document.getElementById('secondary_weapon_id').addEventListener('change', calculatePoints);
+
+// Weapon property toggles
+document.querySelectorAll('.weapon-prop-toggle').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        const targetId = this.getAttribute('data-target');
+        const targetSection = document.getElementById(targetId);
+        if (targetSection) {
+            targetSection.style.display = this.checked ? 'block' : 'none';
+        }
+    });
+});
 
 // Initial calculation
 calculatePoints();
