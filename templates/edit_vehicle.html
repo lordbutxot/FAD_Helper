@@ -10,24 +10,6 @@
             <p class="text-muted">Update vehicle unit details. Weapons can be modified separately.</p>
             
             <form id="vehicleForm" method="POST" action="{{ url_for('edit_unit', unit_id=unit.id) }}">
-                                <!-- Parent/Variant -->
-                                <div class="card mb-3">
-                                    <div class="card-header bg-secondary text-white">
-                                        <h5 class="mb-0">Family (Parent/Variant)</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="mb-3">
-                                            <label for="parent_id" class="form-label">Parent Model (optional)</label>
-                                            <select class="form-select" id="parent_id" name="parent_id">
-                                                <option value="">No Parent (This is a parent model)</option>
-                                                {% for possible_parent in my_units if possible_parent.id != unit.id and possible_parent.unit_type == unit.unit_type %}
-                                                <option value="{{ possible_parent.id }}" {% if unit.parent_id == possible_parent.id %}selected{% endif %}>{{ possible_parent.name }}</option>
-                                                {% endfor %}
-                                            </select>
-                                            <small class="text-muted">If this is a variant, select the parent model. Otherwise, leave as 'No Parent'.</small>
-                                        </div>
-                                    </div>
-                                </div>
                 <!-- Basic Info -->
                 <div class="card mb-3">
                     <div class="card-header bg-primary text-white">
@@ -40,39 +22,8 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="faction_id" class="form-label">
-                                Faction
-                                <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Select a faction to organize your units"></i>
-                            </label>
-                            <select class="form-select" id="faction_id" name="faction_id">
-                                <option value="">No Faction</option>
-                                {% for faction in my_factions %}
-                                <option value="{{ faction.id }}" {% if unit.faction_id == faction.id %}selected{% endif %}>
-                                    {{ faction.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                            {% if my_factions|length == 0 %}
-                            <small class="text-muted">
-                                <a href="{{ url_for('faction_creator') }}
-" class="text-decoration-none">
-                                    <i class="bi bi-plus-circle"></i> Create your first faction
-                                </a>
-                            </small>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="role" class="form-label">
-                                <i class="bi bi-tag"></i> Battlefield Role
-                            </label>
-                            <select class="form-select" id="role" name="role">
-                                <option value="">-- No Role --</option>
-                                {% for role_option in roles %}
-                                <option value="{{ role_option }}" {% if unit.role == role_option %}selected{% endif %}>{{ role_option }}</option>
-                                {% endfor %}
-                            </select>
-                            <small class="text-muted">Optional tag for quick identification</small>
+                            <label for="faction" class="form-label">Faction</label>
+                            <input type="text" class="form-control" id="faction" name="faction" value="{{ unit.faction or '' }}" placeholder="Optional">
                         </div>
                         
                         <div class="mb-3">
@@ -103,6 +54,7 @@
                                 <label for="quality" class="form-label">Quality *</label>
                                 <select class="form-select" id="quality" name="quality" required>
                                     <option value="">Select Quality...</option>
+                                    <option value="Rabble" {% if unit.quality == 'Rabble' %}selected{% endif %}>Rabble (5+)</option>
                                     <option value="Conscript" {% if unit.quality == 'Conscript' %}selected{% endif %}>Conscript (4+)</option>
                                     <option value="Regular" {% if unit.quality == 'Regular' %}selected{% endif %}>Regular (3+)</option>
                                     <option value="Elite" {% if unit.quality == 'Elite' %}selected{% endif %}>Elite (2+)</option>
@@ -189,65 +141,10 @@
                         <h5 class="mb-0">Vehicle Properties</h5>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted">Select special vehicle properties and abilities (each affects points multiplier)</p>
-                        <div class="row">
-                            {% set unit_trait_ids = unit.get_traits()|map(attribute='id')|list %}
-                            {% set trait_counts = unit.get_vehicle_property_counts() %}
-                            {% for trait in traits %}
-                            {% if trait.category == 'Vehicle' %}
-                            <div class="col-md-6 mb-2">
-                                {% if trait.is_repeatable %}
-                                <!-- Repeatable trait with counter -->
-                                <div class="form-check trait-option repeatable-trait" data-trait-id="{{ trait.id }}">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div class="flex-grow-1">
-                                            <label class="form-check-label">
-                                                <strong>{{ trait.name }}</strong>
-                                                <small class="text-muted">(×{{ trait.points_multiplier }} each)</small>
-                                                <span class="badge bg-warning text-dark" style="font-size: 0.7rem; padding: 2px 6px;">
-                                                    <i class="bi bi-arrow-repeat"></i> Repeatable
-                                                </span>
-                                                <i class="bi bi-info-circle info-icon" 
-                                                   data-bs-toggle="tooltip" 
-                                                   data-bs-placement="right"
-                                                   title="{{ trait.description }} | Multiplier: ×{{ trait.points_multiplier }}"></i>
-                                            </label>
-                                        </div>
-                                        <div class="input-group input-group-sm ms-2" style="width: 110px;">
-                                            <button type="button" class="btn btn-outline-secondary trait-count-minus" data-trait-id="{{ trait.id }}">
-                                                <i class="bi bi-dash"></i>
-                                            </button>
-                                            <input type="number" class="form-control trait-count-input text-center" 
-                                                   id="trait_count_{{ trait.id }}" 
-                                                   name="trait_count_{{ trait.id }}" 
-                                                   value="{{ trait_counts.get(trait.id|string, 0) }}" min="0" max="10"
-                                                   data-trait-id="{{ trait.id }}"
-                                                   style="font-weight: 600;">
-                                            <button type="button" class="btn btn-outline-secondary trait-count-plus" data-trait-id="{{ trait.id }}">
-                                                <i class="bi bi-plus"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <input type="hidden" name="traits" value="{{ trait.id }}" class="trait-hidden-input" data-trait-id="{{ trait.id }}" {% if trait_counts.get(trait.id|string, 0) == 0 %}disabled{% endif %}>
-                                </div>
-                                {% else %}
-                                <!-- Regular trait with checkbox -->
-                                <div class="form-check trait-option">
-                                    <input class="form-check-input" type="checkbox" name="traits" value="{{ trait.id }}" id="trait_{{ trait.id }}" 
-                                        {% if trait.id in selected_trait_ids %}checked{% endif %}>
-                                    <label class="form-check-label" for="trait_{{ trait.id }}">
-                                        {{ trait.name }} 
-                                        <small class="text-muted">(×{{ trait.points_multiplier }})</small>
-                                        <i class="bi bi-info-circle info-icon" 
-                                           data-bs-toggle="tooltip" 
-                                           data-bs-placement="right"
-                                           title="{{ trait.description }} | Multiplier: ×{{ trait.points_multiplier }}"></i>
-                                    </label>
-                                </div>
-                                {% endif %}
-                            </div>
-                            {% endif %}
-                            {% endfor %}
+                        <p class="text-muted">Special vehicle properties and abilities</p>
+                        <div class="mb-3">
+                            <textarea class="form-control" id="vehicle_properties" name="vehicle_properties" rows="3" placeholder="e.g., Amphibious, Smoke Launchers, Active Protection System">{{ unit.vehicle_properties or '' }}</textarea>
+                            <small class="text-muted">Enter properties separated by commas</small>
                         </div>
                     </div>
                 </div>
@@ -258,52 +155,27 @@
                         <h5 class="mb-0">Vehicle Weapons</h5>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted">Select primary and secondary weapons for this vehicle</p>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="basic_weapon_id" class="form-label">
-                                    Primary Weapon
-                                    <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Main armament"></i>
-                                </label>
-                                <select class="form-select" id="basic_weapon_id" name="basic_weapon_id">
-                                    <option value="">No Primary Weapon</option>
-                                    {% for weapon in weapons if weapon.category in ['Support', 'Heavy'] %}
-                                    <option value="{{ weapon.id }}" data-points="{{ weapon.points }}" data-category="{{ weapon.category }}"
-                                        {% if unit.basic_weapon_id == weapon.id %}selected{% endif %}>
-                                        {{ weapon.name }} [{{ weapon.category }}] (+{{ weapon.points }} pts) - Range: {{ weapon.range_multiplier }}" | Damage: {{ weapon.damage }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                <label for="secondary_weapon_id" class="form-label">
-                                    Secondary Weapon
-                                    <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Secondary armament (co-axial MG, pintle-mounted, etc.)"></i>
-                                </label>
-                                <select class="form-select" id="secondary_weapon_id" name="secondary_weapon_id">
-                                    <option value="">No Secondary Weapon</option>
-                                    {% for weapon in weapons if weapon.category == 'Support' %}
-                                    <option value="{{ weapon.id }}" data-points="{{ weapon.points }}" data-category="{{ weapon.category }}"
-                                        {% if unit.secondary_weapon_id == weapon.id %}selected{% endif %}>
-                                        {{ weapon.name }} [{{ weapon.category }}] (+{{ weapon.points }} pts) - Range: {{ weapon.range_multiplier }}" | Damage: {{ weapon.damage }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                <small class="text-muted">Support weapons only (MGs, etc.)</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                        <p class="text-muted">Select primary and secondary weapons from the vehicle weapon list.</p>
 
-                <!-- How to Use Description -->
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> How to Use (Exported - Markdown Supported)</h5>
-                    </div>
-                    <div class="card-body">
-                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Explain how to use this vehicle in battle. Supports markdown:&#10;**Bold** for emphasis&#10;- Bullet points&#10;1. Numbered lists&#10;&#10;Examples: Reconnaissance, Tank support, Transport role, Mobile firepower platform">{{ unit.description or '' }}</textarea>
-                        <small class="text-muted d-block mt-2"><strong>Markdown Help:</strong> Use **bold**, *italic*, - bullets, 1. numbers, [link text](url), ### headers</small>
+                        <div class="mb-3">
+                            <label for="primary_weapon_id" class="form-label">Primary Weapon</label>
+                            <select class="form-select" id="primary_weapon_id" name="primary_weapon_id">
+                                <option value="">Select Weapon...</option>
+                                {% for weapon in vehicle_weapons %}
+                                <option value="{{ weapon.id }}" {% if primary_weapon_id == weapon.id %}selected{% endif %}>{{ weapon.name }} ({{ weapon.range }}, FE:{{ weapon.fire_effect }}, +{{ weapon.points }} pts)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="secondary_weapon_id" class="form-label">Secondary Weapon</label>
+                            <select class="form-select" id="secondary_weapon_id" name="secondary_weapon_id">
+                                <option value="">None</option>
+                                {% for weapon in vehicle_weapons %}
+                                <option value="{{ weapon.id }}" {% if secondary_weapon_id == weapon.id %}selected{% endif %}>{{ weapon.name }} ({{ weapon.range }}, FE:{{ weapon.fire_effect }}, +{{ weapon.points }} pts)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -313,7 +185,7 @@
                         <h5 class="mb-0">Notes</h5>
                     </div>
                     <div class="card-body">
-                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Optional notes about this vehicle... (internal only, not exported)">{{ unit.notes or '' }}</textarea>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Vehicle description, tactics, etc...">{{ unit.notes or '' }}</textarea>
                         <small class="text-muted">Weapons can be modified separately</small>
                     </div>
                 </div>
@@ -392,6 +264,7 @@
 <script>
 // Real-time points calculator
 const qualityPoints = {
+    'Rabble': 4,
     'Conscript': 6,
     'Regular': 8,
     'Elite': 10
@@ -405,6 +278,12 @@ const movementPoints = {
     'Walk': 3
 };
 
+const weaponPoints = {
+    {% for weapon in vehicle_weapons %}
+    '{{ weapon.id }}': {{ weapon.points }},
+    {% endfor %}
+};
+
 function calculatePoints() {
     const quality = document.getElementById('quality').value;
     const movementType = document.getElementById('movement_type').value;
@@ -412,6 +291,8 @@ function calculatePoints() {
     const sideArmour = parseInt(document.getElementById('vehicle_armour_side').value) || 0;
     const rearArmour = parseInt(document.getElementById('vehicle_armour_rear').value) || 0;
     const capacity = parseInt(document.getElementById('carrying_capacity').value) || 0;
+    const primaryWeaponId = document.getElementById('primary_weapon_id').value;
+    const secondaryWeaponId = document.getElementById('secondary_weapon_id').value;
     
     // Base points (quality)
     const basePoints = qualityPoints[quality] || 0;
@@ -426,8 +307,12 @@ function calculatePoints() {
     
     // Transport capacity (2 pts per slot)
     const capacityPts = capacity * 2;
+
+    // Weapon points
+    const primaryWeaponPts = primaryWeaponId ? (weaponPoints[primaryWeaponId] || 0) : 0;
+    const secondaryWeaponPts = secondaryWeaponId ? (weaponPoints[secondaryWeaponId] || 0) : 0;
     
-    const totalPoints = basePoints + frontPts + sidePts + rearPts + movementPts + capacityPts;
+    const totalPoints = basePoints + frontPts + sidePts + rearPts + movementPts + capacityPts + primaryWeaponPts + secondaryWeaponPts;
     
     // Update display
     document.getElementById('calc_base_points').textContent = basePoints;
@@ -446,97 +331,10 @@ document.getElementById('vehicle_armour_front').addEventListener('input', calcul
 document.getElementById('vehicle_armour_side').addEventListener('input', calculatePoints);
 document.getElementById('vehicle_armour_rear').addEventListener('input', calculatePoints);
 document.getElementById('carrying_capacity').addEventListener('input', calculatePoints);
+document.getElementById('primary_weapon_id').addEventListener('change', calculatePoints);
+document.getElementById('secondary_weapon_id').addEventListener('change', calculatePoints);
 
 // Initial calculation
 calculatePoints();
-
-// Repeatable trait counter handlers
-document.querySelectorAll('.trait-count-plus').forEach(button => {
-    button.addEventListener('click', function() {
-        const traitId = this.dataset.traitId;
-        const input = document.getElementById(`trait_count_${traitId}`);
-        const currentValue = parseInt(input.value) || 0;
-        const maxValue = parseInt(input.max) || 10;
-        if (currentValue < maxValue) {
-            input.value = currentValue + 1;
-            updateRepeatableTraitHidden(traitId, currentValue + 1);
-            calculatePoints();
-        }
-    });
-});
-
-document.querySelectorAll('.trait-count-minus').forEach(button => {
-    button.addEventListener('click', function() {
-        const traitId = this.dataset.traitId;
-        const input = document.getElementById(`trait_count_${traitId}`);
-        const currentValue = parseInt(input.value) || 0;
-        if (currentValue > 0) {
-            input.value = currentValue - 1;
-            updateRepeatableTraitHidden(traitId, currentValue - 1);
-            calculatePoints();
-        }
-    });
-});
-
-document.querySelectorAll('.trait-count-input').forEach(input => {
-    input.addEventListener('input', function() {
-        const traitId = this.dataset.traitId;
-        const value = parseInt(this.value) || 0;
-        updateRepeatableTraitHidden(traitId, value);
-        calculatePoints();
-    });
-});
-
-// Helper function to enable/disable hidden inputs for repeatable traits
-function updateRepeatableTraitHidden(traitId, count) {
-    const hiddenInput = document.querySelector(`.trait-hidden-input[data-trait-id="${traitId}"]`);
-    if (hiddenInput) {
-        hiddenInput.disabled = count === 0;
-        hiddenInput.setAttribute('data-count', count);
-    }
-}
 </script>
-
-<style>
-/* Repeatable trait styling */
-.repeatable-trait {
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    transition: background-color 0.15s ease-in-out;
-}
-
-.repeatable-trait:hover {
-    background-color: #f8f9fa;
-}
-
-.repeatable-trait .form-check-label {
-    margin-bottom: 0;
-    cursor: default;
-    width: 100%;
-}
-
-.repeatable-trait .input-group {
-    flex-shrink: 0;
-}
-
-.repeatable-trait .trait-count-input {
-    border-left: 0;
-    border-right: 0;
-}
-
-.repeatable-trait .btn {
-    padding: 0.25rem 0.5rem;
-}
-
-/* Ensure both regular and repeatable traits have similar spacing */
-.trait-option {
-    min-height: 38px;
-    display: flex;
-    align-items: center;
-}
-
-.form-check.trait-option {
-    padding: 0.5rem;
-}
-</style>
 {% endblock %}

@@ -36,8 +36,7 @@ class Faction(db.Model):
     description = db.Column(db.Text)
     color = db.Column(db.String(7), default='#0d6efd')  # Hex color for UI display
     icon = db.Column(db.String(50), default='shield')  # Bootstrap icon name
-    logo_filename = db.Column(db.String(255))  # Uploaded logo image filename (for Supabase)
-    logo_url = db.Column(db.String(500))  # Public URL for logo (Supabase Storage URL)
+    logo_filename = db.Column(db.String(255))  # Uploaded logo image filename
     playstyle_tags = db.Column(db.Text)  # JSON list of tactical playstyle tags
     background = db.Column(db.Text)  # Lore/background information
     special_rules = db.Column(db.Text)  # Faction-wide special rules
@@ -48,23 +47,12 @@ class Faction(db.Model):
     # Relationships
     units = db.relationship('Unit', backref='faction_obj', lazy=True, foreign_keys='Unit.faction_id')
     army_lists = db.relationship('ArmyList', backref='faction_obj', lazy=True, foreign_keys='ArmyList.faction_id')
-    ratings = db.relationship('FactionRating', backref='faction', lazy=True, cascade='all, delete-orphan')
     
     def get_playstyle_tags(self):
         """Get list of playstyle tags for this faction"""
         if not self.playstyle_tags:
             return []
         return json.loads(self.playstyle_tags)
-    
-    def get_average_rating(self):
-        """Get average rating for this faction"""
-        if not self.ratings:
-            return 0
-        return round(sum(r.score for r in self.ratings) / len(self.ratings), 1)
-    
-    def get_rating_count(self):
-        """Get total number of ratings"""
-        return len(self.ratings)
     
     def __repr__(self):
         return f'<Faction {self.name}>'
@@ -108,71 +96,23 @@ class Armour(db.Model):
 
 class Trait(db.Model):
     """Special traits/abilities for units"""
-    __table_args__ = (
-        db.UniqueConstraint('name', 'category', name='uix_trait_name_category'),
-    )
-    
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(100), nullable=False, unique=True)
     description = db.Column(db.Text, nullable=False)
     points_multiplier = db.Column(db.Float, nullable=False)
     category = db.Column(db.String(50))  # Infantry, Vehicle, Character, etc.
-    is_repeatable = db.Column(db.Boolean, default=False)  # Can be taken multiple times (e.g., Weapon Stabilizer)
     
     def __repr__(self):
         return f'<Trait {self.name}>'
 
 
-class SquadMember(db.Model):
-    """Individual squad members with their specific equipment"""
-    id = db.Column(db.Integer, primary_key=True)
-    unit_id = db.Column(db.Integer, db.ForeignKey('unit.id', ondelete='CASCADE'), nullable=False)
-    member_number = db.Column(db.Integer, nullable=False)  # Position in squad (1, 2, 3...)
-    member_type = db.Column(db.String(20), nullable=False, default='Regular')  # Regular, Support, Leader
-    
-    # Equipment
-    weapon_id = db.Column(db.Integer, db.ForeignKey('weapon.id'), nullable=True)
-    secondary_weapon_id = db.Column(db.Integer, db.ForeignKey('weapon.id'), nullable=True)  # Pistols, etc.
-    
-    # Metadata
-    notes = db.Column(db.String(200))  # Optional notes (e.g., "Squad Leader", "Medic")
-    
-    # Relationships
-    weapon = db.relationship('Weapon', foreign_keys=[weapon_id])
-    secondary_weapon = db.relationship('Weapon', foreign_keys=[secondary_weapon_id])
-    
-    def __repr__(self):
-        return f'<SquadMember {self.member_number} of Unit {self.unit_id}>'
-
-
 class Unit(db.Model):
     """Custom units created by users - Supports 6 unit types: Squad, Character, Sniper, Heavy Weapons, Psionic, Vehicle"""
-
-    def get_inherited_traits(self):
-        """Return traits for this unit, inheriting from parent if not overridden."""
-        if self.traits_json and json.loads(self.traits_json):
-            return self.get_traits()
-        elif self.parent:
-            return self.parent.get_inherited_traits()
-        else:
-            return []
-
-    def get_inherited_weapon(self, weapon_type):
-        """Return weapon (basic, secondary, heavy, etc.) for this unit, inheriting from parent if not set."""
-        weapon = getattr(self, weapon_type, None)
-        if weapon:
-            return weapon
-        elif self.parent:
-            return self.parent.get_inherited_weapon(weapon_type)
-        else:
-            return None
     id = db.Column(db.Integer, primary_key=True)
-    parent_id = db.Column(db.Integer, db.ForeignKey('unit.id'), nullable=True)  # For parent/variant relationship
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     faction_id = db.Column(db.Integer, db.ForeignKey('faction.id'), nullable=True)  # Optional: can be unassigned
     name = db.Column(db.String(100), nullable=False)
     unit_type = db.Column(db.String(50), nullable=False)  # Squad, Character, Sniper, HeavyWeapon, Psionic, Vehicle
-    role = db.Column(db.String(50))  # Battlefield role tag (e.g., "Line Infantry", "Fire Support", "Main Battle")
     
     # Base stats (all units)
     quality = db.Column(db.String(20), nullable=False)  # Rabble, Conscript, Regular, Elite
@@ -190,12 +130,10 @@ class Unit(db.Model):
     # Equipment (shared)
     armour_id = db.Column(db.Integer, db.ForeignKey('armour.id'))
     basic_weapon_id = db.Column(db.Integer, db.ForeignKey('weapon.id'))
-    secondary_weapon_id = db.Column(db.Integer, db.ForeignKey('weapon.id'), nullable=True)  # Pistols, backup weapons
     
     # Heavy Weapons Team specific
     heavy_weapon_id = db.Column(db.Integer, db.ForeignKey('weapon.id'), nullable=True)
     weapon_options_json = db.Column(db.Text)  # JSON list of additional weapon options
-    crew_count = db.Column(db.Integer, default=2)  # Number of crew members (default 2 for heavy weapons teams)
     
     # Psionic specific
     psionic_aptitude = db.Column(db.String(20))  # Marginal, Competent, Expert, Master
@@ -207,7 +145,7 @@ class Unit(db.Model):
     vehicle_armour_front = db.Column(db.Integer)
     vehicle_armour_side = db.Column(db.Integer)
     vehicle_armour_rear = db.Column(db.Integer)
-    crew_size = db.Column(db.Integer, default=1)  # Number of crew members
+    crew_size = db.Column(db.Integer)
     carrying_capacity = db.Column(db.Integer)
     vehicle_weapons_json = db.Column(db.Text)  # JSON list of vehicle weapons
     vehicle_properties_json = db.Column(db.Text)  # JSON list of vehicle properties/traits
@@ -220,42 +158,22 @@ class Unit(db.Model):
     total_points = db.Column(db.Float, nullable=False)
     
     # Metadata
-    description = db.Column(db.Text)  # "How to use" guide for this unit
     is_public = db.Column(db.Boolean, default=False)
     notes = db.Column(db.Text)  # User notes about the unit
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    faction = db.relationship('Faction', foreign_keys=[faction_id], overlaps="faction_obj,units")
     armour = db.relationship('Armour', foreign_keys=[armour_id])
     basic_weapon = db.relationship('Weapon', foreign_keys=[basic_weapon_id])
-    secondary_weapon = db.relationship('Weapon', foreign_keys=[secondary_weapon_id])
     heavy_weapon = db.relationship('Weapon', foreign_keys=[heavy_weapon_id])
-    squad_members = db.relationship('SquadMember', backref='unit', lazy=True, cascade='all, delete-orphan', order_by='SquadMember.member_number')
-    parent = db.relationship('Unit', remote_side=[id], backref='variants')
     
     def get_traits(self):
         """Get list of trait objects for this unit"""
         if not self.traits_json:
             return []
-        data = json.loads(self.traits_json)
-        # Handle both old format [1,5,12] and new format {"1":1,"5":1,"12":2}
-        if isinstance(data, list):
-            trait_ids = data
-        else:
-            trait_ids = [int(k) for k in data.keys()]
+        trait_ids = json.loads(self.traits_json)
         return Trait.query.filter(Trait.id.in_(trait_ids)).all()
-    
-    def get_trait_counts(self):
-        """Get dict of trait ID to count for this unit"""
-        if not self.traits_json:
-            return {}
-        data = json.loads(self.traits_json)
-        # Handle both old format [1,5,12] and new format {"1":1,"5":1,"12":2}
-        if isinstance(data, list):
-            return {str(trait_id): 1 for trait_id in data}
-        return {k: int(v) for k, v in data.items()}
     
     def get_squad_members(self):
         """Get list of squad members (for Squad type only)"""
@@ -271,24 +189,10 @@ class Unit(db.Model):
         return Weapon.query.filter(Weapon.id.in_(weapon_ids)).all()
     
     def get_vehicle_properties(self):
-        """Get list of vehicle property IDs (for Vehicle type only)"""
+        """Get list of vehicle properties/traits (for Vehicle type only)"""
         if not self.vehicle_properties_json or self.unit_type != 'Vehicle':
             return []
-        data = json.loads(self.vehicle_properties_json)
-        # Handle both old format [1,5,12] and new format {"1":1,"5":1,"12":2}
-        if isinstance(data, list):
-            return data
-        return [int(k) for k in data.keys()]
-    
-    def get_vehicle_property_counts(self):
-        """Get dict of property ID to count (for Vehicle type only)"""
-        if not self.vehicle_properties_json or self.unit_type != 'Vehicle':
-            return {}
-        data = json.loads(self.vehicle_properties_json)
-        # Handle both old format [1,5,12] and new format {"1":1,"5":1,"12":2}
-        if isinstance(data, list):
-            return {str(prop_id): 1 for prop_id in data}
-        return {k: int(v) for k, v in data.items()}
+        return json.loads(self.vehicle_properties_json)
     
     def __repr__(self):
         return f'<Unit {self.name} ({self.unit_type})>'
@@ -318,7 +222,7 @@ class ArmyList(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def get_units(self):
-        """Get list of units with their quantities and attached units"""
+        """Get list of units with their quantities"""
         if not self.units_json:
             return []
         units_data = json.loads(self.units_json)
@@ -326,38 +230,11 @@ class ArmyList(db.Model):
         for item in units_data:
             unit = Unit.query.get(item['unit_id'])
             if unit:
-                # Get attached units if any
-                attached_units_list = []
-                if 'attached_units' in item and item['attached_units']:
-                    for attached_id in item['attached_units']:
-                        attached_unit = Unit.query.get(attached_id)
-                        if attached_unit:
-                            attached_units_list.append(attached_unit)
-                
                 result.append({
                     'unit': unit,
-                    'quantity': item['quantity'],
-                    'attached_units': attached_units_list
+                    'quantity': item['quantity']
                 })
         return result
     
     def __repr__(self):
         return f'<ArmyList {self.name}>'
-
-class FactionRating(db.Model):
-    """User ratings for public factions"""
-    id = db.Column(db.Integer, primary_key=True)
-    faction_id = db.Column(db.Integer, db.ForeignKey('faction.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    score = db.Column(db.Integer, nullable=False)  # 1-5 stars
-    comment = db.Column(db.Text)  # Optional review comment
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Unique constraint: one rating per user per faction
-    __table_args__ = (db.UniqueConstraint('faction_id', 'user_id', name='unique_faction_rating'),)
-    
-    user = db.relationship('User', backref='faction_ratings')
-    
-    def __repr__(self):
-        return f'<FactionRating {self.faction_id} by {self.user_id}>'

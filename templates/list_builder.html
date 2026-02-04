@@ -1,14 +1,5 @@
 {% extends "base.html" %}
-{% set all_units = [] %}
-{% for unit in my_units %}
-    {% set _ = all_units.append({'id': unit.id, 'name': unit.name, 'total_points': unit.total_points, 'unit_type': unit.unit_type}) %}
-    {% for variant in unit.variants %}
-        {% set _ = all_units.append({'id': variant.id, 'name': variant.name, 'total_points': variant.total_points, 'unit_type': variant.unit_type}) %}
-    {% endfor %}
-{% endfor %}
-{% for unit in public_units %}
-    {% set _ = all_units.append({'id': unit.id, 'name': unit.name, 'total_points': unit.total_points, 'unit_type': unit.unit_type}) %}
-{% endfor %}
+
 {% block title %}List Builder - F.A.D. List Builder{% endblock %}
 
 {% block content %}
@@ -28,37 +19,12 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Faction</label>
-                            <select class="form-select" id="listFaction" onchange="onFactionChange()">
-                                <option value="">No Faction</option>
-                                {% for faction in my_factions %}
-                                <option value="{{ faction.id }}" {% if selected_faction_id and faction.id == selected_faction_id %}selected{% endif %}>
-                                    <i class="bi bi-{{ faction.icon }}"></i> {{ faction.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                            <script>
-                            function onFactionChange() {
-                                const factionId = document.getElementById('listFaction').value;
-                                const url = new URL(window.location.href);
-                                if (factionId) {
-                                    url.searchParams.set('faction_id', factionId);
-                                } else {
-                                    url.searchParams.delete('faction_id');
-                                }
-                                window.location.href = url.toString();
-                            }
-                            </script>
-                            <small class="text-muted">
-                                <a href="{{ url_for('faction_creator') }}" target="_blank" class="text-decoration-none">
-                                    Create a new faction
-                                </a>
-                            </small>
+                            <input type="text" class="form-control" id="listFaction">
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Description</label>
-                        <textarea class="form-control" id="listDescription" rows="3" placeholder="Describe your list tactics and composition. Supports markdown:&#10;**Bold** for emphasis&#10;- Bullet points&#10;1. Numbered lists&#10;&#10;Examples: Primary objectives, Counter-tactics, Force synergies, Deployment strategy"></textarea>
-                        <small class="text-muted d-block mt-2"><strong>Markdown Help:</strong> Use **bold**, *italic*, - bullets, 1. numbers, [link text](url), ### headers</small>
+                        <textarea class="form-control" id="listDescription" rows="3"></textarea>
                     </div>
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="isPublic">
@@ -72,106 +38,88 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h3>Available Units</h3>
-                    {% if not selected_faction_id %}
-                        <div class="alert alert-warning">Please select a faction to view available units.</div>
-                    {% else %}
-                        <ul class="nav nav-tabs mb-3">
-                            <li class="nav-item">
-                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#myUnits">My Units</button>
-                            </li>
-                            <li class="nav-item">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#publicUnits">Public Units</button>
-                            </li>
-                        </ul>
-                        <div class="tab-content">
-                            <div class="tab-pane fade show active" id="myUnits">
-                                {% if my_units %}
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Type</th>
-                                                <th>Points</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {# Group units by parent: show only parentless units as main rows, and their variants as indented rows #}
-                                            {% for unit in my_units if not unit.parent_id %}
-                                            <tr>
-                                                <td><strong>{{ unit.name }}</strong> {% if unit.variants|length > 0 %}<span class="badge bg-info">Parent</span>{% endif %}</td>
-                                                <td>{{ unit.unit_type }}</td>
-                                                <td class="points-display">{{ unit.total_points }}</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-primary" onclick="addUnitToList({{ unit.id }}, '{{ unit.name }}', {{ unit.total_points }}, '{{ unit.unit_type }}')">
-                                                        <i class="bi bi-plus"></i> Add
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            {# Show variants indented under parent #}
-                                            {% for variant in unit.variants %}
-                                            <tr>
-                                                <td style="padding-left: 2em;">
-                                                    <span class="text-secondary"><i class="bi bi-arrow-return-right"></i> Variant:</span> <strong>{{ variant.name }}</strong>
-                                                </td>
-                                                <td>{{ variant.unit_type }}</td>
-                                                <td class="points-display">{{ variant.total_points }}</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-primary" onclick="addUnitToList({{ variant.id }}, '{{ variant.name }}', {{ variant.total_points }}, '{{ variant.unit_type }}')">
-                                                        <i class="bi bi-plus"></i> Add
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                {% else %}
-                                <div class="alert alert-info">
-                                    No units found for this faction. <a href="{{ url_for('unit_builder') }}">Create a unit first</a>!
-                                </div>
-                                {% endif %}
+                    <ul class="nav nav-tabs mb-3">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#myUnits">My Units</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#publicUnits">Public Units</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="myUnits">
+                            {% if my_units %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Points</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for unit in my_units %}
+                                        <tr>
+                                            <td><strong>{{ unit.name }}</strong></td>
+                                            <td>{{ unit.unit_type }}</td>
+                                            <td class="points-display">{{ unit.total_points }}</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-primary" onclick="addUnitToList({{ unit.id }}, '{{ unit.name }}', {{ unit.total_points }})">
+                                                    <i class="bi bi-plus"></i> Add
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
                             </div>
-                            <div class="tab-pane fade" id="publicUnits">
-                                {% if public_units %}
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Type</th>
-                                                <th>Points</th>
-                                                <th>Creator</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for unit in public_units %}
-                                            <tr>
-                                                <td><strong>{{ unit.name }}</strong></td>
-                                                <td>{{ unit.unit_type }}</td>
-                                                <td class="points-display">{{ unit.total_points }}</td>
-                                                <td>{{ unit.creator.username }}</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-primary" onclick="addUnitToList({{ unit.id }}, '{{ unit.name }}', {{ unit.total_points }}, '{{ unit.unit_type }}')">
-                                                        <i class="bi bi-plus"></i> Add
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                {% else %}
-                                <div class="alert alert-info">
-                                    No public units available for this faction yet.
-                                </div>
-                                {% endif %}
+                            {% else %}
+                            <div class="alert alert-info">
+                                No units found. <a href="{{ url_for('unit_builder') }}">Create a unit first</a>!
                             </div>
+                            {% endif %}
                         </div>
-                    {% endif %}
+
+                        <div class="tab-pane fade" id="publicUnits">
+                            {% if public_units %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Points</th>
+                                            <th>Creator</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for unit in public_units %}
+                                        <tr>
+                                            <td><strong>{{ unit.name }}</strong></td>
+                                            <td>{{ unit.unit_type }}</td>
+                                            <td class="points-display">{{ unit.total_points }}</td>
+                                            <td>{{ unit.creator.username }}</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-primary" onclick="addUnitToList({{ unit.id }}, '{{ unit.name }}', {{ unit.total_points }})">
+                                                    <i class="bi bi-plus"></i> Add
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info">
+                                No public units available yet.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -203,143 +151,117 @@
     </div>
 </div>
 
-<!-- END OF MAIN CONTENT -->
 <script>
-    const allUnits = {{ all_units|tojson|safe }};
-    const unitData = {};
-    allUnits.forEach(u => unitData[u.id] = u);
-    
-    let listItems = {}; // Track units in list: { unit_id: { name, points, quantity, unit_type } }
-    
-    function addUnitToList(unitId, unitName, points, unitType) {
-        if (listItems[unitId]) {
-            listItems[unitId].quantity += 1;
-        } else {
-            listItems[unitId] = {
-                name: unitName,
-                points: points,
-                quantity: 1,
-                unit_type: unitType,
-                id: unitId
-            };
-        }
-        updateListDisplay();
-    }
-    
-    function removeUnitFromList(unitId) {
-        delete listItems[unitId];
-        updateListDisplay();
-    }
-    
-    function updateQuantity(unitId, newQuantity) {
-        const qty = parseInt(newQuantity) || 0;
-        if (qty <= 0) {
-            removeUnitFromList(unitId);
-        } else {
-            listItems[unitId].quantity = qty;
-            updateListDisplay();
-        }
-    }
-    
-    function updateListDisplay() {
-        const listContainer = document.getElementById('listUnits');
-        const totalPointsEl = document.getElementById('totalPoints');
-        const totalUnitsEl = document.getElementById('totalUnits');
-        
-        if (Object.keys(listItems).length === 0) {
-            listContainer.innerHTML = '<p class="text-muted">No units added yet</p>';
-            totalPointsEl.textContent = '0';
-            totalUnitsEl.textContent = '0';
-            return;
-        }
-        
-        let html = '<ul class="list-group">';
-        let totalPoints = 0;
-        let totalUnits = 0;
-        
-        for (const unitId in listItems) {
-            const item = listItems[unitId];
-            const itemTotal = item.points * item.quantity;
-            totalPoints += itemTotal;
-            totalUnits += item.quantity;
-            
-            html += `
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>${item.name}</strong>
-                        <br>
-                        <small class="text-muted">${item.points} pts × 
-                        <input type="number" min="1" max="99" value="${item.quantity}" 
-                               style="width: 45px;" 
-                               onchange="updateQuantity(${unitId}, this.value)" 
-                               class="form-control form-control-sm d-inline-block" style="width: 45px;"> = 
-                        ${itemTotal} pts</small>
-                    </div>
-                    <button class="btn btn-sm btn-danger" onclick="removeUnitFromList(${unitId})">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </li>
-            `;
-        }
-        
-        html += '</ul>';
-        listContainer.innerHTML = html;
-        totalPointsEl.textContent = totalPoints;
-        totalUnitsEl.textContent = totalUnits;
-    }
-    
-    function saveList() {
-        const listName = document.getElementById('listName').value.trim();
-        const listFaction = document.getElementById('listFaction').value || null;
-        const listDescription = document.getElementById('listDescription').value;
-        const isPublic = document.getElementById('isPublic').checked;
-        
-        if (!listName) {
-            alert('Please enter a list name');
-            return;
-        }
-        
-        if (Object.keys(listItems).length === 0) {
-            alert('Please add at least one unit to the list');
-            return;
-        }
-        
-        const units = [];
-        for (const unitId in listItems) {
-            units.push({
-                unit_id: parseInt(unitId),
-                quantity: listItems[unitId].quantity
-            });
-        }
-        
-        const data = {
-            name: listName,
-            faction_id: listFaction ? parseInt(listFaction) : null,
-            description: listDescription,
-            is_public: isPublic,
-            units: units
-        };
-        
-        fetch('/list/save', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('List saved successfully!');
-                window.location.href = '/list/' + data.list_id;
-            } else {
-                alert('Error: ' + data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while saving the list');
+let listUnits = [];
+
+function addUnitToList(unitId, unitName, unitPoints) {
+    const existing = listUnits.find(u => u.unit_id === unitId);
+    if (existing) {
+        existing.quantity++;
+    } else {
+        listUnits.push({
+            unit_id: unitId,
+            name: unitName,
+            points: unitPoints,
+            quantity: 1
         });
     }
+    updateListDisplay();
+}
+
+function removeUnitFromList(unitId) {
+    listUnits = listUnits.filter(u => u.unit_id !== unitId);
+    updateListDisplay();
+}
+
+function updateQuantity(unitId, change) {
+    const unit = listUnits.find(u => u.unit_id === unitId);
+    if (unit) {
+        unit.quantity = Math.max(1, unit.quantity + change);
+        updateListDisplay();
+    }
+}
+
+function updateListDisplay() {
+    const container = document.getElementById('listUnits');
+    
+    if (listUnits.length === 0) {
+        container.innerHTML = '<p class="text-muted">No units added yet</p>';
+        document.getElementById('totalUnits').textContent = '0';
+        document.getElementById('totalPoints').textContent = '0';
+        return;
+    }
+    
+    let html = '';
+    let totalUnits = 0;
+    let totalPoints = 0;
+    
+    listUnits.forEach(unit => {
+        totalUnits += unit.quantity;
+        totalPoints += unit.points * unit.quantity;
+        
+        html += `
+            <div class="mb-3 p-2 border rounded">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong>${unit.name}</strong>
+                    <button class="btn btn-sm btn-danger" onclick="removeUnitFromList(${unit.unit_id})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-secondary" onclick="updateQuantity(${unit.unit_id}, -1)">-</button>
+                        <button class="btn btn-outline-secondary" disabled>${unit.quantity}</button>
+                        <button class="btn btn-outline-secondary" onclick="updateQuantity(${unit.unit_id}, 1)">+</button>
+                    </div>
+                    <span class="points-display">${(unit.points * unit.quantity).toFixed(2)} pts</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+    document.getElementById('totalUnits').textContent = totalUnits;
+    document.getElementById('totalPoints').textContent = totalPoints.toFixed(2);
+}
+
+async function saveList() {
+    const name = document.getElementById('listName').value;
+    if (!name) {
+        alert('Please enter a list name');
+        return;
+    }
+    
+    if (listUnits.length === 0) {
+        alert('Please add at least one unit to the list');
+        return;
+    }
+    
+    const data = {
+        name: name,
+        faction: document.getElementById('listFaction').value,
+        description: document.getElementById('listDescription').value,
+        units: listUnits.map(u => ({unit_id: u.unit_id, quantity: u.quantity})),
+        is_public: document.getElementById('isPublic').checked
+    };
+    
+    try {
+        const response = await fetch('/list/save', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            alert('List saved successfully!');
+            window.location.href = '/dashboard';
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error saving list: ' + error);
+    }
+}
 </script>
 {% endblock %}

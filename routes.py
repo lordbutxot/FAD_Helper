@@ -1,51 +1,3 @@
-def create_variant(unit_id):
-    original = Unit.query.get_or_404(unit_id)
-    if original.user_id != current_user.id:
-        flash('You can only create variants of your own units.', 'danger')
-        return redirect(url_for('dashboard'))
-
-    # Copy all fields except id, created_at, updated_at, and set parent_id
-    variant = Unit(
-        user_id=current_user.id,
-        name=f"{original.name} Variant",
-        unit_type=original.unit_type,
-        faction_id=original.faction_id,
-        quality=original.quality,
-        resolve=original.resolve,
-        squad_size=getattr(original, 'squad_size', None),
-        squad_members_json=getattr(original, 'squad_members_json', None),
-        has_personality=getattr(original, 'has_personality', False),
-        leadership_rating=getattr(original, 'leadership_rating', None),
-        specialization=getattr(original, 'specialization', None),
-        armour_id=getattr(original, 'armour_id', None),
-        basic_weapon_id=getattr(original, 'basic_weapon_id', None),
-        secondary_weapon_id=getattr(original, 'secondary_weapon_id', None),
-        heavy_weapon_id=getattr(original, 'heavy_weapon_id', None),
-        weapon_options_json=getattr(original, 'weapon_options_json', None),
-        crew_count=getattr(original, 'crew_count', None),
-        vehicle_type=getattr(original, 'vehicle_type', None),
-        movement_type=getattr(original, 'movement_type', None),
-        vehicle_armour_front=getattr(original, 'vehicle_armour_front', None),
-        vehicle_armour_side=getattr(original, 'vehicle_armour_side', None),
-        vehicle_armour_rear=getattr(original, 'vehicle_armour_rear', None),
-        crew_size=getattr(original, 'crew_size', None),
-        carrying_capacity=getattr(original, 'carrying_capacity', None),
-        vehicle_weapons_json=getattr(original, 'vehicle_weapons_json', None),
-        vehicle_properties_json=getattr(original, 'vehicle_properties_json', None),
-        psionic_aptitude=getattr(original, 'psionic_aptitude', None),
-        psionic_strength=getattr(original, 'psionic_strength', None),
-        traits_json=original.traits_json,
-        base_points=original.base_points,
-        total_points=original.total_points,
-        description=original.description,
-        is_public=False,
-        notes=original.notes,
-        parent_id=original.id
-    )
-    db.session.add(variant)
-    db.session.commit()
-    flash(f'Variant created from {original.name}. You can now edit it.', 'success')
-    return redirect(url_for('edit_unit', unit_id=variant.id))
 """
 Application routes for F.A.D. List Builder
 """
@@ -55,15 +7,61 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from extensions import db
-from models import User, ArmyList, Unit, Weapon, Armour, Trait, Faction, FactionRating, SquadMember
+from models import User, ArmyList, Unit, Weapon, Armour, Trait, Faction
 from datetime import datetime, timedelta
 from functools import wraps
 import json
 import re
 import os
 import uuid
-from sqlalchemy import and_, or_
-from storage_utils import upload_faction_logo, delete_faction_logo, get_logo_url
+
+VEHICLE_WEAPON_NAMES = None
+
+def load_vehicle_weapon_names():
+    """Load vehicle weapon names from Vehicle Table.TXT"""
+    global VEHICLE_WEAPON_NAMES
+    if VEHICLE_WEAPON_NAMES is not None:
+        return VEHICLE_WEAPON_NAMES
+
+    file_path = os.path.join(os.path.dirname(__file__), 'Vehicle Table.TXT')
+    names = []
+
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            lines = [line.strip() for line in file.readlines()]
+
+        start_idx = None
+        for i, line in enumerate(lines):
+            if line.lower() == 'select weapons':
+                start_idx = i + 1
+                break
+
+        if start_idx is None:
+            for i, line in enumerate(lines):
+                if line.lower() == 'weapons':
+                    start_idx = i + 1
+                    break
+
+        if start_idx is not None:
+            for line in lines[start_idx:]:
+                if not line:
+                    continue
+                names.append(line.replace('Morter', 'Mortar'))
+    except Exception:
+        names = []
+
+    VEHICLE_WEAPON_NAMES = names
+    return names
+
+def get_vehicle_weapons():
+    """Get ordered list of vehicle weapons defined in Vehicle Table.TXT"""
+    names = load_vehicle_weapon_names()
+    if not names:
+        return []
+
+    weapons = Weapon.query.filter(Weapon.name.in_(names)).all()
+    weapon_map = {weapon.name: weapon for weapon in weapons}
+    return [weapon_map[name] for name in names if name in weapon_map]
 
 
 # File upload configuration
@@ -111,95 +109,6 @@ PLAYSTYLE_TAGS = {
     'detection_systems': {'name': 'Detection Systems', 'icon': 'radar', 'description': 'Advanced sensors revealing hidden enemies', 'category': 'scifi'},
     'disruptive_tech': {'name': 'Disruptive Tech', 'icon': 'lightning-fill', 'description': 'EMP, jamming, and electronic warfare', 'category': 'scifi'},
     'quality_over_quantity': {'name': 'Quality over Quantity', 'icon': 'gem', 'description': 'Elite units with superior stats and equipment', 'category': 'scifi'},
-}
-
-# Official trait lists (from table files)
-OFFICIAL_INFANTRY_TRAITS = [
-    'Adaptive Camouflage', 'Aerial', 'Aggressive', 'Agile', 'Assault Troops', 'Berserk', 'Bestow Trait', 'Brave',
-    'Bug Hunter', 'Cautious', 'Combat Drugs', 'Dependant', 'Detection', 'Disruptive Charge', 'Droids (self-less)',
-    'Droids (self-preserving)', 'Drop Troop', 'Elusive', 'Engineer', 'Fanatic', 'Fast', 'Fearless', 'Fire Team',
-    'Flyer', 'Frail', 'Frenzied', 'Goon', 'Grav Mount', 'Grizzled', 'Gung Ho', 'Hardened', 'Hero', 'Hesitant',
-    'Hive mind (controller)', 'Hive Mind (unit)', 'HQ', 'Huge', 'Ignore Pain', 'Infect', 'Infilration',
-    'Inflexible', 'Jet Packs', 'Legend', 'Limited Teleport', 'Mechanized', 'Night Vision', 'No Grenades',
-    'Obvious Target', 'Recon', 'Regenerate', 'Relentless', 'Reserves', 'Resilient (2)', 'Resilient (3)',
-    'Resilient (4)', 'Resilient (5)', 'Resilient (6)', 'Save', 'Self Repairing', 'Shaky', 'Shock Troops',
-    'Slick', 'Slow', 'Slow Firing', 'Stealth', 'Supreme Armour', 'Supreme Weapon', 'Swift', 'Tank Hunter',
-    'Terrifying', 'Timid', 'Tough', 'Unstable Technology', 'Villain', 'Weak', 'Zombie'
-]
-
-OFFICIAL_VEHICLE_TRAITS = [
-    'Advanced Targeting System', 'AI Controlled', 'Alternate Fire Weapons (2)', 'Alternate Fire Weapons (3)',
-    'Amphibious', 'Close - In Defense System', 'Command Vehicle', 'Electronic Countermeasures', 'Energy screen',
-    'Fast', 'Fixed Mount (1)', 'Fixed Mount (2)', 'Fixed Mount (3)', 'Forward Observer', 'Improved Weapons Control',
-    'Jump Jets', 'Linked Weapons', 'Medevac', 'Reactive Armour', 'Reserves', 'Slow', 'Smoke', 'Stealth',
-    'Supercharged', 'Under-Powered', 'Weapon Stabilizer'
-]
-
-# Battlefield role tags for quick unit identification
-UNIT_ROLES = {
-    'Squad': [
-        'Line Infantry',
-        'Elite Assault',
-        'Assault / Urban',
-        'Fire Support',
-        'Recon',
-        'Internal Security',
-        'Frontline Support',
-        'Drop Troops',
-        'Mechanized Infantry',
-        'Heavy Infantry'
-    ],
-    'Character': [
-        'Elite Leadership',
-        'Strategic Command',
-        'Combat Support',
-        'EWAR Command',
-        'Tactical Command',
-        'Infantry Commander',
-        'Armored Commander',
-        'Special Operations'
-    ],
-    'HeavyWeapon': [
-        'Fire Support',
-        'Anti-Armor',
-        'Saturation',
-        'Indirect Support',
-        'Anti-Air',
-        'Area Denial',
-        'Direct Fire Support'
-    ],
-    'Sniper': [
-        'Precision Strikes',
-        'Recon',
-        'Hit & Run',
-        'Anti-Personnel',
-        'Target Elimination',
-        'Forward Observer'
-    ],
-    'Psionic': [
-        'Combat Support',
-        'EWAR / EMS',
-        'Elite Leadership',
-        'Psychic Warfare',
-        'Mind Control',
-        'Force Multiplier'
-    ],
-    'Vehicle': [
-        'Main Battle',
-        'Medium Tank',
-        'Light Tank',
-        'Assault IFV / Hybrid Tank',
-        'Transport',
-        'Support / Troop Delivery',
-        'Strike-Fighter',
-        'CAS / Transport',
-        'Saturation Artillery',
-        'Recon',
-        'Command Vehicle',
-        'Fire Support',
-        'Anti-Air',
-        'Engineering'
-    ]
 }
 
 def allowed_file(filename):
@@ -275,20 +184,10 @@ def admin_required(f):
 
 def init_routes(app):
     """Initialize all routes"""
-
-    @app.route('/unit/<int:unit_id>/create-variant')
-    @login_required
-    def create_variant_route(unit_id):
-        return create_variant(unit_id)
-
+    
     @app.route('/')
     def index():
-        try:
-            recent_lists = ArmyList.query.filter_by(is_public=True).order_by(ArmyList.created_at.desc()).limit(6).all()
-        except Exception as e:
-            # Database tables may not exist yet - show empty list
-            print(f"Warning: Could not fetch recent lists: {e}")
-            recent_lists = []
+        recent_lists = ArmyList.query.filter_by(is_public=True).order_by(ArmyList.created_at.desc()).limit(6).all()
         return render_template('index.html', recent_lists=recent_lists)
     
     @app.route('/register', methods=['GET', 'POST'])
@@ -337,14 +236,10 @@ def init_routes(app):
                 return render_template('register.html')
             
             # Create new user with pbkdf2:sha256 hashing
-            # Auto-promote the very first registered user to admin, except test accounts
-            test_usernames = {'testuser', 'test', 'admin_test'}
-            is_first_user = User.query.count() == 0 and username.lower() not in test_usernames
             user = User(  # type: ignore
                 username=username,
                 email=email,
-                password_hash=generate_password_hash(password, method='pbkdf2:sha256', salt_length=16),
-                is_admin=is_first_user
+                password_hash=generate_password_hash(password, method='pbkdf2:sha256', salt_length=16)
             )
             db.session.add(user)
             db.session.commit()
@@ -478,7 +373,6 @@ def init_routes(app):
                 
                 # Handle logo upload
                 logo_filename = None
-                logo_url = None
                 if 'logo' in request.files:
                     file = request.files['logo']
                     if file and file.filename:
@@ -492,7 +386,7 @@ def init_routes(app):
                         elif not allowed_file(file.filename):
                             flash('Invalid file type. Only PNG, JPG, JPEG, and GIF are allowed.', 'warning')
                         else:
-                            logo_filename, logo_url = upload_faction_logo(file)
+                            logo_filename = save_faction_logo(file)
                             if not logo_filename:
                                 flash('Error uploading logo. Please try again.', 'warning')
                 
@@ -503,7 +397,6 @@ def init_routes(app):
                     color=color,
                     icon=icon,
                     logo_filename=logo_filename,
-                    logo_url=logo_url,
                     playstyle_tags=playstyle_tags_json,
                     background=background,
                     special_rules=special_rules,
@@ -534,62 +427,7 @@ def init_routes(app):
         units = Unit.query.filter_by(faction_id=faction_id).all()
         lists = ArmyList.query.filter_by(faction_id=faction_id).all()
         
-        # Get user's rating if authenticated
-        user_rating = None
-        if current_user.is_authenticated:
-            user_rating = FactionRating.query.filter_by(faction_id=faction_id, user_id=current_user.id).first()
-        
-        return render_template('view_faction.html', faction=faction, units=units, lists=lists, playstyle_tags=PLAYSTYLE_TAGS, user_rating=user_rating)
-    
-    @app.route('/faction/<int:faction_id>/rate', methods=['POST'])
-    @login_required
-    def rate_faction(faction_id):
-        try:
-            faction = Faction.query.get_or_404(faction_id)
-            
-            # Only public factions can be rated
-            if not faction.is_public:
-                return jsonify({'success': False, 'error': 'Cannot rate private factions'}), 403
-            
-            # Get the rating score (1-5)
-            score = request.json.get('score')
-            comment = request.json.get('comment', '').strip()
-            
-            # Validate score
-            if not score or int(score) < 1 or int(score) > 5:
-                return jsonify({'success': False, 'error': 'Rating must be between 1 and 5'}), 400
-            
-            score = int(score)
-            
-            # Check if user already rated this faction
-            existing_rating = FactionRating.query.filter_by(faction_id=faction_id, user_id=current_user.id).first()
-            
-            if existing_rating:
-                # Update existing rating
-                existing_rating.score = score
-                existing_rating.comment = comment if comment else None
-                existing_rating.updated_at = datetime.utcnow()
-            else:
-                # Create new rating
-                new_rating = FactionRating(
-                    faction_id=faction_id,
-                    user_id=current_user.id,
-                    score=score,
-                    comment=comment if comment else None
-                )
-                db.session.add(new_rating)
-            
-            db.session.commit()
-            
-            # Return updated faction stats
-            return jsonify({
-                'success': True,
-                'average_rating': faction.get_average_rating(),
-                'rating_count': faction.get_rating_count()
-            })
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({'success': False, 'error': str(e)}), 500
+        return render_template('view_faction.html', faction=faction, units=units, lists=lists, playstyle_tags=PLAYSTYLE_TAGS)
     
     @app.route('/faction/<int:faction_id>/delete', methods=['POST'])
     @login_required
@@ -623,7 +461,7 @@ def init_routes(app):
         # Get search and filter parameters
         search_query = request.args.get('search', '').strip()
         playstyle_filter = request.args.get('playstyle', '').strip()
-        sort_by = request.args.get('sort', 'newest')  # newest, score, name
+        sort_by = request.args.get('sort', 'newest')  # newest, popular, name
         
         # Base query - only public factions
         query = Faction.query.filter_by(is_public=True)
@@ -646,20 +484,11 @@ def init_routes(app):
             query = query.order_by(Faction.name.asc())
         elif sort_by == 'oldest':
             query = query.order_by(Faction.created_at.asc())
-        elif sort_by == 'score':
-            # Sort by average rating (score), descending
-            # SQLAlchemy can't sort by hybrid property, so sort in Python
-            factions = query.all()
-            factions.sort(key=lambda f: f.get_average_rating(), reverse=True)
-            return render_template('browse_factions.html', 
-                                 factions=factions, 
-                                 playstyle_tags=PLAYSTYLE_TAGS,
-                                 search_query=search_query,
-                                 playstyle_filter=playstyle_filter,
-                                 sort_by=sort_by)
         else:  # newest (default)
             query = query.order_by(Faction.created_at.desc())
+        
         factions = query.all()
+        
         return render_template('browse_factions.html', 
                              factions=factions, 
                              playstyle_tags=PLAYSTYLE_TAGS,
@@ -723,10 +552,9 @@ def init_routes(app):
                             if faction.logo_filename:
                                 delete_faction_logo(faction.logo_filename)
                             
-                            logo_filename, logo_url = upload_faction_logo(file)
+                            logo_filename = save_faction_logo(file)
                             if logo_filename:
                                 faction.logo_filename = logo_filename
-                                faction.logo_url = logo_url
                             else:
                                 flash('Error uploading logo. Please try again.', 'warning')
                 
@@ -753,9 +581,21 @@ def init_routes(app):
             if not original_faction.is_public and original_faction.user_id != current_user.id:
                 return jsonify({'success': False, 'error': 'Cannot copy private faction'}), 403
             
-            # Copy logo reference (Supabase URLs are shareable)
-            new_logo_filename = original_faction.logo_filename
-            new_logo_url = original_faction.logo_url
+            # Copy logo file if exists
+            new_logo_filename = None
+            if original_faction.logo_filename:
+                try:
+                    import shutil
+                    old_path = os.path.join(UPLOAD_FOLDER, original_faction.logo_filename)
+                    if os.path.exists(old_path):
+                        # Generate new filename
+                        ext = original_faction.logo_filename.rsplit('.', 1)[1].lower()
+                        new_logo_filename = f"{uuid.uuid4()}.{ext}"
+                        new_path = os.path.join(UPLOAD_FOLDER, new_logo_filename)
+                        shutil.copy2(old_path, new_path)
+                except Exception as e:
+                    print(f"Error copying logo: {e}")
+                    # Continue without logo
             
             # Create new faction
             new_faction = Faction(  # type: ignore
@@ -765,7 +605,6 @@ def init_routes(app):
                 color=original_faction.color,
                 icon=original_faction.icon,
                 logo_filename=new_logo_filename,
-                logo_url=new_logo_url,
                 playstyle_tags=original_faction.playstyle_tags,
                 background=original_faction.background,
                 special_rules=original_faction.special_rules,
@@ -791,47 +630,44 @@ def init_routes(app):
     @login_required
     def squad_builder():
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
-        # Secondary weapons: pistols, SMG, shotgun only
-        secondary_weapons = Weapon.query.filter(
-            (Weapon.name.ilike('%pistol%')) |
-            (Weapon.name == 'SMG') |
-            (Weapon.name == 'Shotgun')
-        ).order_by(Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
-        # All infantry types share the same traits (per .TXT files)
-        traits = Trait.query.filter(
-            Trait.category == 'Infantry',
-            Trait.name.in_(OFFICIAL_INFANTRY_TRAITS)
-        ).order_by(Trait.name).all()
-        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
+        traits = Trait.query.order_by(Trait.category, Trait.name).all()
+        vehicle_weapons = get_vehicle_weapons()
+
+        primary_weapon_id = None
+        secondary_weapon_id = None
+        if unit.unit_type == 'Vehicle' and unit.vehicle_weapons_json:
+            try:
+                weapon_ids = json.loads(unit.vehicle_weapons_json)
+                if len(weapon_ids) > 0:
+                    primary_weapon_id = weapon_ids[0]
+                if len(weapon_ids) > 1:
+                    secondary_weapon_id = weapon_ids[1]
+            except Exception:
+                primary_weapon_id = None
+                secondary_weapon_id = None
         
         if request.method == 'POST':
             try:
                 # Get form data
                 name = request.form.get('name', '').strip()
-                faction_id = request.form.get('faction_id') or None
-                role = request.form.get('role', '').strip() or None
+                faction = request.form.get('faction', '').strip()
                 quality = request.form.get('quality')
                 resolve = request.form.get('resolve')
                 squad_size = int(request.form.get('squad_size', 5))
                 armour_id = request.form.get('armour_id') or None
                 basic_weapon_id = request.form.get('basic_weapon_id') or None
-                secondary_weapon_id = request.form.get('secondary_weapon_id') or None
                 trait_ids = request.form.getlist('traits')
                 notes = request.form.get('notes', '').strip()
-                description = request.form.get('description', '').strip()
-                weapon_distribution = request.form.get('weapon_distribution', '').strip()
                 
                 # Calculate points
                 data = {
                     'unit_type': 'Squad',
                     'quality': quality,
-                    'resolve': resolve,
                     'squad_size': squad_size,
                     'armour_id': int(armour_id) if armour_id else None,
                     'basic_weapon_id': int(basic_weapon_id) if basic_weapon_id else None,
-                    'traits': [int(t) for t in trait_ids],
-                    'weapon_distribution': weapon_distribution
+                    'traits': [int(t) for t in trait_ids]
                 }
                 total_points = calculate_points(data)
                 
@@ -840,17 +676,13 @@ def init_routes(app):
                     user_id=current_user.id,
                     name=name,
                     unit_type='Squad',
-                    faction_id=int(faction_id) if faction_id else None,
-                    role=role,
+                    faction=faction,
                     quality=quality,
                     resolve=resolve,
                     squad_size=squad_size,
                     armour_id=int(armour_id) if armour_id else None,
                     basic_weapon_id=int(basic_weapon_id) if basic_weapon_id else None,
-                    secondary_weapon_id=int(secondary_weapon_id) if secondary_weapon_id else None,
                     traits_json=json.dumps([int(t) for t in trait_ids]),
-                    squad_members_json=weapon_distribution if weapon_distribution else None,
-                    description=description,
                     notes=notes,
                     base_points=total_points,
                     total_points=total_points
@@ -866,7 +698,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating squad: {str(e)}', 'danger')
         
-        return render_template('squad_builder.html', weapons=weapons, secondary_weapons=secondary_weapons, armours=armours, traits=traits, my_factions=my_factions, roles=UNIT_ROLES['Squad'])
+        return render_template('squad_builder.html', weapons=weapons, armours=armours, traits=traits)
     
     # ==================== CHARACTER BUILDER ====================
     @app.route('/unit/builder/character', methods=['GET', 'POST'])
@@ -874,17 +706,12 @@ def init_routes(app):
     def character_builder():
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
-        # All infantry types share the same traits (per .TXT files)
-        traits = Trait.query.filter(
-            Trait.category == 'Infantry',
-            Trait.name.in_(OFFICIAL_INFANTRY_TRAITS)
-        ).order_by(Trait.name).all()
-        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
+        traits = Trait.query.order_by(Trait.category, Trait.name).all()
         
         if request.method == 'POST':
             try:
                 name = request.form.get('name', '').strip()
-                faction_id = request.form.get('faction_id') or None
+                faction = request.form.get('faction', '').strip()
                 quality = request.form.get('quality')
                 resolve = request.form.get('resolve')
                 has_personality = request.form.get('has_personality') == 'true'
@@ -892,12 +719,10 @@ def init_routes(app):
                 specialization = request.form.get('specialization')
                 armour_id = request.form.get('armour_id') or None
                 basic_weapon_id = request.form.get('basic_weapon_id') or None
-                role = request.form.get('role', '').strip() or None
                 trait_ids = request.form.getlist('traits')
                 notes = request.form.get('notes', '').strip()
-                description = request.form.get('description', '').strip()
                 
-                # Calculate points for Character
+                # Calculate points
                 data = {
                     'unit_type': 'Character',
                     'quality': quality,
@@ -913,17 +738,15 @@ def init_routes(app):
                     user_id=current_user.id,
                     name=name,
                     unit_type='Character',
-                    faction_id=int(faction_id) if faction_id else None,
+                    faction=faction,
                     quality=quality,
                     resolve=resolve,
-                    role=role,
                     has_personality=has_personality,
                     leadership_rating=leadership_rating,
                     specialization=specialization,
                     armour_id=int(armour_id) if armour_id else None,
                     basic_weapon_id=int(basic_weapon_id) if basic_weapon_id else None,
                     traits_json=json.dumps([int(t) for t in trait_ids]),
-                    description=description,
                     notes=notes,
                     base_points=total_points,
                     total_points=total_points
@@ -939,7 +762,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating character: {str(e)}', 'danger')
         
-        return render_template('character_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions, roles=UNIT_ROLES['Character'])
+        return render_template('character_builder.html', weapons=weapons, armours=armours, traits=traits)
     
     # ==================== HEAVY WEAPONS TEAM BUILDER ====================
     @app.route('/unit/builder/heavy-weapon', methods=['GET', 'POST'])
@@ -947,26 +770,18 @@ def init_routes(app):
     def heavy_weapon_builder():
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
-        # Heavy weapon teams are small infantry units - Infantry traits only
-        traits = Trait.query.filter(
-            Trait.category == 'Infantry',
-            Trait.name.in_(OFFICIAL_INFANTRY_TRAITS)
-        ).order_by(Trait.name).all()
-        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
+        traits = Trait.query.order_by(Trait.category, Trait.name).all()
         
         if request.method == 'POST':
             try:
                 name = request.form.get('name', '').strip()
-                faction_id = request.form.get('faction_id') or None
+                faction = request.form.get('faction', '').strip()
                 quality = request.form.get('quality')
                 resolve = request.form.get('resolve')
                 heavy_weapon_id = request.form.get('heavy_weapon_id') or None
                 armour_id = request.form.get('armour_id') or None
-                crew_count = int(request.form.get('crew_count', 2))
-                role = request.form.get('role', '').strip() or None
                 trait_ids = request.form.getlist('traits')
                 notes = request.form.get('notes', '').strip()
-                description = request.form.get('description', '').strip()
                 
                 # Calculate points
                 data = {
@@ -982,15 +797,12 @@ def init_routes(app):
                     user_id=current_user.id,
                     name=name,
                     unit_type='HeavyWeapon',
-                    faction_id=int(faction_id) if faction_id else None,
+                    faction=faction,
                     quality=quality,
                     resolve=resolve,
-                    role=role,
                     heavy_weapon_id=int(heavy_weapon_id) if heavy_weapon_id else None,
                     armour_id=int(armour_id) if armour_id else None,
-                    crew_count=crew_count,
                     traits_json=json.dumps([int(t) for t in trait_ids]),
-                    description=description,
                     notes=notes,
                     base_points=total_points,
                     total_points=total_points
@@ -1006,7 +818,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating heavy weapons team: {str(e)}', 'danger')
         
-        return render_template('heavy_weapon_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions, roles=UNIT_ROLES['HeavyWeapon'])
+        return render_template('heavy_weapon_builder.html', weapons=weapons, armours=armours, traits=traits)
     
     # ==================== SNIPER BUILDER ====================
     @app.route('/unit/builder/sniper', methods=['GET', 'POST'])
@@ -1014,26 +826,19 @@ def init_routes(app):
     def sniper_builder():
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
-        # Snipers are individual infantry specialists - Infantry traits only
-        traits = Trait.query.filter(
-            Trait.category == 'Infantry',
-            Trait.name.in_(OFFICIAL_INFANTRY_TRAITS)
-        ).order_by(Trait.name).all()
-        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
+        traits = Trait.query.order_by(Trait.category, Trait.name).all()
         
         if request.method == 'POST':
             try:
                 name = request.form.get('name', '').strip()
-                faction_id = request.form.get('faction_id') or None
+                faction = request.form.get('faction', '').strip()
                 quality = request.form.get('quality')
                 resolve = request.form.get('resolve')
                 has_personality = request.form.get('has_personality') == 'true'
                 basic_weapon_id = request.form.get('basic_weapon_id') or None
                 armour_id = request.form.get('armour_id') or None
-                role = request.form.get('role', '').strip() or None
                 trait_ids = request.form.getlist('traits')
                 notes = request.form.get('notes', '').strip()
-                description = request.form.get('description', '').strip()
                 
                 # Calculate points
                 data = {
@@ -1050,15 +855,13 @@ def init_routes(app):
                     user_id=current_user.id,
                     name=name,
                     unit_type='Sniper',
-                    faction_id=int(faction_id) if faction_id else None,
+                    faction=faction,
                     quality=quality,
                     resolve=resolve,
-                    role=role,
                     has_personality=has_personality,
                     basic_weapon_id=int(basic_weapon_id) if basic_weapon_id else None,
                     armour_id=int(armour_id) if armour_id else None,
                     traits_json=json.dumps([int(t) for t in trait_ids]),
-                    description=description,
                     notes=notes,
                     base_points=total_points,
                     total_points=total_points
@@ -1074,7 +877,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating sniper: {str(e)}', 'danger')
         
-        return render_template('sniper_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions, roles=UNIT_ROLES['Sniper'])
+        return render_template('sniper_builder.html', weapons=weapons, armours=armours, traits=traits)
     
     # ==================== PSIONIC BUILDER ====================
     @app.route('/unit/builder/psionic', methods=['GET', 'POST'])
@@ -1082,17 +885,12 @@ def init_routes(app):
     def psionic_builder():
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
-        # Psionics are individual infantry with special powers - Infantry traits only
-        traits = Trait.query.filter(
-            Trait.category == 'Infantry',
-            Trait.name.in_(OFFICIAL_INFANTRY_TRAITS)
-        ).order_by(Trait.name).all()
-        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
+        traits = Trait.query.order_by(Trait.category, Trait.name).all()
         
         if request.method == 'POST':
             try:
                 name = request.form.get('name', '').strip()
-                faction_id = request.form.get('faction_id') or None
+                faction = request.form.get('faction', '').strip()
                 quality = request.form.get('quality')
                 resolve = request.form.get('resolve')
                 has_personality = request.form.get('has_personality') == 'true'
@@ -1100,10 +898,8 @@ def init_routes(app):
                 psionic_strength = int(request.form.get('psionic_strength', 3))
                 basic_weapon_id = request.form.get('basic_weapon_id') or None
                 armour_id = request.form.get('armour_id') or None
-                role = request.form.get('role', '').strip() or None
                 trait_ids = request.form.getlist('traits')
                 notes = request.form.get('notes', '').strip()
-                description = request.form.get('description', '').strip()
                 
                 # Calculate points
                 data = {
@@ -1122,17 +918,15 @@ def init_routes(app):
                     user_id=current_user.id,
                     name=name,
                     unit_type='Psionic',
-                    faction_id=int(faction_id) if faction_id else None,
+                    faction=faction,
                     quality=quality,
                     resolve=resolve,
-                    role=role,
                     has_personality=has_personality,
                     psionic_aptitude=psionic_aptitude,
                     psionic_strength=psionic_strength,
                     basic_weapon_id=int(basic_weapon_id) if basic_weapon_id else None,
                     armour_id=int(armour_id) if armour_id else None,
                     traits_json=json.dumps([int(t) for t in trait_ids]),
-                    description=description,
                     notes=notes,
                     base_points=total_points,
                     total_points=total_points
@@ -1148,7 +942,7 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating psionic: {str(e)}', 'danger')
         
-        return render_template('psionic_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions, roles=UNIT_ROLES['Psionic'])
+        return render_template('psionic_builder.html', weapons=weapons, armours=armours, traits=traits)
     
     # ==================== VEHICLE BUILDER ====================
     @app.route('/unit/builder/vehicle', methods=['GET', 'POST'])
@@ -1156,17 +950,13 @@ def init_routes(app):
     def vehicle_builder():
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
-        # Vehicles have their own specific properties/traits
-        traits = Trait.query.filter(
-            Trait.category == 'Vehicle',
-            Trait.name.in_(OFFICIAL_VEHICLE_TRAITS)
-        ).order_by(Trait.name).all()
-        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
+        traits = Trait.query.order_by(Trait.category, Trait.name).all()
+        vehicle_weapons = get_vehicle_weapons()
         
         if request.method == 'POST':
             try:
                 name = request.form.get('name', '').strip()
-                faction_id = request.form.get('faction_id') or None
+                faction = request.form.get('faction', '').strip()
                 vehicle_type = request.form.get('vehicle_type')
                 quality = request.form.get('quality')
                 resolve = request.form.get('resolve')
@@ -1174,27 +964,15 @@ def init_routes(app):
                 front_armour = int(request.form.get('vehicle_armour_front', 3))
                 side_armour = int(request.form.get('vehicle_armour_side', 2))
                 rear_armour = int(request.form.get('vehicle_armour_rear', 1))
-                crew_size = int(request.form.get('crew_size', 1))
+                crew_size = int(request.form.get('crew_size', 2))
                 capacity = int(request.form.get('carrying_capacity', 0))
-                basic_weapon_id = request.form.get('basic_weapon_id') or None
+                properties = request.form.get('vehicle_properties', '').strip()
+                primary_weapon_id = request.form.get('primary_weapon_id') or None
                 secondary_weapon_id = request.form.get('secondary_weapon_id') or None
-                role = request.form.get('role', '').strip() or None
-                property_ids = request.form.getlist('traits')  # Vehicle properties use the trait checkboxes
                 notes = request.form.get('notes', '').strip()
-                description = request.form.get('description', '').strip()
                 
-                # Build trait counts dict for repeatable traits
-                trait_counts = {}
-                for trait_id in property_ids:
-                    # Check if this trait has a count field (repeatable)
-                    count_field = f'trait_count_{trait_id}'
-                    if count_field in request.form:
-                        count = int(request.form.get(count_field, 1))
-                        if count > 0:
-                            trait_counts[trait_id] = count
-                    else:
-                        # Regular non-repeatable trait
-                        trait_counts[trait_id] = 1
+                # Parse properties (comma-separated)
+                props_list = [p.strip() for p in properties.split(',') if p.strip()] if properties else []
                 
                 # Calculate points
                 data = {
@@ -1205,9 +983,8 @@ def init_routes(app):
                     'vehicle_armour_side': side_armour,
                     'vehicle_armour_rear': rear_armour,
                     'carrying_capacity': capacity,
-                    'basic_weapon_id': int(basic_weapon_id) if basic_weapon_id else None,
-                    'secondary_weapon_id': int(secondary_weapon_id) if secondary_weapon_id else None,
-                    'trait_counts': trait_counts  # Pass the dict with counts
+                    'primary_weapon_id': int(primary_weapon_id) if primary_weapon_id else None,
+                    'secondary_weapon_id': int(secondary_weapon_id) if secondary_weapon_id else None
                 }
                 total_points = calculate_points(data)
                 
@@ -1215,21 +992,20 @@ def init_routes(app):
                     user_id=current_user.id,
                     name=name,
                     unit_type='Vehicle',
-                    faction_id=int(faction_id) if faction_id else None,
+                    faction=faction,
                     vehicle_type=vehicle_type,
                     quality=quality,
                     resolve=resolve,
-                    role=role,
                     movement_type=movement_type,
                     vehicle_armour_front=front_armour,
                     vehicle_armour_side=side_armour,
                     vehicle_armour_rear=rear_armour,
                     crew_size=crew_size,
                     carrying_capacity=capacity,
-                    basic_weapon_id=int(basic_weapon_id) if basic_weapon_id else None,
-                    secondary_weapon_id=int(secondary_weapon_id) if secondary_weapon_id else None,
-                    traits_json=json.dumps(trait_counts),  # Store as dict with counts
-                    description=description,
+                    vehicle_weapons_json=json.dumps([
+                        int(w) for w in [primary_weapon_id, secondary_weapon_id] if w
+                    ]),
+                    vehicle_properties_json=json.dumps(props_list),
                     notes=notes,
                     base_points=total_points,
                     total_points=total_points
@@ -1245,7 +1021,13 @@ def init_routes(app):
                 db.session.rollback()
                 flash(f'Error creating vehicle: {str(e)}', 'danger')
         
-        return render_template('vehicle_builder.html', weapons=weapons, armours=armours, traits=traits, my_factions=my_factions, roles=UNIT_ROLES['Vehicle'])
+        return render_template(
+            'vehicle_builder.html',
+            weapons=weapons,
+            armours=armours,
+            traits=traits,
+            vehicle_weapons=vehicle_weapons
+        )
     
     # ==================== UNIT EDIT ====================
     @app.route('/unit/<int:unit_id>/edit', methods=['GET', 'POST'])
@@ -1259,82 +1041,44 @@ def init_routes(app):
             return redirect(url_for('dashboard'))
         
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
-        # Secondary weapons: pistols, SMG, shotgun only
-        secondary_weapons = Weapon.query.filter(
-            (Weapon.name.ilike('%pistol%')) |
-            (Weapon.name == 'SMG') |
-            (Weapon.name == 'Shotgun')
-        ).order_by(Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
-        if unit.unit_type == 'Vehicle':
-            traits = Trait.query.filter(
-                and_(Trait.category == 'Vehicle', Trait.name.in_(OFFICIAL_VEHICLE_TRAITS))
-            ).order_by(Trait.category, Trait.name).all()
-        else:
-            traits = Trait.query.filter(
-                and_(Trait.category == 'Infantry', Trait.name.in_(OFFICIAL_INFANTRY_TRAITS))
-            ).order_by(Trait.category, Trait.name).all()
-
-        # For display: use inherited traits if none are set
-        if not (unit.traits_json and json.loads(unit.traits_json)):
-            selected_trait_ids = [t.id for t in unit.get_inherited_traits()]
-        else:
-            selected_trait_ids = [t.id for t in unit.get_traits()]
+        traits = Trait.query.order_by(Trait.category, Trait.name).all()
         
         if request.method == 'POST':
             try:
                 # Common fields for all unit types
                 unit.name = request.form.get('name', '').strip()
-                faction_id = request.form.get('faction_id')
-                unit.faction_id = int(faction_id) if faction_id else None
+                unit.faction = request.form.get('faction', '').strip()
                 unit.quality = request.form.get('quality')
                 unit.resolve = request.form.get('resolve')
                 unit.notes = request.form.get('notes', '').strip()
-
-                # Helper to preserve traits/properties if not present in form
-                def get_trait_ids(form_key, fallback_json):
-                    ids = request.form.getlist(form_key)
-                    if ids:
-                        return [int(t) for t in ids]
-                    elif fallback_json:
-                        try:
-                            return json.loads(fallback_json)
-                        except Exception:
-                            return []
-                    else:
-                        return []
-
+                
                 # Type-specific fields
                 if unit.unit_type == 'Squad':
-                    unit.squad_size = int(request.form.get('squad_size', unit.squad_size or 5))
-                    unit.armour_id = request.form.get('armour_id') or unit.armour_id
-                    unit.basic_weapon_id = request.form.get('basic_weapon_id') or unit.basic_weapon_id
-                    unit.secondary_weapon_id = request.form.get('secondary_weapon_id') or unit.secondary_weapon_id
-                    parent_id = request.form.get('parent_id')
-                    unit.parent_id = int(parent_id) if parent_id else None
-                    trait_ids = get_trait_ids('traits', unit.traits_json)
-                    unit.traits_json = json.dumps(trait_ids)
-
+                    unit.squad_size = int(request.form.get('squad_size', 5))
+                    unit.armour_id = request.form.get('armour_id') or None
+                    unit.basic_weapon_id = request.form.get('basic_weapon_id') or None
+                    trait_ids = request.form.getlist('traits')
+                    unit.traits_json = json.dumps([int(t) for t in trait_ids])
+                    
                     data = {
                         'unit_type': 'Squad',
                         'quality': unit.quality,
                         'squad_size': unit.squad_size,
                         'armour_id': int(unit.armour_id) if unit.armour_id else None,
                         'basic_weapon_id': int(unit.basic_weapon_id) if unit.basic_weapon_id else None,
-                        'traits': trait_ids
+                        'traits': [int(t) for t in trait_ids]
                     }
-
+                    
                 elif unit.unit_type == 'Character':
-                    unit.has_personality = request.form.get('has_personality') == 'true' if 'has_personality' in request.form else unit.has_personality
-                    unit.leadership_rating = request.form.get('leadership_rating') or unit.leadership_rating
-                    unit.specialization = request.form.get('specialization') or unit.specialization
-                    unit.armour_id = request.form.get('armour_id') or unit.armour_id
-                    unit.basic_weapon_id = request.form.get('basic_weapon_id') or unit.basic_weapon_id
-                    role = request.form.get('role', '').strip() or None
-                    unit.role = role
-                    trait_ids = get_trait_ids('traits', unit.traits_json)
-                    unit.traits_json = json.dumps(trait_ids)
-
+                    unit.has_personality = request.form.get('has_personality') == 'true'
+                    unit.leadership_rating = request.form.get('leadership_rating')
+                    unit.specialization = request.form.get('specialization')
+                    unit.armour_id = request.form.get('armour_id') or None
+                    unit.basic_weapon_id = request.form.get('basic_weapon_id') or None
+                    trait_ids = request.form.getlist('traits')
+                    unit.traits_json = json.dumps([int(t) for t in trait_ids])
+                    
                     data = {
                         'unit_type': 'Character',
                         'quality': unit.quality,
@@ -1343,84 +1087,76 @@ def init_routes(app):
                         'specialization': unit.specialization,
                         'armour_id': int(unit.armour_id) if unit.armour_id else None,
                         'basic_weapon_id': int(unit.basic_weapon_id) if unit.basic_weapon_id else None,
-                        'traits': trait_ids
+                        'traits': [int(t) for t in trait_ids]
                     }
-
+                    
                 elif unit.unit_type == 'HeavyWeapon':
-                    unit.heavy_weapon_id = request.form.get('heavy_weapon_id') or unit.heavy_weapon_id
-                    unit.armour_id = request.form.get('armour_id') or unit.armour_id
-                    unit.crew_count = int(request.form.get('crew_count', unit.crew_count or 2))
-                    role = request.form.get('role', '').strip() or None
-                    unit.role = role
-                    trait_ids = get_trait_ids('traits', unit.traits_json)
-                    unit.traits_json = json.dumps(trait_ids)
-
+                    unit.heavy_weapon_id = request.form.get('heavy_weapon_id') or None
+                    unit.armour_id = request.form.get('armour_id') or None
+                    trait_ids = request.form.getlist('traits')
+                    unit.traits_json = json.dumps([int(t) for t in trait_ids])
+                    
                     data = {
                         'unit_type': 'HeavyWeapon',
                         'quality': unit.quality,
                         'heavy_weapon_id': int(unit.heavy_weapon_id) if unit.heavy_weapon_id else None,
                         'armour_id': int(unit.armour_id) if unit.armour_id else None,
-                        'traits': trait_ids
+                        'traits': [int(t) for t in trait_ids]
                     }
-
+                    
                 elif unit.unit_type == 'Sniper':
-                    unit.has_personality = request.form.get('has_personality') == 'true' if 'has_personality' in request.form else unit.has_personality
-                    unit.basic_weapon_id = request.form.get('basic_weapon_id') or unit.basic_weapon_id
-                    unit.armour_id = request.form.get('armour_id') or unit.armour_id
-                    role = request.form.get('role', '').strip() or None
-                    unit.role = role
-                    trait_ids = get_trait_ids('traits', unit.traits_json)
-                    unit.traits_json = json.dumps(trait_ids)
-
+                    unit.has_personality = request.form.get('has_personality') == 'true'
+                    unit.basic_weapon_id = request.form.get('basic_weapon_id') or None
+                    unit.armour_id = request.form.get('armour_id') or None
+                    trait_ids = request.form.getlist('traits')
+                    unit.traits_json = json.dumps([int(t) for t in trait_ids])
+                    
                     data = {
                         'unit_type': 'Sniper',
                         'quality': unit.quality,
                         'has_personality': unit.has_personality,
                         'basic_weapon_id': int(unit.basic_weapon_id) if unit.basic_weapon_id else None,
                         'armour_id': int(unit.armour_id) if unit.armour_id else None,
-                        'traits': trait_ids
+                        'traits': [int(t) for t in trait_ids]
                     }
-
+                    
                 elif unit.unit_type == 'Psionic':
-                    unit.has_personality = request.form.get('has_personality') == 'true' if 'has_personality' in request.form else unit.has_personality
-                    unit.psionic_level = request.form.get('psionic_level') or getattr(unit, 'psionic_level', None)
-                    unit.armour_id = request.form.get('armour_id') or unit.armour_id
-                    unit.basic_weapon_id = request.form.get('basic_weapon_id') or unit.basic_weapon_id
-                    role = request.form.get('role', '').strip() or None
-                    unit.role = role
-                    trait_ids = get_trait_ids('traits', unit.traits_json)
-                    unit.traits_json = json.dumps(trait_ids)
-
+                    unit.has_personality = request.form.get('has_personality') == 'true'
+                    unit.psionic_level = request.form.get('psionic_level')
+                    unit.armour_id = request.form.get('armour_id') or None
+                    unit.basic_weapon_id = request.form.get('basic_weapon_id') or None
+                    trait_ids = request.form.getlist('traits')
+                    unit.traits_json = json.dumps([int(t) for t in trait_ids])
+                    
                     data = {
                         'unit_type': 'Psionic',
                         'quality': unit.quality,
                         'has_personality': unit.has_personality,
-                        'psionic_level': getattr(unit, 'psionic_level', None),
+                        'psionic_level': unit.psionic_level,
                         'armour_id': int(unit.armour_id) if unit.armour_id else None,
                         'basic_weapon_id': int(unit.basic_weapon_id) if unit.basic_weapon_id else None,
-                        'traits': trait_ids
+                        'traits': [int(t) for t in trait_ids]
                     }
-
+                    
                 elif unit.unit_type == 'Vehicle':
-                    unit.vehicle_type = request.form.get('vehicle_type') or unit.vehicle_type
-                    unit.movement_type = request.form.get('movement_type') or unit.movement_type
-                    unit.vehicle_armour_front = int(request.form.get('vehicle_armour_front', unit.vehicle_armour_front or 3))
-                    unit.vehicle_armour_side = int(request.form.get('vehicle_armour_side', unit.vehicle_armour_side or 2))
-                    unit.vehicle_armour_rear = int(request.form.get('vehicle_armour_rear', unit.vehicle_armour_rear or 1))
-                    unit.crew_size = int(request.form.get('crew_size', unit.crew_size or 2))
-                    unit.carrying_capacity = int(request.form.get('carrying_capacity', unit.carrying_capacity or 0))
+                    unit.vehicle_type = request.form.get('vehicle_type')
+                    unit.movement_type = request.form.get('movement_type')
+                    unit.vehicle_armour_front = int(request.form.get('vehicle_armour_front', 3))
+                    unit.vehicle_armour_side = int(request.form.get('vehicle_armour_side', 2))
+                    unit.vehicle_armour_rear = int(request.form.get('vehicle_armour_rear', 1))
+                    unit.crew_size = int(request.form.get('crew_size', 2))
+                    unit.carrying_capacity = int(request.form.get('carrying_capacity', 0))
 
-                    # Weapons
-                    basic_weapon_id = request.form.get('basic_weapon_id') or unit.basic_weapon_id
-                    secondary_weapon_id = request.form.get('secondary_weapon_id') or unit.secondary_weapon_id
-                    unit.basic_weapon_id = int(basic_weapon_id) if basic_weapon_id else None
-                    unit.secondary_weapon_id = int(secondary_weapon_id) if secondary_weapon_id else None
-
-                    role = request.form.get('role', '').strip() or None
-                    unit.role = role
-                    property_ids = get_trait_ids('traits', unit.traits_json)
-                    unit.traits_json = json.dumps(property_ids)
-
+                    primary_weapon_id = request.form.get('primary_weapon_id') or None
+                    secondary_weapon_id = request.form.get('secondary_weapon_id') or None
+                    unit.vehicle_weapons_json = json.dumps([
+                        int(w) for w in [primary_weapon_id, secondary_weapon_id] if w
+                    ])
+                    
+                    properties = request.form.get('vehicle_properties', '').strip()
+                    props_list = [p.strip() for p in properties.split(',') if p.strip()] if properties else []
+                    unit.vehicle_properties_json = json.dumps(props_list)
+                    
                     data = {
                         'unit_type': 'Vehicle',
                         'quality': unit.quality,
@@ -1429,30 +1165,25 @@ def init_routes(app):
                         'vehicle_armour_side': unit.vehicle_armour_side,
                         'vehicle_armour_rear': unit.vehicle_armour_rear,
                         'carrying_capacity': unit.carrying_capacity,
-                        'basic_weapon_id': unit.basic_weapon_id,
-                        'secondary_weapon_id': unit.secondary_weapon_id,
-                        'traits': property_ids
+                        'primary_weapon_id': int(primary_weapon_id) if primary_weapon_id else None,
+                        'secondary_weapon_id': int(secondary_weapon_id) if secondary_weapon_id else None
                     }
-
+                
                 # Recalculate points
                 total_points = calculate_points(data)
                 unit.base_points = total_points
                 unit.total_points = total_points
                 unit.updated_at = datetime.utcnow()
-
+                
                 db.session.commit()
-
+                
                 flash(f'Unit "{unit.name}" updated successfully!', 'success')
                 return redirect(url_for('dashboard'))
-
+                
             except Exception as e:
                 db.session.rollback()
                 flash(f'Error updating unit: {str(e)}', 'danger')
         
-        # Get user's factions for dropdown
-        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
-        my_units = Unit.query.filter_by(user_id=current_user.id).order_by(Unit.name).all()
-
         # Determine which template to use based on unit type
         template_map = {
             'Squad': 'edit_squad.html',
@@ -1462,11 +1193,18 @@ def init_routes(app):
             'Psionic': 'edit_psionic.html',
             'Vehicle': 'edit_vehicle.html'
         }
-
+        
         template = template_map.get(unit.unit_type, 'edit_squad.html')
-        # Get roles for the unit type
-        roles = UNIT_ROLES.get(unit.unit_type, [])
-        return render_template(template, unit=unit, weapons=weapons, secondary_weapons=secondary_weapons, armours=armours, traits=traits, my_factions=my_factions, my_units=my_units, selected_trait_ids=selected_trait_ids, roles=roles)
+        return render_template(
+            template,
+            unit=unit,
+            weapons=weapons,
+            armours=armours,
+            traits=traits,
+            vehicle_weapons=vehicle_weapons,
+            primary_weapon_id=primary_weapon_id,
+            secondary_weapon_id=secondary_weapon_id
+        )
     
     @app.route('/unit/save', methods=['POST'])
     @login_required
@@ -1514,13 +1252,22 @@ def init_routes(app):
             flash('This unit is private', 'danger')
             return redirect(url_for('index'))
         
-        # Get vehicle properties as Trait objects if this is a vehicle
-        vehicle_properties = []
-        if unit.unit_type == 'Vehicle' and unit.get_vehicle_properties():
-            prop_ids = unit.get_vehicle_properties()
-            vehicle_properties = Trait.query.filter(Trait.id.in_(prop_ids)).all()
+        return render_template('view_unit.html', unit=unit)
+    
+    @app.route('/unit/<int:unit_id>/edit')
+    @login_required
+    def edit_unit(unit_id):
+        unit = Unit.query.get_or_404(unit_id)
         
-        return render_template('view_unit.html', unit=unit, vehicle_properties=vehicle_properties)
+        if unit.user_id != current_user.id:
+            flash('You can only edit your own units', 'danger')
+            return redirect(url_for('dashboard'))
+        
+        weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
+        armours = Armour.query.order_by(Armour.points).all()
+        traits = Trait.query.order_by(Trait.category, Trait.name).all()
+        
+        return render_template('edit_unit.html', unit=unit, weapons=weapons, armours=armours, traits=traits)
     
     @app.route('/unit/<int:unit_id>/delete', methods=['POST'])
     @login_required
@@ -1538,15 +1285,9 @@ def init_routes(app):
     @app.route('/list/builder')
     @login_required
     def list_builder():
-        selected_faction_id = request.args.get('faction_id', type=int)
-        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
-        if selected_faction_id:
-            my_units = Unit.query.filter_by(user_id=current_user.id, faction_id=selected_faction_id).order_by(Unit.faction_id, Unit.name).all()
-            public_units = Unit.query.filter_by(is_public=True, faction_id=selected_faction_id).order_by(Unit.faction_id, Unit.name).all()
-        else:
-            my_units = []
-            public_units = []
-        return render_template('list_builder.html', my_units=my_units, public_units=public_units, my_factions=my_factions, selected_faction_id=selected_faction_id)
+        my_units = Unit.query.filter_by(user_id=current_user.id).order_by(Unit.faction, Unit.name).all()
+        public_units = Unit.query.filter_by(is_public=True).order_by(Unit.faction, Unit.name).all()
+        return render_template('list_builder.html', my_units=my_units, public_units=public_units)
     
     @app.route('/list/save', methods=['POST'])
     @login_required
@@ -1575,7 +1316,7 @@ def init_routes(app):
                 army_list = ArmyList(user_id=current_user.id)  # type: ignore
             
             army_list.name = data['name']
-            army_list.faction_id = data.get('faction_id') or None
+            army_list.faction = data.get('faction', '')
             army_list.description = data.get('description', '')
             army_list.units_json = json.dumps(units_data)
             army_list.total_points = total_points
@@ -1609,29 +1350,6 @@ def init_routes(app):
         
         return render_template('view_list.html', army_list=army_list)
     
-    def _serialize_unit_for_list(unit, include_variants=True):
-        unit_data = {
-            'id': unit.id,
-            'name': unit.name,
-            'unit_type': unit.unit_type,
-            'total_points': unit.total_points,
-            'quality': unit.quality,
-            'parent_id': unit.parent_id,
-            'squad_size': unit.squad_size,
-            'movement_type': unit.movement_type,
-        }
-        if unit.creator:
-            unit_data['creator'] = {
-                'id': unit.creator.id,
-                'username': unit.creator.username,
-            }
-        if include_variants:
-            unit_data['variants'] = [
-                _serialize_unit_for_list(variant, include_variants=False)
-                for variant in unit.variants
-            ]
-        return unit_data
-
     @app.route('/list/<int:list_id>/edit')
     @login_required
     def edit_list(list_id):
@@ -1641,21 +1359,10 @@ def init_routes(app):
             flash('You can only edit your own lists', 'danger')
             return redirect(url_for('dashboard'))
         
-        my_factions = Faction.query.filter_by(user_id=current_user.id).order_by(Faction.name).all()
-        my_units = Unit.query.filter_by(user_id=current_user.id).order_by(Unit.faction_id, Unit.name).all()
-        public_units = Unit.query.filter_by(is_public=True).order_by(Unit.faction_id, Unit.name).all()
-        my_units_json = [_serialize_unit_for_list(unit) for unit in my_units]
-        public_units_json = [_serialize_unit_for_list(unit) for unit in public_units]
+        my_units = Unit.query.filter_by(user_id=current_user.id).order_by(Unit.faction, Unit.name).all()
+        public_units = Unit.query.filter_by(is_public=True).order_by(Unit.faction, Unit.name).all()
         
-        return render_template(
-            'edit_list.html',
-            army_list=army_list,
-            my_units=my_units,
-            public_units=public_units,
-            my_units_json=my_units_json,
-            public_units_json=public_units_json,
-            my_factions=my_factions,
-        )
+        return render_template('edit_list.html', army_list=army_list, my_units=my_units, public_units=public_units)
     
     @app.route('/list/<int:list_id>/delete', methods=['POST'])
     @login_required
@@ -1670,91 +1377,31 @@ def init_routes(app):
         
         return jsonify({'success': True, 'message': 'List deleted successfully'})
     
-    @app.route('/list/<int:list_id>/export-pdf')
-    def export_list_pdf(list_id):
-        """Export army list as PDF with unit stats"""
-        army_list = ArmyList.query.get_or_404(list_id)
-        
-        # Check permissions
-        if not army_list.is_public and (not current_user.is_authenticated or army_list.user_id != current_user.id):
-            flash('This list is private', 'danger')
-            return redirect(url_for('index'))
-        
-        try:
-            from pdf_generator import generate_army_list_pdf
-            from flask import send_file
-            
-            # Get units with quantities
-            units_with_quantities = army_list.get_units()
-            
-            # Generate PDF
-            pdf_buffer = generate_army_list_pdf(army_list, units_with_quantities)
-            
-            # Create safe filename
-            safe_name = "".join(c for c in army_list.name if c.isalnum() or c in (' ', '-', '_')).rstrip()
-            filename = f"FAD_List_{safe_name}.pdf"
-            
-            return send_file(
-                pdf_buffer,
-                mimetype='application/pdf',
-                as_attachment=True,
-                download_name=filename
-            )
-        except Exception as e:
-            flash(f'Error generating PDF: {str(e)}', 'danger')
-            return redirect(url_for('view_list', list_id=list_id))
-        
-        if army_list.user_id != current_user.id:
-            return jsonify({'success': False, 'error': 'Unauthorized'}), 403
-        
-        db.session.delete(army_list)
-        db.session.commit()
-        
-        return jsonify({'success': True, 'message': 'List deleted successfully'})
-    
     @app.route('/browse')
     def browse_lists():
         faction = request.args.get('faction', '')
         search = request.args.get('search', '')
-        sort = request.args.get('sort', 'newest')  # newest, oldest, points_asc, points_desc
         
         query = ArmyList.query.filter_by(is_public=True)
         
         if faction:
-            # Filter by faction name, not faction field
-            query = query.join(Faction).filter(Faction.name == faction)
+            query = query.filter(ArmyList.faction == faction)
         
         if search:
             query = query.filter(ArmyList.name.contains(search) | ArmyList.description.contains(search))
         
-        # Apply sorting
-        if sort == 'points_asc':
-            query = query.order_by(ArmyList.points.asc())
-        elif sort == 'points_desc':
-            query = query.order_by(ArmyList.points.desc())
-        elif sort == 'oldest':
-            query = query.order_by(ArmyList.created_at.asc())
-        else:  # newest (default)
-            query = query.order_by(ArmyList.created_at.desc())
+        lists = query.order_by(ArmyList.created_at.desc()).all()
         
-        lists = query.all()
-        
-        # Get list of public factions that have public lists
-        factions = db.session.query(Faction.name).join(ArmyList).filter(ArmyList.is_public == True).distinct().all()
+        factions = db.session.query(ArmyList.faction).filter(ArmyList.is_public == True).distinct().all()
         factions = [f[0] for f in factions if f[0]]
         
-        return render_template('browse.html', lists=lists, factions=factions, selected_faction=faction, search=search, current_sort=sort)
+        return render_template('browse.html', lists=lists, factions=factions, selected_faction=faction, search=search)
     
     @app.route('/armoury')
     def armoury():
         weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
         armours = Armour.query.order_by(Armour.points).all()
-        traits = Trait.query.filter(
-            or_(
-                and_(Trait.category == 'Infantry', Trait.name.in_(OFFICIAL_INFANTRY_TRAITS)),
-                and_(Trait.category == 'Vehicle', Trait.name.in_(OFFICIAL_VEHICLE_TRAITS))
-            )
-        ).order_by(Trait.category, Trait.name).all()
+        traits = Trait.query.order_by(Trait.category, Trait.name).all()
         return render_template('armoury.html', weapons=weapons, armours=armours, traits=traits)
     
     
@@ -1838,25 +1485,16 @@ def calculate_points(data):
     """Calculate unit points based on configuration - Supports all 6 unit types"""
     unit_type = data.get('unit_type', 'Squad')
     
-    # Quality and Resolve multipliers (from F.A.D. rules)
-    quality_multipliers = {
-        'Rabble': 0.7,
-        'Conscript': 0.0,
-        'Regular': 1.3,
-        'Elite': 1.6
-    }
-    
-    resolve_multipliers = {
-        'Reluctant': -0.5,
-        'Uncertain': -0.3,
-        'Steady': 0.0,
-        'Determined': 0.3
+    # Quality base points (from Rules)
+    quality_points = {
+        'Rabble': 4,
+        'Conscript': 6,
+        'Regular': 8,
+        'Elite': 10
     }
     
     quality = data.get('quality', 'Regular')
-    resolve = data.get('resolve', 'Steady')
-    quality_mult = quality_multipliers.get(quality, 1.3)
-    resolve_mult = resolve_multipliers.get(resolve, 0.0)
+    base_points = quality_points.get(quality, 8)
     
     # Initialize total
     total_points = 0
@@ -1864,275 +1502,157 @@ def calculate_points(data):
     # ==================== SQUAD ====================
     if unit_type == 'Squad':
         squad_size = data.get('squad_size', 5)
-        armour_id = data.get('armour_id')
+        # Base points × squad size
+        total_points = base_points * squad_size
         
-        # Check if weapon distribution is specified
-        weapon_distribution = data.get('weapon_distribution', '')
+        # Equipment per squad member
+        if data.get('armour_id'):
+            armour = Armour.query.get(data['armour_id'])
+            if armour:
+                total_points += armour.points * squad_size
         
-        if weapon_distribution and weapon_distribution != '{}':
-            # Parse weapon distribution JSON
-            try:
-                distribution = json.loads(weapon_distribution) if isinstance(weapon_distribution, str) else weapon_distribution
-                
-                # Calculate cost per weapon type
-                for weapon_id_str, quantity in distribution.items():
-                    weapon_id = int(weapon_id_str)
-                    quantity = int(quantity)
-                    
-                    # Base cost per trooper
-                    cost_per_trooper = 3
-                    
-                    # Add armour
-                    if armour_id:
-                        armour = Armour.query.get(armour_id)
-                        if armour:
-                            cost_per_trooper += armour.points
-                    
-                    # Add weapon
-                    weapon = Weapon.query.get(weapon_id)
-                    if weapon:
-                        cost_per_trooper += weapon.points
-                    
-                    # Apply Quality and Resolve multipliers
-                    cost_per_trooper = cost_per_trooper * (1 + quality_mult + resolve_mult)
-                    
-                    # Add to total
-                    total_points += cost_per_trooper * quantity
-                    
-            except (json.JSONDecodeError, ValueError, TypeError):
-                # Fall back to default weapon
-                weapon_distribution = None
+        if data.get('basic_weapon_id'):
+            weapon = Weapon.query.get(data['basic_weapon_id'])
+            if weapon:
+                total_points += weapon.points * squad_size
         
-        # If no distribution, use default weapon for all
-        if not weapon_distribution or weapon_distribution == '{}':
-            # Step 1: Base cost per trooper = 3 points
-            cost_per_trooper = 3
-            
-            # Step 2: Add armour per trooper
-            if armour_id:
-                armour = Armour.query.get(armour_id)
-                if armour:
-                    cost_per_trooper += armour.points
-            
-            # Step 3: Add weapon per trooper
-            if data.get('basic_weapon_id'):
-                weapon = Weapon.query.get(data['basic_weapon_id'])
-                if weapon:
-                    cost_per_trooper += weapon.points
-            
-            # Step 4: Apply Quality and Resolve multipliers
-            cost_per_trooper = cost_per_trooper * (1 + quality_mult + resolve_mult)
-            
-            # Step 5: Multiply by squad size
-            total_points = cost_per_trooper * squad_size
-        
-        # Step 6: Apply trait multipliers sequentially (per game rules)
-        trait_data = data.get('trait_counts') or data.get('traits')
-        if trait_data:
-            if isinstance(trait_data, dict):
-                for trait_id_str, count in trait_data.items():
-                    trait = Trait.query.get(int(trait_id_str))
-                    if trait:
-                        for _ in range(int(count)):
-                            total_points *= trait.points_multiplier
-            else:
-                for trait_id in trait_data:
-                    trait = Trait.query.get(trait_id)
-                    if trait:
-                        total_points *= trait.points_multiplier
+        # Traits (flat cost, not multiplied)
+        if data.get('traits'):
+            for trait_id in data['traits']:
+                trait = Trait.query.get(trait_id)
+                if trait:
+                    total_points += trait.points_modifier
     
     # ==================== CHARACTER ====================
     elif unit_type == 'Character':
-        # Step 1: Base cost = 3 points
-        total_points = 3
+        total_points = base_points
         
-        # Step 2: Add armour
+        # Leadership rating
+        leadership_points = {
+            'Novice': 0,
+            'Experienced': 10,
+            'Inspiring': 20,
+            'Heroic': 30
+        }
+        leadership = data.get('leadership_rating', 'Novice')
+        total_points += leadership_points.get(leadership, 0)
+        
+        # Personality
+        if data.get('has_personality'):
+            total_points += 5
+        
+        # Equipment (single model)
         if data.get('armour_id'):
             armour = Armour.query.get(data['armour_id'])
             if armour:
                 total_points += armour.points
         
-        # Step 3: Add weapon
         if data.get('basic_weapon_id'):
             weapon = Weapon.query.get(data['basic_weapon_id'])
             if weapon:
                 total_points += weapon.points
         
-        # Step 4: Add personality
-        if data.get('has_personality'):
-            total_points += 1
-        
-        # Step 5: Add leadership rating
-        leadership_points = {
-            'Novice': 0,
-            'Experienced': 3,
-            'Inspiring': 8,
-            'Heroic': 15
-        }
-        leadership = data.get('leadership_rating', 'Novice')
-        total_points += leadership_points.get(leadership, 0)
-        
-        # Step 6: Apply Quality and Resolve multipliers
-        total_points = total_points * (1 + quality_mult + resolve_mult)
-        
-        # Step 7: Apply trait multipliers sequentially (per game rules)
-        trait_data = data.get('trait_counts') or data.get('traits')
-        if trait_data:
-            if isinstance(trait_data, dict):
-                for trait_id_str, count in trait_data.items():
-                    trait = Trait.query.get(int(trait_id_str))
-                    if trait:
-                        for _ in range(int(count)):
-                            total_points *= trait.points_multiplier
-            else:
-                for trait_id in trait_data:
-                    trait = Trait.query.get(trait_id)
-                    if trait:
-                        total_points *= trait.points_multiplier
+        # Traits
+        if data.get('traits'):
+            for trait_id in data['traits']:
+                trait = Trait.query.get(trait_id)
+                if trait:
+                    total_points += trait.points_modifier
     
     # ==================== HEAVY WEAPON ====================
     elif unit_type == 'HeavyWeapon':
-        # Step 1: Base cost = 2 points × crew count
-        crew_count = data.get('crew_count', 2)
-        total_points = 2 * crew_count
+        total_points = base_points
         
-        # Step 2: Add armour
-        if data.get('armour_id'):
-            armour = Armour.query.get(data['armour_id'])
-            if armour:
-                total_points += armour.points
-        
-        # Step 3: Add heavy weapon
+        # Heavy weapon
         if data.get('heavy_weapon_id'):
             weapon = Weapon.query.get(data['heavy_weapon_id'])
             if weapon:
                 total_points += weapon.points
         
-        # Step 4: Apply Quality and Resolve multipliers
-        total_points = total_points * (1 + quality_mult + resolve_mult)
+        # Armour
+        if data.get('armour_id'):
+            armour = Armour.query.get(data['armour_id'])
+            if armour:
+                total_points += armour.points
         
-        # Step 5: Apply trait multipliers sequentially (per game rules)
-        trait_data = data.get('trait_counts') or data.get('traits')
-        if trait_data:
-            if isinstance(trait_data, dict):
-                for trait_id_str, count in trait_data.items():
-                    trait = Trait.query.get(int(trait_id_str))
-                    if trait:
-                        for _ in range(int(count)):
-                            total_points *= trait.points_multiplier
-            else:
-                for trait_id in trait_data:
-                    trait = Trait.query.get(trait_id)
-                    if trait:
-                        total_points *= trait.points_multiplier
+        # Traits
+        if data.get('traits'):
+            for trait_id in data['traits']:
+                trait = Trait.query.get(trait_id)
+                if trait:
+                    total_points += trait.points_modifier
     
     # ==================== SNIPER ====================
     elif unit_type == 'Sniper':
-        # Step 1: Base cost = 3 points
-        total_points = 3
+        total_points = base_points
         
-        # Step 2: Add armour
-        if data.get('armour_id'):
-            armour = Armour.query.get(data['armour_id'])
-            if armour:
-                total_points += armour.points
+        # Personality
+        if data.get('has_personality'):
+            total_points += 5
         
-        # Step 3: Add weapon (sniper rifle)
+        # Equipment
         if data.get('basic_weapon_id'):
             weapon = Weapon.query.get(data['basic_weapon_id'])
             if weapon:
                 total_points += weapon.points
         
-        # Step 4: Add personality
-        if data.get('has_personality'):
-            total_points += 1
+        if data.get('armour_id'):
+            armour = Armour.query.get(data['armour_id'])
+            if armour:
+                total_points += armour.points
         
-        # Step 5: Apply Quality and Resolve multipliers
-        total_points = total_points * (1 + quality_mult + resolve_mult)
-        
-        # Step 6: Apply trait multipliers sequentially (per game rules)
-        trait_data = data.get('trait_counts') or data.get('traits')
-        if trait_data:
-            if isinstance(trait_data, dict):
-                for trait_id_str, count in trait_data.items():
-                    trait = Trait.query.get(int(trait_id_str))
-                    if trait:
-                        for _ in range(int(count)):
-                            total_points *= trait.points_multiplier
-            else:
-                for trait_id in trait_data:
-                    trait = Trait.query.get(trait_id)
-                    if trait:
-                        total_points *= trait.points_multiplier
+        # Traits
+        if data.get('traits'):
+            for trait_id in data['traits']:
+                trait = Trait.query.get(trait_id)
+                if trait:
+                    total_points += trait.points_modifier
     
     # ==================== PSIONIC ====================
     elif unit_type == 'Psionic':
-        # Psionic aptitude base costs
-        aptitude_base_costs = {
-            'Marginal': 5,
-            'Competent': 10,
-            'Expert': 15,
-            'Master': 20
+        total_points = base_points
+        
+        # Psionic aptitude
+        aptitude_points = {
+            'Marginal': 10,
+            'Competent': 20,
+            'Expert': 30,
+            'Master': 40
         }
+        aptitude = data.get('psionic_aptitude', 'Marginal')
+        total_points += aptitude_points.get(aptitude, 10)
         
-        # Step 1: Base cost = 3 points
-        total_points = 3
+        # Psionic strength (5 pts per level)
+        strength = data.get('psionic_strength', 0)
+        total_points += strength * 5
         
-        # Step 2: Add armour
-        if data.get('armour_id'):
-            armour = Armour.query.get(data['armour_id'])
-            if armour:
-                total_points += armour.points
+        # Personality
+        if data.get('has_personality'):
+            total_points += 5
         
-        # Step 3: Add weapon (optional backup)
+        # Equipment (optional backup)
         if data.get('basic_weapon_id'):
             weapon = Weapon.query.get(data['basic_weapon_id'])
             if weapon:
                 total_points += weapon.points
         
-        # Step 4: Add personality
-        if data.get('has_personality'):
-            total_points += 1
+        if data.get('armour_id'):
+            armour = Armour.query.get(data['armour_id'])
+            if armour:
+                total_points += armour.points
         
-        # Step 5: Apply Quality and Resolve multipliers
-        total_points = total_points * (1 + quality_mult + resolve_mult)
-        
-        # Step 6: Add psionic aptitude (after multipliers)
-        aptitude = data.get('psionic_aptitude', 'Marginal')
-        total_points += aptitude_base_costs.get(aptitude, 5)
-        
-        # Step 7: Add psionic strength (2 pts per level)
-        strength = data.get('psionic_strength', 0)
-        total_points += strength * 2
-        
-        # Step 8: Apply trait multipliers sequentially (per game rules)
-        trait_data = data.get('trait_counts') or data.get('traits')
-        if trait_data:
-            if isinstance(trait_data, dict):
-                for trait_id_str, count in trait_data.items():
-                    trait = Trait.query.get(int(trait_id_str))
-                    if trait:
-                        for _ in range(int(count)):
-                            total_points *= trait.points_multiplier
-            else:
-                for trait_id in trait_data:
-                    trait = Trait.query.get(trait_id)
-                    if trait:
-                        total_points *= trait.points_multiplier
+        # Traits
+        if data.get('traits'):
+            for trait_id in data['traits']:
+                trait = Trait.query.get(trait_id)
+                if trait:
+                    total_points += trait.points_modifier
     
     # ==================== VEHICLE ====================
     elif unit_type == 'Vehicle':
-        # Step 1: Base cost = 10 points for vehicle
-        total_points = 10
+        total_points = base_points
         
-        # Step 2: Add armour (average × 3)
-        front = data.get('vehicle_armour_front', 0)
-        side = data.get('vehicle_armour_side', 0)
-        rear = data.get('vehicle_armour_rear', 0)
-        avg_armour = (front + side + rear) / 3
-        total_points += avg_armour * 3
-        
-        # Step 3: Add movement type
+        # Movement type
         movement_points = {
             'Fly': 15,
             'Hover': 10,
@@ -2143,142 +1663,23 @@ def calculate_points(data):
         movement = data.get('movement_type', 'Tracked')
         total_points += movement_points.get(movement, 5)
         
-        # Step 4: Add transport capacity (2 pts per slot)
+        # Armour (5 pts per armour point, directional)
+        front = data.get('vehicle_armour_front', 0)
+        side = data.get('vehicle_armour_side', 0)
+        rear = data.get('vehicle_armour_rear', 0)
+        total_points += (front + side + rear) * 5
+        
+        # Transport capacity (2 pts per slot)
         capacity = data.get('carrying_capacity', 0)
         total_points += capacity * 2
         
-        # Step 5: Add weapons
-        if data.get('basic_weapon_id'):
-            weapon = Weapon.query.get(data['basic_weapon_id'])
-            if weapon:
-                total_points += weapon.points
-        
-        if data.get('secondary_weapon_id'):
-            weapon = Weapon.query.get(data['secondary_weapon_id'])
-            if weapon:
-                total_points += weapon.points
-        
-        # Step 6: Apply Quality and Resolve multipliers
-        total_points = total_points * (1 + quality_mult + resolve_mult)
-        
-        # Step 7: Apply trait/property multipliers sequentially (per game rules)
-        trait_data = data.get('trait_counts') or data.get('traits')
-        if trait_data:
-            if isinstance(trait_data, dict):
-                # New format with counts for repeatable traits
-                for trait_id_str, count in trait_data.items():
-                    trait = Trait.query.get(int(trait_id_str))
-                    if trait:
-                        # Apply the multiplier once for each count
-                        for _ in range(int(count)):
-                            total_points *= trait.points_multiplier
-            else:
-                # Old format (array)
-                for trait_id in trait_data:
-                    trait = Trait.query.get(trait_id)
-                    if trait:
-                        total_points *= trait.points_multiplier
+        # Vehicle weapons
+        primary_weapon_id = data.get('primary_weapon_id')
+        secondary_weapon_id = data.get('secondary_weapon_id')
+        for weapon_id in [primary_weapon_id, secondary_weapon_id]:
+            if weapon_id:
+                weapon = Weapon.query.get(weapon_id)
+                if weapon:
+                    total_points += weapon.points
     
     return round(total_points, 2)
-
-
-    # ==================== SQUAD MEMBER MANAGEMENT ====================
-    @app.route('/unit/<int:unit_id>/squad-members', methods=['GET'])
-    @login_required
-    def manage_squad_members(unit_id):
-        """View and manage individual squad members"""
-        unit = Unit.query.get_or_404(unit_id)
-        
-        if unit.user_id != current_user.id:
-            abort(403)
-        
-        if unit.unit_type != 'Squad':
-            flash('This unit is not a squad', 'warning')
-            return redirect(url_for('dashboard'))
-        
-        weapons = Weapon.query.order_by(Weapon.category, Weapon.points).all()
-        squad_members = SquadMember.query.filter_by(unit_id=unit_id).order_by(SquadMember.member_number).all()
-        
-        return render_template('manage_squad_members.html', 
-                             unit=unit, 
-                             squad_members=squad_members,
-                             weapons=weapons)
-    
-    @app.route('/unit/<int:unit_id>/squad-member/add', methods=['POST'])
-    @login_required
-    def add_squad_member(unit_id):
-        """Add a new squad member"""
-        unit = Unit.query.get_or_404(unit_id)
-        
-        if unit.user_id != current_user.id:
-            abort(403)
-        
-        if unit.unit_type != 'Squad':
-            return jsonify({'success': False, 'message': 'Not a squad unit'}), 400
-        
-        try:
-            member_number = request.form.get('member_number', type=int)
-            member_type = request.form.get('member_type', 'Regular')
-            weapon_id = request.form.get('weapon_id', type=int) or None
-            secondary_weapon_id = request.form.get('secondary_weapon_id', type=int) or None
-            notes = request.form.get('notes', '').strip()
-            
-            member = SquadMember(
-                unit_id=unit_id,
-                member_number=member_number,
-                member_type=member_type,
-                weapon_id=weapon_id,
-                secondary_weapon_id=secondary_weapon_id,
-                notes=notes
-            )
-            
-            db.session.add(member)
-            db.session.commit()
-            
-            return jsonify({'success': True, 'message': 'Squad member added'})
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({'success': False, 'message': str(e)}), 500
-    
-    @app.route('/squad-member/<int:member_id>/edit', methods=['POST'])
-    @login_required
-    def edit_squad_member(member_id):
-        """Edit an existing squad member"""
-        member = SquadMember.query.get_or_404(member_id)
-        unit = Unit.query.get_or_404(member.unit_id)
-        
-        if unit.user_id != current_user.id:
-            abort(403)
-        
-        try:
-            member.member_type = request.form.get('member_type', 'Regular')
-            member.weapon_id = request.form.get('weapon_id', type=int) or None
-            member.secondary_weapon_id = request.form.get('secondary_weapon_id', type=int) or None
-            member.notes = request.form.get('notes', '').strip()
-            
-            db.session.commit()
-            
-            return jsonify({'success': True, 'message': 'Squad member updated'})
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({'success': False, 'message': str(e)}), 500
-    
-    @app.route('/squad-member/<int:member_id>/delete', methods=['POST'])
-    @login_required
-    def delete_squad_member(member_id):
-        """Delete a squad member"""
-        member = SquadMember.query.get_or_404(member_id)
-        unit = Unit.query.get_or_404(member.unit_id)
-        
-        if unit.user_id != current_user.id:
-            abort(403)
-        
-        try:
-            db.session.delete(member)
-            db.session.commit()
-            
-            return jsonify({'success': True, 'message': 'Squad member deleted'})
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({'success': False, 'message': str(e)}), 500
-

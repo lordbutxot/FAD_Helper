@@ -52,7 +52,6 @@
                         <select class="form-select" id="sort" name="sort">
                             <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
                             <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
-                            <option value="score" {% if sort_by == 'score' %}selected{% endif %}>Score (Highest)</option>
                             <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name (A-Z)</option>
                         </select>
                     </div>
@@ -89,7 +88,7 @@
                 <div class="card-header text-white" style="background-color: {{ faction.color }};">
                     <h5 class="mb-0">
                         {% if faction.logo_filename %}
-                        <img src="{% if faction.logo_url %}{{ faction.logo_url }}{% else %}{{ url_for('static', filename='faction_logos/' + faction.logo_filename) }}{% endif %}" 
+                        <img src="{{ url_for('static', filename='faction_logos/' + faction.logo_filename) }}" 
                              alt="{{ faction.name }}" 
                              style="width: 30px; height: 30px; object-fit: contain; margin-right: 8px; background: white; padding: 3px; border-radius: 4px;">
                         {% else %}
@@ -99,12 +98,8 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <p class="card-text mb-0">{{ faction.description[:150] }}{% if faction.description|length > 150 %}...{% endif %}</p>
-                        <span class="badge bg-warning text-dark" title="Average Score">
-                            <i class="bi bi-star-fill"></i> {{ faction.get_average_rating() }}
-                        </span>
-                    </div>
+                    <p class="card-text">{{ faction.description[:150] }}{% if faction.description|length > 150 %}...{% endif %}</p>
+                    
                     <!-- Playstyle Tags Preview -->
                     {% set playstyle_tags_list = faction.get_playstyle_tags() %}
                     {% if playstyle_tags_list %}

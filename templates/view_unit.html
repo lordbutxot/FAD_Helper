@@ -4,41 +4,6 @@
 
 {% block content %}
 <div class="container mt-4">
-        <!-- Quick Reference Card -->
-        {% if unit.get_traits()|length > 0 or (unit.basic_weapon and unit.basic_weapon.special_rules) or (unit.secondary_weapon and unit.secondary_weapon.special_rules) or (unit.heavy_weapon and unit.heavy_weapon.special_rules) %}
-        <div class="alert alert-success mb-4">
-            <h5 class="mb-3"><i class="bi bi-lightning-charge-fill"></i> Quick Reference - Special Abilities</h5>
-            <div class="row">
-                <div class="col-md-6">
-                    {% if unit.get_traits()|length > 0 %}
-                    <strong>Traits:</strong>
-                    <ul class="mb-2">
-                        {% for trait in unit.get_traits() %}
-                        <li><strong>{{ trait.name }}</strong> - {{ trait.description|truncate(60) }}</li>
-                        {% endfor %}
-                    </ul>
-                    {% endif %}
-                </div>
-                <div class="col-md-6">
-                    {% if (unit.basic_weapon and unit.basic_weapon.special_rules) or (unit.secondary_weapon and unit.secondary_weapon.special_rules) or (unit.heavy_weapon and unit.heavy_weapon.special_rules) %}
-                    <strong>Weapon Abilities:</strong>
-                    <ul class="mb-2">
-                        {% if unit.basic_weapon and unit.basic_weapon.special_rules %}
-                        <li><strong>{{ unit.basic_weapon.name }}:</strong> {{ unit.basic_weapon.special_rules }}</li>
-                        {% endif %}
-                        {% if unit.secondary_weapon and unit.secondary_weapon.special_rules %}
-                        <li><strong>{{ unit.secondary_weapon.name }}:</strong> {{ unit.secondary_weapon.special_rules }}</li>
-                        {% endif %}
-                        {% if unit.heavy_weapon and unit.heavy_weapon.special_rules %}
-                        <li><strong>{{ unit.heavy_weapon.name }}:</strong> {{ unit.heavy_weapon.special_rules }}</li>
-                        {% endif %}
-                    </ul>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        {% endif %}
-    
     <div class="row">
         <div class="col-lg-8">
             <div class="card">
@@ -46,9 +11,6 @@
                     <h1 class="card-title">{{ unit.name }}</h1>
                     <p class="text-muted">
                         <span class="badge bg-primary">{{ unit.unit_type }}</span>
-                        {% if unit.role %}
-                        <span class="badge bg-info"><i class="bi bi-tag"></i> {{ unit.role }}</span>
-                        {% endif %}
                         {% if unit.faction %}
                         <span class="badge bg-secondary">{{ unit.faction }}</span>
                         {% endif %}
@@ -60,16 +22,6 @@
                     </p>
                     
                     <hr>
-                    
-                    {% if unit.description %}
-                    <div class="alert alert-info">
-                        <h5><i class="bi bi-info-circle"></i> How to Use</h5>
-                        <div class="markdown-content">
-                            {{ unit.description|markdown|safe }}
-                        </div>
-                    </div>
-                    <hr>
-                    {% endif %}
                     
                     <h4>Statistics</h4>
                     <table class="table">
@@ -85,228 +37,111 @@
                             <td colspan="3">{{ unit.squad_size }}</td>
                         </tr>
                         {% endif %}
-                        {% if unit.unit_type == 'HeavyWeapon' %}
-                        <tr>
-                            <th>Crew Count:</th>
-                            <td colspan="3">{{ unit.crew_count }}</td>
-                        </tr>
-                        {% endif %}
                         {% if unit.unit_type == 'Character' %}
                         <tr>
                             <th>Leadership:</th>
-                            <td>{{ unit.leadership_rating or 'None' }}</td>
+                            <td>{{ unit.leadership_rating }}</td>
                             <th>Specialization:</th>
-                            <td>{{ unit.specialization or 'None' }}</td>
+                            <td>{{ unit.specialization }}</td>
                         </tr>
-                        {% if unit.has_personality %}
-                        <tr>
-                            <th colspan="4"><span class="badge bg-info">Has Personality Trait</span></th>
-                        </tr>
-                        {% endif %}
                         {% endif %}
                         {% if unit.unit_type == 'Psionic' %}
                         <tr>
-                            <th>Psionic Aptitude:</th>
-                            <td>{{ unit.psionic_aptitude or 'None' }}</td>
-                            <th>Psionic Strength:</th>
-                            <td>{{ unit.psionic_strength or 0 }}</td>
+                            <th>Aptitude:</th>
+                            <td>{{ unit.psionic_aptitude }}</td>
+                            <th>Strength:</th>
+                            <td>{{ unit.psionic_strength }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if unit.unit_type == 'Vehicle' %}
+                        <tr>
+                            <th>Type:</th>
+                            <td>{{ unit.vehicle_type }}</td>
+                            <th>Movement:</th>
+                            <td>{{ unit.movement_type }}</td>
+                        </tr>
+                        <tr>
+                            <th colspan="2">Armour (Front/Side/Rear):</th>
+                            <td colspan="2">{{ unit.vehicle_armour_front }}/{{ unit.vehicle_armour_side }}/{{ unit.vehicle_armour_rear }}</td>
+                        </tr>
+                        <tr>
+                            <th>Crew Size:</th>
+                            <td>{{ unit.crew_size }}</td>
+                            <th>Carrying Capacity:</th>
+                            <td>{{ unit.carrying_capacity }}</td>
                         </tr>
                         {% endif %}
                     </table>
                     
-                    {% if unit.unit_type == 'Vehicle' %}
-                    <h4><i class="bi bi-truck"></i> Vehicle Specifications</h4>
-                    <div class="alert alert-secondary">
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <strong>Vehicle Type:</strong><br>
-                                <span class="badge bg-primary">{{ unit.vehicle_type or 'Standard' }}</span>
-                            </div>
-                            <div class="col-md-6">
-                                <strong>Movement Type:</strong><br>
-                                <span class="badge bg-info">
-                                    {% if unit.movement_type == 'Fly' %}
-                                    <i class="bi bi-airplane-fill"></i>
-                                    {% elif unit.movement_type == 'Hover' %}
-                                    <i class="bi bi-wind"></i>
-                                    {% elif unit.movement_type == 'Tracked' %}
-                                    <i class="bi bi-truck"></i>
-                                    {% elif unit.movement_type == 'Walk' %}
-                                    <i class="bi bi-robot"></i>
-                                    {% elif unit.movement_type == 'Wheeled' %}
-                                    <i class="bi bi-circle"></i>
-                                    {% endif %}
-                                    {{ unit.movement_type or 'Standard' }}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-12">
-                                <strong>Armor Values:</strong><br>
-                                <div class="d-flex gap-2 mt-2">
-                                    <span class="badge bg-danger">Front: {{ unit.vehicle_armour_front or 0 }}</span>
-                                    <span class="badge bg-warning text-dark">Side: {{ unit.vehicle_armour_side or 0 }}</span>
-                                    <span class="badge bg-secondary">Rear: {{ unit.vehicle_armour_rear or 0 }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Crew Size:</strong><br>
-                                <span class="badge bg-success">{{ unit.crew_size if unit.crew_size is not none else 1 }} crew</span>
-                                {% if unit.crew_size == 0 %}
-                                <small class="text-muted d-block">AI-Controlled / Autonomous</small>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6">
-                                <strong>Transport Capacity:</strong><br>
-                                {% if unit.carrying_capacity and unit.carrying_capacity > 0 %}
-                                <span class="badge bg-primary">{{ unit.carrying_capacity }} passengers</span>
-                                {% else %}
-                                <span class="text-muted">No transport capacity</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    {% if unit.get_vehicle_weapons()|length > 0 %}
-                    <h4><i class="bi bi-bullseye"></i> Vehicle Weapons</h4>
-                    <ul class="list-group mb-3">
-                        {% for weapon in unit.get_vehicle_weapons() %}
-                        <li class="list-group-item">
-                            <strong>{{ weapon.name }}</strong>
-                            <span class="badge bg-secondary">{{ weapon.category }}</span>
-                            <span class="badge bg-info">{{ weapon.points }} pts</span>
-                            <br><small class="text-muted">
-                                Range: {{ weapon.range_multiplier }}" | 
-                                Damage: {{ weapon.damage }} | 
-                                Fire Effect: +{{ weapon.fire_effect }} | 
-                                AP: {{ weapon.armor_piercing }}
-                            </small>
-                            {% if weapon.special_rules %}
-                            <br><small class="text-info">➜ {{ weapon.special_rules }}</small>
-                            {% endif %}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    {% endif %}
-                    
-                    {% if vehicle_properties|length > 0 %}
-                    <h4><i class="bi bi-gear-fill"></i> Vehicle Properties</h4>
-                    <ul class="list-group mb-3">
-                        {% set property_counts = unit.get_vehicle_property_counts() %}
-                        {% for prop in vehicle_properties %}
-                        {% set count = property_counts.get(prop.id|string, 1) %}
-                        <li class="list-group-item">
-                            <span class="badge bg-success me-2">{{ prop.name }}</span>
-                            <span class="badge bg-secondary">×{{ prop.points_multiplier }}</span>
-                            {% if prop.is_repeatable and count > 1 %}
-                            <span class="badge bg-warning text-dark" title="This repeatable property is taken {{ count }} times">×{{ count }}</span>
-                            {% endif %}
-                            <br><span class="text-secondary">{{ prop.description }}</span>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    {% endif %}
-                    {% endif %}
-                    
                     <h4>Equipment</h4>
                     <ul class="list-group mb-3">
+                        {% if unit.unit_type == 'Character' and unit.has_personality %}
+                        <li class="list-group-item">
+                            <strong>Personality:</strong> Yes (+5 pts)
+                        </li>
+                        {% endif %}
+                        {% if unit.unit_type == 'Psionic' and unit.has_personality %}
+                        <li class="list-group-item">
+                            <strong>Personality:</strong> Yes (+5 pts)
+                        </li>
+                        {% endif %}
+                        {% if unit.unit_type == 'Sniper' and unit.has_personality %}
+                        <li class="list-group-item">
+                            <strong>Personality:</strong> Yes (+5 pts)
+                        </li>
+                        {% endif %}
                         {% if unit.armour %}
                         <li class="list-group-item">
-                            <strong>🛡️ Armour:</strong> {{ unit.armour.name }} 
-                            <span class="badge bg-secondary">Rating {{ unit.armour.rating }}</span>
-                            <span class="badge bg-info">{{ unit.armour.points }} pts</span>
-                            {% if unit.armour.special_rules %}
-                            <br><small class="text-muted">{{ unit.armour.special_rules }}</small>
-                            {% endif %}
+                            <strong>Armour:</strong> {{ unit.armour.name }} (Rating {{ unit.armour.rating }})
                         </li>
                         {% endif %}
                         {% if unit.basic_weapon %}
                         <li class="list-group-item">
-                            <strong>🔫 Basic Weapon:</strong> {{ unit.basic_weapon.name }}
-                            <span class="badge bg-info">{{ unit.basic_weapon.points }} pts</span>
-                            <br><small class="text-muted">
-                                Range: {{ unit.basic_weapon.range_multiplier }}" | 
-                                Damage: {{ unit.basic_weapon.damage }} | 
-                                Fire Effect: +{{ unit.basic_weapon.fire_effect }} | 
-                                AP: {{ unit.basic_weapon.armor_piercing }}
-                            </small>
-                            {% if unit.basic_weapon.special_rules %}
-                            <br><small class="text-info">➜ {{ unit.basic_weapon.special_rules }}</small>
-                            {% endif %}
+                            <strong>{% if unit.unit_type == 'Psionic' %}Backup Weapon{% elif unit.unit_type == 'Sniper' %}Sniper Rifle{% elif unit.unit_type == 'Character' %}Weapon{% else %}Basic Weapon{% endif %}:</strong> {{ unit.basic_weapon.name }}
                         </li>
                         {% endif %}
-                        {% if unit.secondary_weapon %}
+                        {% if unit.support_weapon %}
                         <li class="list-group-item">
-                            <strong>🔫 Secondary Weapon:</strong> {{ unit.secondary_weapon.name }}
-                            <span class="badge bg-info">{{ unit.secondary_weapon.points }} pts</span>
-                            <br><small class="text-muted">
-                                Range: {{ unit.secondary_weapon.range_multiplier }}" | 
-                                Damage: {{ unit.secondary_weapon.damage }} | 
-                                Fire Effect: +{{ unit.secondary_weapon.fire_effect }} | 
-                                AP: {{ unit.secondary_weapon.armor_piercing }}
-                            </small>
-                            {% if unit.secondary_weapon.special_rules %}
-                            <br><small class="text-info">➜ {{ unit.secondary_weapon.special_rules }}</small>
-                            {% endif %}
+                            <strong>Support Weapon:</strong> {{ unit.support_weapon.name }}
                         </li>
                         {% endif %}
                         {% if unit.heavy_weapon %}
                         <li class="list-group-item">
-                            <strong>💥 Heavy Weapon:</strong> {{ unit.heavy_weapon.name }}
-                            <span class="badge bg-info">{{ unit.heavy_weapon.points }} pts</span>
-                            <br><small class="text-muted">
-                                Range: {{ unit.heavy_weapon.range_multiplier }}" | 
-                                Damage: {{ unit.heavy_weapon.damage }} | 
-                                Fire Effect: +{{ unit.heavy_weapon.fire_effect }} | 
-                                AP: {{ unit.heavy_weapon.armor_piercing }}
-                            </small>
-                            {% if unit.heavy_weapon.special_rules %}
-                            <br><small class="text-info">➜ {{ unit.heavy_weapon.special_rules }}</small>
-                            {% endif %}
+                            <strong>Heavy Weapon:</strong> {{ unit.heavy_weapon.name }}
                         </li>
+                        {% endif %}
+                        {% if unit.unit_type == 'Vehicle' and unit.get_vehicle_weapons()|length > 0 %}
+                        {% set vehicle_weapons = unit.get_vehicle_weapons() %}
+                        <li class="list-group-item">
+                            <strong>Primary Weapon:</strong> {{ vehicle_weapons[0].name }}
+                        </li>
+                        {% if vehicle_weapons|length > 1 %}
+                        <li class="list-group-item">
+                            <strong>Secondary Weapon:</strong> {{ vehicle_weapons[1].name }}
+                        </li>
+                        {% endif %}
                         {% endif %}
                     </ul>
                     
                     {% if unit.get_traits()|length > 0 %}
-                    <h4><i class="bi bi-star-fill"></i> Traits & Abilities</h4>
+                    <h4>Traits</h4>
                     <ul class="list-group mb-3">
-                        {% set trait_counts = unit.get_trait_counts() %}
                         {% for trait in unit.get_traits() %}
-                        {% set count = trait_counts.get(trait.id|string, 1) %}
                         <li class="list-group-item">
-                            <span class="badge bg-success me-2">{{ trait.name }}</span>
-                            <span class="badge bg-secondary">×{{ trait.points_multiplier }}</span>
-                            {% if trait.is_repeatable and count > 1 %}
-                            <span class="badge bg-warning text-dark" title="This repeatable trait is taken {{ count }} times">×{{ count }}</span>
-                            {% endif %}
-                            <br><span class="text-secondary">{{ trait.description }}</span>
+                            <strong>{{ trait.name }}</strong>: {{ trait.description }}
                         </li>
                         {% endfor %}
+                    </ul>
+                    {% endif %}
                     
-                                        {% if unit.unit_type == 'Squad' and unit.squad_size %}
-                                        <div class="alert alert-info">
-                                            <h5><i class="bi bi-people-fill"></i> Squad Composition</h5>
-                                            <p class="mb-1"><strong>Total Squad Members:</strong> {{ unit.squad_size }}</p>
-                                            {% if unit.get_squad_members()|length > 0 %}
-                                            <hr>
-                                            <strong>Roster:</strong>
-                                            <ul class="mb-0">
-                                                {% for member in unit.get_squad_members() %}
-                                                <li>{{ member.member_type }}: {{ member.get_primary_weapon_name() }}
-                                                    {% if member.secondary_weapon_id %} + {{ member.get_secondary_weapon_name() }}{% endif %}
-                                                    {% if member.notes %}<br><small class="text-muted">{{ member.notes }}</small>{% endif %}
-                                                </li>
-                                                {% endfor %}
-                                            </ul>
-                                            {% else %}
-                                            <p class="mb-0 text-muted">No individual squad members configured yet.</p>
-                                            {% endif %}
-                                        </div>
-                                        {% endif %}
+                    {% if unit.unit_type == 'Vehicle' and unit.get_vehicle_properties()|length > 0 %}
+                    <h4>Vehicle Properties</h4>
+                    <ul class="list-group mb-3">
+                        {% for prop in unit.get_vehicle_properties() %}
+                        <li class="list-group-item">
+                            <strong>{{ prop.name if prop is mapping else prop }}</strong>
+                        </li>
+                        {% endfor %}
                     </ul>
                     {% endif %}
                     

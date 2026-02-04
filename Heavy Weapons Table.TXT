@@ -1,0 +1,134 @@
+Create a new HeavyWeaponTeam
+NOTE You must click "Save" in order to see the total points.
+
+
+Unit Details
+Name
+Faction
+Add an image for this unit
+drop a file
+Attach a file From your computerNingún archivo seleccionado
+Statistics
+Quality
+
+Rabble
+Resolve
+
+Reluctant
+Armour
+
+Battle Dress
+Weapon
+Weapon
+
+Select Main Weapon
+Select Possible Main Weapon Options
+NOTE: You cannot add weapon options until you have saved this team for the first time
+
+Traits
+Select Traits
+Adaptive Camouflage: This unit is equipped with an outfit (or armour) that disrupts the appearance of the unit. If the unit moved this turn and is fired at then resolve the shooting as if the unit is one range band further away.
+
+If the unit did not move, it cannot be shot at beyond long range.
+Aerial: Units with this trait hover in the air while moving, and can clear any obstacles up to the height of the aerial figure. These troops land after they move and will incur any benefits or penalties the terrain may provide.
+Aggressive: When an aggressive unit marked as Under Fire is activated, if it chooses to move it must be towards the enemy. Any Command Response limitations are ignored.
+Agile: Agile units ignore movement penalties when crossing Difficult Terrain.
+Assault Troops: +2 to all Close Assaults.
+Berserk: A squad with this trait will ignore the effects of being Under Fire or Pinned if they activate within close assault range of an enemy unit.
+
+However they must charge into hand-to-hand combat with the nearest enemy unit, and receive a +2 to their Close Assault.
+Bestow Trait: If this chatacter joins a squad, he may bestow one predefined trait upon them.
+Brave: This unit automatically succeeds on one of their dice when testing morale. Roll one less die than required and add one success to the result.
+Bug Hunter: Units with this trait are specially trained to fight alien species. When fighting an alien race, this squad receives a bonus of +1 to Close Assault and Fire Effect rolls.
+Cautious: The unit must test Quality to leave cover if it is currently Under Fire
+Combat Drugs: A unit equipped with this item may use it upon activation (once per game). They temporarily gain the Berserk, Fearless and Swift traits. They must charge into hand-to-hand combat with the nearest enemy unit.
+
+At the end of their activation roll 1d6 for each survivor. A result of 6 indicates the trooper is wounded by the powerful drugs.
+Dependant: When led by officer this squad will automatically pass one of it's command response dice. If not it automatically fails on one of it's command response dice.
+Detection: Every time this unit is activated, all hidden markers within 12” must be removed or revealed.
+Disruptive Charge: When this unit charges into close combat it sends it's opponent into disarray. Because of this the opponent suffers a -2 penalty to fire effect on their free attack when receiving a charge from this unit. from this unit.
+Droids (self-less): Not subject to normal psychology. Do not take morale checks. May never be Elite. Gain the Relentless trait for no additional points. Save against wounds on draws. Die instead of being wounded.
+Droids (self-preserving): Not subject to normal psychology. Do not take morale checks. May never be Elite. Gain the Save against wounds on draws. Die instead of being wounded.
+Drop Troop: This unit has special training and equipment that allow it to be deployed after a battle has started. Adding this trait to a unit allows it to use the Drop Troops advanced rule.
+Elusive: Once per turn, when an elusive unit is fired upon, they may fall back 4” before shooting is resolved. Measure range and calculate terrain benefits from their new location. If Line of Sight is lost, the shooting unit is free to select another target.
+Engineer: Engineers automatically succeed on one of their dice when attempting to rig or detonate demolition charges. Roll one less die than allowed, and add one success to the result. In addition, units with the engineer trait add +2 to their die roll when encountering minefields.
+Fanatic: These units never need to Check Resolve, but they must have a Resolve of “Steady”
+Fast: +2" base movement rate.
+Fearless: Ignores any Morale Tests caused by Terrifying units or psionic Terror.
+Fire Team: This unit can be split into two independent squads that act separately of each other but must still stay within close proximity of their partner fireteam.
+
+Adding this trait to a unit allows it to use the “Fire Teams” advanced rule.
+Flyer: Units with this trait are considered airborne at all times. They may move over any obstacles and never receive any benefit from terrain.
+Frail: This unit suffers -1 to Armour.
+Frenzied: Each frenzied model receives 1 additional kill roll in assault combat. This is cumulative with any other additional rolls obtained.
+Goon: Goons may not fire beyond close range, except to return fire, and suffer a -1 penalty to all Fire Effect rolls. Their Armour Rating suffers a -1 penalty as well. They may never Rush.
+Grav Mount: A grav mount allows for heavy weapons to be moved more easily and will also dampen recoil when fired. The mount may move at the same speed as it's crew, is unhindered by terrain but may not perform rush moves.
+
+The crew must remain within normal coherency distance of the mount to operate it and when mounting a “light” or “medium” version of any heavy weapon, the mount may move and fire its armament.
+
+When fired upon, treat the mount as a normal squad member, with heavy armour. A hit indicates that the mount is damaged and the crew must make a quality test each turn, and pass on two or more dice to operate it. If the platform recieves a second hit, or all 3 dice fail, the platform is destroyed and the crew must operate the weapon in the traditional fashion.
+Grizzled: Squads with this trait Check Resolve at one level higher than their Quality level.
+Gung Ho: May ignore "under fire" any turn they close assault
+Hardened: These troops ignore being Under Fire until they suffer their first casualty, and may always leave wounded behind.
+Hero: This trait may only be taken by a Character or Psionic. Heroes always Shoot individually, even when attached to another unit. When firing at close range, they may choose the target figure. They are also Fearless, Shock Troops. Non-heroes suffer a -2 penalty to Fire Effect when firing at a Hero.
+Hesitant: Unless activating within 15" of enemy troops, make a Quality test to activate. If the test fails move towards cover or stand still (if none is close enough).
+Hive mind (controller): This unit controls other members of a hive mind (see Hive Mind unit) but is also Fanatic and Relentless.
+Hive Mind (unit): Units with this Trait are Fanatic and Relentless when they activate within 12” of one of a mind controllers. This controller can be another squad or an independent figure with the Hive Mind (controller) trait.
+
+If the unit is beyond 12” of the controller, it must pass a Quality Test on 2 or more dice, or it cannot activate this turn.
+HQ: This trait may only be applied to a single figure. Once per turn, any one unit may reroll a failed Command Response test.
+Huge: Huge units can be squads, Characters or Psionics and may be equipped with heavy weapons and fire them while moving, but suffer a -2 penalty to fire effect.
+
+In close assault, a huge model rolls 4 kill rolls. If the opposing unit fails to destroy the huge model, it must fall back, even if it won the assault.
+
+Furthermore, while being shot at by any weapons without an AP score, a huge model must receive at least two hits in the same volley of fire to be wounded.
+
+Huge models do not receive any benefits of cover.
+Ignore Pain: The model may continue to move and fight if wounded. Each activation make a Quality Test, is all dice pass it can continue to fight, otherwise it is removed as a casualty
+Infect: When a figure is killed in Close Assault by a unit with this trait roll 1d6, on 5+ the figure is infected.
+Infilration: After initial deployment, this squad may make an additional Rush move before the game starts. In addition, they check Coherency at one level higher than their Quality level.
+Inflexible: The unit may not fire on a turn where it moved.
+Jet Packs: This unit is equipped with some form of device that allows far greater movement than regular infantry. Adding this trait allows the unit to use the “Jet Packs” advanced rule.
+Legend: This trait may only be applied to a single figure. Legends have both Hero and Villain traits. Legends always count as rolling a 6 for Close Assaults and Shooting.
+Limited Teleport: Whenever the unit would normally move, it can instead teleport the same distance, ignoring terrain and other units/vehicles etc (this can work in conjunction with traits such as Jet Packs and Elusive).
+
+Teleportation can be a risky business and a unit that teleports must make a Quality Test, determining success in the same way as Drop Troops. But if all dice on the quality test fail (in addition to the results of Drop Troops rule) then one member of the unit is removed as a fatality, they never re-materialised.
+Mechanized: An infantry unit with this trait is partnered with a transport vehicle at the start of the
+game. When the infantry unit is activated, the designated vehicle may ALSO be activated at the same time if it is currently within 12” of the infantry squad. Either unit must perform all of its actions first before the second unit is activated.
+Night Vision: May fire normally to specified range
+No Grenades: The unit does not carry grenades and is subject to a -2 penalty in assault combat.
+Obvious Target: Can always be chosen as a target, cannot hide.
+Recon: Recon units gain +1” to their Coherency. In addition, they are automatically successful on one of their dice when attempting to call for Indirect Artillery Fire. Only roll 2d6 for their timing test and add one success to the result.
+Regenerate: Any figure with this trait will automatically heal their wound by remaining inactive during their next turn. They cannot Move in any way, nor can they Shoot or Close Assault. At the end of their dormant activation, they are fully healed.
+Relentless: Troops that are Relentless ignore the effects of being Under Fire or Pinned. They never benefit from any form of cover, and will leave any casualties behind without giving it a second thought.
+Reserves: This unit can be held in reserve, and then deployed once the battle has started (as per the Reserves advanced rule).
+Resilient (2): Gain 2 wounds, each "wound" looses one point, each "kill" looses two
+Resilient (3): Gain 3 wounds, each "wound" looses one point, each "kill" looses two
+Resilient (4): Gain 4 wounds, each "wound" looses one point, each "kill" looses two
+Resilient (5): Gain 5 wounds, each "wound" looses one point, each "kill" looses two
+Resilient (6): Gain 6 wounds, each "wound" looses one point, each "kill" looses two
+Save: Squads with this trait roll 1d6 for every hit they suffer. On a result of 5+ the hit is negated.
+
+NOTE: Power Armour Troopers can only make one save in close combat.
+Self Repairing: Units with this trait have been infused with tiny nano medics. During a Recover Wounded action, these troops can make a recovery roll as if an aid team was present, without the need to form such teams.
+Shaky: This unit automatically fails one of their dice when testing morale. Only roll 2d6 for their morale test and add one failure to the result.
+Shock Troops: Shock Troops add +1 to all Close Assaults.
+Slick: A slick model may only be engaged by 2 opponents in close combat. Thus against a unit of 5 models with this trait, you could not count more than 10 opponents for assault bonus and kill rolls.
+Slow: Slow units suffer a penalty of -2” to their base movement rate.
+Slow Firing: Slow Firing units roll only 1d6 to determine Fire Effect if they moved this activation.
+Stealth: A unit with this ability always succeeds when it goes into hiding (see Hidden Movement). There is no die roll required.
+Supreme Armour: An ancient artifact from an age of lost technology, a holy (or unholy) relic, maybe even a mastercrafted piece of technology. This trait applies to the armour of the unit which gains +1 to the Armour Rating of the unit.
+Supreme Weapon: An ancient artifact from an age of lost technology, a holy (or unholy) relic, maybe even a mastercrafted piece of technology. This trait applies to the unit's weapons which gain a +1 damage bonus.
+Swift: These units add +4” to their base movement rate.
+Tank Hunter: Squads with this trait are equipped with special explosives used to deal with enemy armoured vehicles. They gain +1 to their Nerves Check and a +2 mod when Close Assaulting vehicles.
+Terrifying: Squads with this trait will strike fear in the hearts of any unit nearby. An enemy unit which activates within 8” of a terrifying squad must make an immediate Morale Test.
+Timid: The unit must pass a Quality Test on at least 2 dice to launch a close combat assault.
+Tough: Squads that are Tough gain a +1 bonus to their Armour Rating.
+Unstable Technology: These troops make use of weapons and equipment that may be powerful or advanced, but have also not been thoroughly tested. They may be prototypes or something jerry rigged but whatever the case there is a chance something will go wrong!
+
+Every time a unit with this trait rolls a 1 on a fire effect dice it takes a hit with a damage equal to the standard weapon. Resolve this hit in the usual fashion.
+
+NOTE: if a squad rolls 2 1's on their fire effect dice they receive 2 hits.
+Villain: This trait may only be applied to a single figure. Any time a Villain is killed, leave the figure on the table. It remains in this state for the remainder of this turn. During the next turn, the owning player may activate this figure. Roll 1d6. If the result is 5+ the Villain was really only stunned. He climbs back to his feet and may return to battle immediately. If the result was less than 5, the Villain is truly dead and is removed from the table, never to be seen again. Or will he? :)
+Weak: The unit suffers a -1 penalty to close assault.
+Zombie: Zombies are Relentless and Fanatics. Unless the scenario dictates otherwise, they may never Rush. Zombies also have poor vision, so they cannot Shoot beyond close range, and all fire suffers a -2 penalty.

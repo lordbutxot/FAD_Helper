@@ -10,24 +10,6 @@
             <p class="text-muted">Update elite sniper with precision weapons and special abilities.</p>
             
             <form id="sniperForm" method="POST" action="{{ url_for('edit_unit', unit_id=unit.id) }}">
-                                <!-- Parent/Variant -->
-                                <div class="card mb-3">
-                                    <div class="card-header bg-secondary text-white">
-                                        <h5 class="mb-0">Family (Parent/Variant)</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="mb-3">
-                                            <label for="parent_id" class="form-label">Parent Model (optional)</label>
-                                            <select class="form-select" id="parent_id" name="parent_id">
-                                                <option value="">No Parent (This is a parent model)</option>
-                                                {% for possible_parent in my_units if possible_parent.id != unit.id and possible_parent.unit_type == unit.unit_type %}
-                                                <option value="{{ possible_parent.id }}" {% if unit.parent_id == possible_parent.id %}selected{% endif %}>{{ possible_parent.name }}</option>
-                                                {% endfor %}
-                                            </select>
-                                            <small class="text-muted">If this is a variant, select the parent model. Otherwise, leave as 'No Parent'.</small>
-                                        </div>
-                                    </div>
-                                </div>
                 <!-- Basic Info -->
                 <div class="card mb-3">
                     <div class="card-header bg-primary text-white">
@@ -40,38 +22,8 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="faction_id" class="form-label">
-                                Faction
-                                <i class="bi bi-info-circle info-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Select a faction to organize your units"></i>
-                            </label>
-                            <select class="form-select" id="faction_id" name="faction_id">
-                                <option value="">No Faction</option>
-                                {% for faction in my_factions %}
-                                <option value="{{ faction.id }}" {% if unit.faction_id == faction.id %}selected{% endif %}>
-                                    {{ faction.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                            {% if my_factions|length == 0 %}
-                            <small class="text-muted">
-                                <a href="{{ url_for('faction_creator') }}" class="text-decoration-none">
-                                    <i class="bi bi-plus-circle"></i> Create your first faction
-                                </a>
-                            </small>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="role" class="form-label">
-                                <i class="bi bi-tag"></i> Battlefield Role
-                            </label>
-                            <select class="form-select" id="role" name="role">
-                                <option value="">-- No Role --</option>
-                                {% for role_option in roles %}
-                                <option value="{{ role_option }}" {% if unit.role == role_option %}selected{% endif %}>{{ role_option }}</option>
-                                {% endfor %}
-                            </select>
-                            <small class="text-muted">Optional tag for quick identification</small>
+                            <label for="faction" class="form-label">Faction</label>
+                            <input type="text" class="form-control" id="faction" name="faction" value="{{ unit.faction or '' }}" placeholder="Optional">
                         </div>
                         
                         <div class="mb-3">
@@ -96,6 +48,7 @@
                             <label for="quality" class="form-label">Quality *</label>
                             <select class="form-select" id="quality" name="quality" required>
                                 <option value="">Select Quality...</option>
+                                <option value="Rabble" {% if unit.quality == 'Rabble' %}selected{% endif %}>Rabble (5+)</option>
                                 <option value="Regular" {% if unit.quality == 'Regular' %}selected{% endif %}>Regular (3+)</option>
                                 <option value="Elite" {% if unit.quality == 'Elite' %}selected{% endif %}>Elite (2+)</option>
                             </select>
@@ -106,6 +59,7 @@
                             <label for="resolve" class="form-label">Resolve *</label>
                             <select class="form-select" id="resolve" name="resolve" required>
                                 <option value="">Select Resolve...</option>
+                                <option value="Reluctant" {% if unit.resolve == 'Reluctant' %}selected{% endif %}>Reluctant</option>
                                 <option value="Steady" {% if unit.resolve == 'Steady' %}selected{% endif %}>Steady</option>
                                 <option value="Determined" {% if unit.resolve == 'Determined' %}selected{% endif %}>Determined</option>
                             </select>
@@ -124,7 +78,7 @@
                             <select class="form-select" id="basic_weapon_id" name="basic_weapon_id" required>
                                 <option value="">Select Weapon...</option>
                                 {% for weapon in weapons if 'Sniper' in weapon.name or 'Rifle' in weapon.name %}
-                                <option value="{{ weapon.id }}" {% if unit.basic_weapon_id == weapon.id %}selected{% endif %}>{{ weapon.name }} ({{ weapon.range_multiplier }}, FE:{{ weapon.fire_effect }}, +{{ weapon.points }} pts)</option>
+                                <option value="{{ weapon.id }}" {% if unit.basic_weapon_id == weapon.id %}selected{% endif %}>{{ weapon.name }} ({{ weapon.range }}, FE:{{ weapon.fire_effect }}, +{{ weapon.points }} pts)</option>
                                 {% endfor %}
                             </select>
                             <small class="text-muted">Long-range precision weapons</small>
@@ -151,32 +105,17 @@
                         <p class="text-muted">Select special traits for this sniper</p>
                         <div class="row">
                             {% for trait in traits %}
-                            <div class="col-md-6 mb-2">
-                                <div class="form-check trait-option">
-                                    <input class="form-check-input" type="checkbox" name="traits" value="{{ trait.id }}" id="trait_{{ trait.id }}" {% if trait.id in selected_trait_ids %}checked{% endif %}>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="traits" value="{{ trait.id }}" id="trait_{{ trait.id }}" {% if trait.id in unit.get_traits() %}checked{% endif %}>
                                     <label class="form-check-label" for="trait_{{ trait.id }}">
-                                        {{ trait.name }}
-                                        <small class="text-muted">(×{{ trait.points_multiplier }})</small>
-                                        <i class="bi bi-info-circle info-icon"
-                                           data-bs-toggle="tooltip"
-                                           data-bs-placement="right"
-                                           title="{{ trait.description }} | Multiplier: ×{{ trait.points_multiplier }} | Category: {{ trait.category }}"></i>
+                                        {{ trait.name }} 
+                                        <small class="text-muted">({{ trait.points_modifier }}{% if trait.points_modifier > 0 %}+{% endif %}{{ trait.points_modifier }} pts)</small>
                                     </label>
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
-                    </div>
-                </div>
-
-                <!-- How to Use Description -->
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> How to Use (Exported - Markdown Supported)</h5>
-                    </div>
-                    <div class="card-body">
-                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Explain how to use this sniper in battle. Supports markdown:&#10;**Bold** for emphasis&#10;- Bullet points&#10;1. Numbered lists&#10;&#10;Examples: High vantage points, Anti-tank role, Reconnaissance, Overwatch support">{{ unit.description or '' }}</textarea>
-                        <small class="text-muted d-block mt-2"><strong>Markdown Help:</strong> Use **bold**, *italic*, - bullets, 1. numbers, [link text](url), ### headers</small>
                     </div>
                 </div>
 
@@ -186,7 +125,7 @@
                         <h5 class="mb-0">Notes</h5>
                     </div>
                     <div class="card-body">
-                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Optional notes about this sniper... (internal only, not exported)">{{ unit.notes or '' }}</textarea>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Sniper abilities, tactics, etc...">{{ unit.notes or '' }}</textarea>
                     </div>
                 </div>
 
@@ -258,6 +197,7 @@
 <script>
 // Real-time points calculator
 const qualityPoints = {
+    'Rabble': 4,
     'Regular': 8,
     'Elite': 10
 };
@@ -276,7 +216,7 @@ const armourPoints = {
 
 const traitPoints = {
     {% for trait in traits %}
-    '{{ trait.id }}': {{ trait.points_multiplier }},
+    '{{ trait.id }}': {{ trait.points_modifier }},
     {% endfor %}
 };
 
@@ -296,34 +236,22 @@ function calculatePoints() {
     const weaponPts = weaponId ? (weaponPoints[weaponId] || 0) : 0;
     const armourPts = armourId ? (armourPoints[armourId] || 0) : 0;
     
-    // Calculate subtotal before traits
-    const subtotal = basePoints + personalityPts + weaponPts + armourPts;
-    
-    // Apply trait multipliers sequentially (per game rules)
-    let traitMultiplier = 1.0;
+    // Traits
+    let traitsPoints = 0;
     document.querySelectorAll('input[name="traits"]:checked').forEach(checkbox => {
-        const traitMult = traitPoints[checkbox.value] || 1.0;
-        traitMultiplier = traitMultiplier * traitMult;
+        traitsPoints += traitPoints[checkbox.value] || 0;
     });
     
-    const totalPoints = subtotal * traitMultiplier;
+    const totalPoints = basePoints + personalityPts + weaponPts + armourPts + traitsPoints;
     
     // Update display
     document.getElementById('calc_base_points').textContent = basePoints;
     document.getElementById('calc_personality').textContent = personalityPts;
     document.getElementById('calc_weapon').textContent = weaponPts;
     document.getElementById('calc_armour').textContent = armourPts;
-    document.getElementById('calc_traits').textContent = `×${traitMultiplier.toFixed(2)}`;
-    document.getElementById('calc_total').textContent = totalPoints.toFixed(2);
+    document.getElementById('calc_traits').textContent = traitsPoints;
+    document.getElementById('calc_total').textContent = totalPoints;
 }
-
-// Initialize Bootstrap tooltips
-document.addEventListener('DOMContentLoaded', function() {
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-});
 
 // Attach event listeners
 document.getElementById('quality').addEventListener('change', calculatePoints);

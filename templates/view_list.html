@@ -21,9 +21,7 @@
                     </p>
                     
                     {% if army_list.description %}
-                    <div class="markdown-content">
-                        {{ army_list.description|markdown|safe }}
-                    </div>
+                    <p class="lead">{{ army_list.description }}</p>
                     {% endif %}
                     
                     <hr>
@@ -47,7 +45,6 @@
                                 <tr>
                                     <th>Unit Name</th>
                                     <th>Type</th>
-                                    <th>Details</th>
                                     <th>Quantity</th>
                                     <th>Points Each</th>
                                     <th>Subtotal</th>
@@ -61,133 +58,11 @@
                                         {% if item.unit.faction %}
                                         <br><small class="text-muted">{{ item.unit.faction }}</small>
                                         {% endif %}
-                                        {% if item.attached_units %}
-                                        <div class="mt-2 ms-3">
-                                            {% for attached in item.attached_units %}
-                                            <div class="text-info small">
-                                                <i class="bi bi-paperclip"></i> <strong>{{ attached.name }}</strong> ({{ attached.unit_type }}, {{ attached.total_points }} pts)
-                                            </div>
-                                            {% endfor %}
-                                        </div>
-                                        {% endif %}
-                                        <br>
-                                        <button class="btn btn-sm btn-outline-info mt-1" type="button" data-bs-toggle="collapse" data-bs-target="#unit-details-{{ loop.index }}" aria-expanded="false">
-                                            <i class="bi bi-info-circle"></i> Details
-                                        </button>
                                     </td>
                                     <td>{{ item.unit.unit_type }}</td>
-                                    <td>
-                                        {% if item.unit.unit_type == 'Squad' and item.unit.squad_size %}
-                                            <small class="text-muted"><i class="bi bi-people"></i> {{ item.unit.squad_size }} troops</small>
-                                        {% elif item.unit.unit_type == 'Vehicle' %}
-                                            <small class="text-muted">
-                                                {% if item.unit.movement_type %}<i class="bi bi-arrow-right"></i> {{ item.unit.movement_type }}{% endif %}
-                                                {% if item.unit.carrying_capacity %}
-                                                    {% if item.unit.movement_type %} · {% endif %}
-                                                    <i class="bi bi-truck"></i> Transport {{ item.unit.carrying_capacity }}
-                                                {% endif %}
-                                                {% if not item.unit.movement_type and not item.unit.carrying_capacity %}-{% endif %}
-                                            </small>
-                                        {% else %}
-                                            <small class="text-muted">-</small>
-                                        {% endif %}
-                                    </td>
                                     <td>{{ item.quantity }}</td>
                                     <td class="points-display">{{ item.unit.total_points }}</td>
                                     <td class="points-display">{{ (item.unit.total_points * item.quantity)|round(2) }}</td>
-                                                                <tr class="collapse" id="unit-details-{{ loop.index }}">
-                                                                    <td colspan="5" class="bg-light">
-                                                                        <div class="card card-body">
-                                                                            <h6><i class="bi bi-clipboard-data"></i> {{ item.unit.name }} - Full Profile</h6>
-                                            
-                                                                            <!-- Statistics -->
-                                                                            <div class="mb-3">
-                                                                                <strong>Statistics:</strong>
-                                                                                <ul class="list-unstyled mb-0 ms-3">
-                                                                                    <li><span class="badge bg-primary">Quality:</span> {{ item.unit.quality }}</li>
-                                                                                    <li><span class="badge bg-primary">Resolve:</span> {{ item.unit.resolve }}</li>
-                                                                                    {% if item.unit.unit_type == 'Squad' and item.unit.squad_size %}
-                                                                                    <li><span class="badge bg-primary">Squad Size:</span> {{ item.unit.squad_size }}</li>
-                                                                                    {% endif %}
-                                                                                    {% if item.unit.unit_type == 'Heavy Weapon Team' and item.unit.crew_size %}
-                                                                                    <li><span class="badge bg-primary">Crew Size:</span> {{ item.unit.crew_size }}</li>
-                                                                                    {% endif %}
-                                                                                    {% if item.unit.unit_type == 'Vehicle' and item.unit.crew_count %}
-                                                                                    <li><span class="badge bg-primary">Crew:</span> {{ item.unit.crew_count }}</li>
-                                                                                    {% endif %}
-                                                                                    {% if item.unit.unit_type == 'Vehicle' and item.unit.carrying_capacity %}
-                                                                                    <li><span class="badge bg-primary">Transport Capacity:</span> {{ item.unit.carrying_capacity }}</li>
-                                                                                    {% endif %}
-                                                                                </ul>
-                                                                            </div>
-                                            
-                                                                            <!-- Equipment -->
-                                                                            {% set armour = item.unit.armour or item.unit.parent.get_inherited_weapon('armour') if item.unit.parent else None %}
-                                                                            {% set basic_weapon = item.unit.basic_weapon or item.unit.parent.get_inherited_weapon('basic_weapon') if item.unit.parent else None %}
-                                                                            {% set secondary_weapon = item.unit.secondary_weapon or item.unit.parent.get_inherited_weapon('secondary_weapon') if item.unit.parent else None %}
-                                                                            {% set support_weapon = item.unit.support_weapon or item.unit.parent.get_inherited_weapon('support_weapon') if item.unit.parent else None %}
-                                                                            {% set heavy_weapon = item.unit.heavy_weapon or item.unit.parent.get_inherited_weapon('heavy_weapon') if item.unit.parent else None %}
-                                                                            {% if armour or basic_weapon or secondary_weapon or support_weapon or heavy_weapon %}
-                                                                            <div class="mb-3">
-                                                                                <strong><i class="bi bi-shield-check"></i> Equipment:</strong>
-                                                                                <ul class="list-unstyled mb-0 ms-3">
-                                                                                    {% if armour %}
-                                                                                    <li>🛡️ <strong>Armour:</strong> {{ armour.name }} (Rating {{ armour.rating }}) - {{ armour.points }} pts</li>
-                                                                                    {% endif %}
-                                                                                    {% if basic_weapon %}
-                                                                                    <li>🔫 <strong>Basic Weapon:</strong> {{ basic_weapon.name }} 
-                                                                                        <small class="text-muted">(Range: {{ basic_weapon.range_multiplier }}, DM:{{ basic_weapon.damage }}, FE:{{ basic_weapon.fire_effect }}, AP:{{ basic_weapon.ap }})</small> - {{ basic_weapon.points }} pts
-                                                                                        {% if basic_weapon.benefits %}
-                                                                                        <br><small class="text-info">➜ {{ basic_weapon.benefits }}</small>
-                                                                                        {% endif %}
-                                                                                    </li>
-                                                                                    {% endif %}
-                                                                                    {% if secondary_weapon %}
-                                                                                    <li>🔫 <strong>Secondary Weapon:</strong> {{ secondary_weapon.name }} 
-                                                                                        <small class="text-muted">(Range: {{ secondary_weapon.range_multiplier }}, DM:{{ secondary_weapon.damage }}, FE:{{ secondary_weapon.fire_effect }}, AP:{{ secondary_weapon.ap }})</small> - {{ secondary_weapon.points }} pts
-                                                                                        {% if secondary_weapon.benefits %}
-                                                                                        <br><small class="text-info">➜ {{ secondary_weapon.benefits }}</small>
-                                                                                        {% endif %}
-                                                                                    </li>
-                                                                                    {% endif %}
-                                                                                    {% if support_weapon %}
-                                                                                    <li>⚡ <strong>Support Weapon:</strong> {{ support_weapon.name }} 
-                                                                                        <small class="text-muted">(Range: {{ support_weapon.range_multiplier }}, DM:{{ support_weapon.damage }}, FE:{{ support_weapon.fire_effect }}, AP:{{ support_weapon.ap }})</small> - {{ support_weapon.points }} pts
-                                                                                        {% if support_weapon.benefits %}
-                                                                                        <br><small class="text-info">➜ {{ support_weapon.benefits }}</small>
-                                                                                        {% endif %}
-                                                                                    </li>
-                                                                                    {% endif %}
-                                                                                    {% if heavy_weapon %}
-                                                                                    <li>💥 <strong>Heavy Weapon:</strong> {{ heavy_weapon.name }} 
-                                                                                        <small class="text-muted">(Range: {{ heavy_weapon.range_multiplier }}, DM:{{ heavy_weapon.damage }}, FE:{{ heavy_weapon.fire_effect }}, AP:{{ heavy_weapon.ap }})</small> - {{ heavy_weapon.points }} pts
-                                                                                        {% if heavy_weapon.benefits %}
-                                                                                        <br><small class="text-info">➜ {{ heavy_weapon.benefits }}</small>
-                                                                                        {% endif %}
-                                                                                    </li>
-                                                                                    {% endif %}
-                                                                                </ul>
-                                                                            </div>
-                                                                            {% endif %}
-                                            
-                                                                            <!-- Traits & Abilities -->
-                                                                            {% set traits = item.unit.get_traits() if item.unit.traits_json and item.unit.traits_json|length > 2 else (item.unit.parent.get_inherited_traits() if item.unit.parent else []) %}
-                                                                            {% if traits|length > 0 %}
-                                                                            <div class="mb-2">
-                                                                                <strong><i class="bi bi-star-fill"></i> Traits & Abilities:</strong>
-                                                                                <ul class="list-unstyled mb-0 ms-3">
-                                                                                    {% for trait in traits %}
-                                                                                    <li class="mb-2">
-                                                                                        <span class="badge bg-success">{{ trait.name }}</span>
-                                                                                        <br><small class="text-secondary">{{ trait.description }}</small>
-                                                                                    </li>
-                                                                                    {% endfor %}
-                                                                                </ul>
-                                                                            </div>
-                                                                            {% endif %}
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -222,17 +97,8 @@
                     <a href="{{ url_for('edit_list', list_id=army_list.id) }}" class="btn btn-primary w-100 mb-2">
                         <i class="bi bi-pencil"></i> Edit List
                     </a>
-                    <a href="{{ url_for('export_list_pdf', list_id=army_list.id) }}" class="btn btn-danger w-100 mb-2" target="_blank">
-                        <i class="bi bi-file-earmark-pdf"></i> Export PDF
-                    </a>
                     <button onclick="window.print()" class="btn btn-secondary w-100 mb-2">
-                        <i class="bi bi-printer"></i> Print
-                    </button>
-                    <button onclick="shareList()" class="btn btn-success w-100 mb-2">
-                        <i class="bi bi-share"></i> Share Link
-                    </button>
-                    <button onclick="copyToClipboard()" class="btn btn-info w-100 mb-2">
-                        <i class="bi bi-clipboard"></i> Copy URL
+                        <i class="bi bi-printer"></i> Print List
                     </button>
                     <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary w-100">
                         <i class="bi bi-arrow-left"></i> Back to Dashboard
@@ -242,17 +108,8 @@
             {% else %}
             <div class="card">
                 <div class="card-body">
-                    <a href="{{ url_for('export_list_pdf', list_id=army_list.id) }}" class="btn btn-danger w-100 mb-2" target="_blank">
-                        <i class="bi bi-file-earmark-pdf"></i> Export PDF
-                    </a>
                     <button onclick="window.print()" class="btn btn-secondary w-100 mb-2">
-                        <i class="bi bi-printer"></i> Print
-                    </button>
-                    <button onclick="shareList()" class="btn btn-success w-100 mb-2">
-                        <i class="bi bi-share"></i> Share List
-                    </button>
-                    <button onclick="copyToClipboard()" class="btn btn-info w-100 mb-2">
-                        <i class="bi bi-clipboard"></i> Copy URL
+                        <i class="bi bi-printer"></i> Print List
                     </button>
                     <a href="{{ url_for('browse_lists') }}" class="btn btn-outline-secondary w-100">
                         <i class="bi bi-arrow-left"></i> Back to Browse
@@ -264,204 +121,9 @@
     </div>
 </div>
 
-<script>
-// Share list using Web Share API (mobile-friendly)
-async function shareList() {
-    const url = window.location.href;
-    const title = '{{ army_list.name }} - F.A.D. Army List';
-    const text = 'Check out my {{ army_list.total_points }} point F.A.D. army list!';
-    
-    // Check if Web Share API is available (mobile browsers)
-    if (navigator.share) {
-        try {
-            await navigator.share({
-                title: title,
-                text: text,
-                url: url
-            });
-        } catch (err) {
-            if (err.name !== 'AbortError') {
-                copyToClipboard();
-            }
-        }
-    } else {
-        copyToClipboard();
-    }
-}
-
-// Copy list URL to clipboard
-function copyToClipboard() {
-    const url = window.location.href;
-    
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(url).then(() => {
-            alert('List URL copied to clipboard! Share this link with your opponent:\n' + url);
-        }).catch(() => {
-            fallbackCopy(url);
-        });
-    } else {
-        fallbackCopy(url);
-    }
-}
-
-// Fallback copy method for older browsers
-function fallbackCopy(text) {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    document.body.appendChild(textArea);
-    textArea.select();
-    try {
-        document.execCommand('copy');
-        alert('List URL copied!\n\n' + text);
-    } catch (err) {
-        alert('Copy this URL:\n\n' + text);
-    }
-    document.body.removeChild(textArea);
-}
-</script>
-
 <style>
-/* Mobile-optimized styles */
-@media (max-width: 768px) {
-    .container {
-        padding: 0.5rem;
-    }
-    .card {
-        margin-bottom: 0.5rem;
-    }
-    table {
-        font-size: 0.85rem;
-    }
-    .display-3 {
-        font-size: 2rem;
-    }
-}
-
-/* Print/PDF styles - optimized for single-page army list */
 @media print {
-    /* Hide UI elements */
-    .navbar, .footer, .btn:not(.btn-outline-info), .card-body h5:not(h6), .text-muted.small { 
-        display: none !important; 
-    
-        /* Show collapsed unit details in print */
-        .collapse {
-            display: table-row !important;
-            visibility: visible !important;
-        }
-    
-        .btn-outline-info {
-            display: none !important;
-        }
-    
-        .bg-light {
-            background-color: #f8f9fa !important;
-            border: 1px solid #dee2e6;
-        }
-    }
-    
-    /* Optimize layout for printing */
-    body {
-        font-size: 10pt;
-        line-height: 1.2;
-    }
-    
-    .container {
-        max-width: 100%;
-        padding: 0;
-    }
-    
-    .card {
-        border: none;
-        box-shadow: none;
-        margin-bottom: 0.5rem;
-        page-break-inside: avoid;
-    }
-    
-    .card-body {
-        padding: 0.5rem;
-    }
-    
-    h1 {
-        font-size: 18pt;
-        margin-bottom: 0.5rem;
-    }
-    
-    h3, h4 {
-        font-size: 14pt;
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .table {
-        font-size: 9pt;
-        margin-bottom: 0;
-    }
-    
-    .table th,
-    .table td {
-        padding: 0.25rem;
-    }
-    
-    .badge {
-        border: 1px solid #000;
-        color: #000 !important;
-        background: white !important;
-    }
-    
-    .points-display {
-        font-weight: bold;
-    }
-    
-    /* Ensure everything fits on one page if possible */
-    .row {
-        display: block;
-    }
-    
-    .col-lg-4,
-    .col-lg-8 {
-        width: 100%;
-        max-width: 100%;
-    }
-    
-    /* Hide sidebar in print, keep only essential info */
-    .col-lg-4 .card:not(:first-child) {
-        display: none;
-    }
-    
-    .display-3 {
-        font-size: 24pt;
-        margin: 0.5rem 0;
-    }
-    
-    /* Page break handling */
-    .table {
-        page-break-inside: auto;
-    }
-    
-    tr {
-        page-break-inside: avoid;
-        page-break-after: auto;
-    }
-    
-    thead {
-        display: table-header-group;
-    }
-    
-    tfoot {
-        display: table-footer-group;
-    }
-}
-
-/* Dark mode friendly */
-@media (prefers-color-scheme: dark) {
-    @media print {
-        body {
-            background: white;
-            color: black;
-        }
-    }
+    .navbar, .footer, .card-body h5:contains('Actions'), .btn { display: none !important; }
 }
 </style>
 {% endblock %}
