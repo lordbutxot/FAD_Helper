@@ -116,8 +116,66 @@ def init_production_database():
             print(f"   ⚠️  Error: {e}")
             print("   Continuing with initialization...")
         
+        # Ensure trait name/category uniqueness (allows same name in different categories)
+        print("\n1b. Ensuring trait name/category uniqueness...")
+        try:
+            from sqlalchemy import text
+
+            db_url = str(db.engine.url)
+            if 'sqlite' in db_url:
+                with db.engine.connect() as conn:
+                    indexes = conn.execute(text("PRAGMA index_list('trait')")).fetchall()
+                    has_composite = False
+                    has_name_only_unique = False
+
+                    for idx in indexes:
+                        idx_name = idx[1]
+                        is_unique = idx[2]
+                        if not is_unique:
+                            continue
+                        cols = conn.execute(text(f"PRAGMA index_info('{idx_name}')")).fetchall()
+                        col_names = [c[2] for c in cols]
+                        if col_names == ['name', 'category']:
+                            has_composite = True
+                        if col_names == ['name']:
+                            has_name_only_unique = True
+
+                    if not has_composite and has_name_only_unique:
+                        print("   📝 Updating SQLite trait table for composite unique constraint...")
+                        conn.execute(text("ALTER TABLE trait RENAME TO trait_old"))
+                        conn.execute(text("""
+                            CREATE TABLE trait (
+                                id INTEGER NOT NULL PRIMARY KEY,
+                                name VARCHAR(100) NOT NULL,
+                                description TEXT NOT NULL,
+                                points_multiplier FLOAT NOT NULL,
+                                category VARCHAR(50),
+                                is_repeatable BOOLEAN DEFAULT 0,
+                                UNIQUE (name, category)
+                            )
+                        """))
+                        conn.execute(text("""
+                            INSERT INTO trait (id, name, description, points_multiplier, category, is_repeatable)
+                            SELECT id, name, description, points_multiplier, category, COALESCE(is_repeatable, 0)
+                            FROM trait_old
+                        """))
+                        conn.execute(text("DROP TABLE trait_old"))
+                        conn.commit()
+                        print("   ✅ SQLite trait table updated")
+                    else:
+                        print("   ✅ Trait uniqueness already configured")
+            else:
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE trait DROP CONSTRAINT IF EXISTS trait_name_key"))
+                    conn.execute(text("ALTER TABLE trait ADD CONSTRAINT uq_trait_name_category UNIQUE (name, category)"))
+                    conn.commit()
+                    print("   ✅ Trait uniqueness updated (PostgreSQL)")
+        except Exception as e:
+            print(f"   ⚠️  Error ensuring trait uniqueness: {e}")
+            print("   Continuing with initialization...")
+
         # Cleanup non-official traits before any early exit
-        print("\n1b. Cleaning non-official traits...")
+        print("\n1c. Cleaning non-official traits...")
         cleanup_non_official_traits()
 
         # Note: We do NOT skip if data exists - we UPDATE existing traits to match Traits.TXT
@@ -207,7 +265,8 @@ def init_production_database():
         updated_infantry = 0
         for name, desc, mult in infantry_traits:
             try:
-                existing = Trait.query.filter_by(name=name, category='Infantry').first()
+                with db.session.no_autoflush:
+                    existing = Trait.query.filter_by(name=name, category='Infantry').first()
                 if existing:
                     # Update existing trait with correct values from Traits.TXT
                     existing.description = desc
@@ -274,7 +333,8 @@ def init_production_database():
         
         for name, desc, mult in vehicle_properties:
             try:
-                existing = Trait.query.filter_by(name=name, category='Vehicle').first()
+                with db.session.no_autoflush:
+                    existing = Trait.query.filter_by(name=name, category='Vehicle').first()
                 is_repeatable = name in repeatable_traits
                 
                 if existing:

@@ -96,8 +96,11 @@ class Armour(db.Model):
 
 class Trait(db.Model):
     """Special traits/abilities for units"""
+    __table_args__ = (
+        db.UniqueConstraint('name', 'category', name='uq_trait_name_category'),
+    )
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
+    name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     points_multiplier = db.Column(db.Float, nullable=False)
     category = db.Column(db.String(50))  # Infantry, Vehicle, Character, etc.
