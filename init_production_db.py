@@ -40,7 +40,13 @@ def cleanup_non_official_traits():
     for trait in to_delete:
         print(f"     - Deleting: {trait.name} ({trait.category or 'Uncategorized'})")
         db.session.delete(trait)
-    db.session.commit()
+    
+    try:
+        db.session.commit()
+        print("   ✅ Cleanup committed successfully")
+    except Exception as e:
+        print(f"   ⚠️  Cleanup error: {e}")
+        db.session.rollback()
 
 def init_production_database():
     """Initialize production database with all official F.A.D. data
@@ -200,25 +206,34 @@ def init_production_database():
         added_infantry = 0
         updated_infantry = 0
         for name, desc, mult in infantry_traits:
-            existing = Trait.query.filter_by(name=name, category='Infantry').first()
-            if existing:
-                # Update existing trait with correct values from Traits.TXT
-                existing.description = desc
-                existing.points_multiplier = mult
-                updated_infantry += 1
-            else:
-                # Insert new trait
-                trait = Trait(
-                    name=name,
-                    description=desc,
-                    points_multiplier=mult,
-                    category='Infantry'
-                )
-                db.session.add(trait)
-                added_infantry += 1
+            try:
+                existing = Trait.query.filter_by(name=name, category='Infantry').first()
+                if existing:
+                    # Update existing trait with correct values from Traits.TXT
+                    existing.description = desc
+                    existing.points_multiplier = mult
+                    updated_infantry += 1
+                else:
+                    # Insert new trait
+                    trait = Trait(
+                        name=name,
+                        description=desc,
+                        points_multiplier=mult,
+                        category='Infantry'
+                    )
+                    db.session.add(trait)
+                    added_infantry += 1
+            except Exception as e:
+                print(f"   ⚠️  Error processing trait '{name}': {e}")
+                db.session.rollback()
+                continue
         
-        db.session.commit()
-        print(f"   ✅ Added {added_infantry} infantry traits, updated {updated_infantry}")
+        try:
+            db.session.commit()
+            print(f"   ✅ Added {added_infantry} infantry traits, updated {updated_infantry}")
+        except Exception as e:
+            print(f"   ❌ Error committing traits: {e}")
+            db.session.rollback()
         
         # Vehicle Properties (ALL from Traits.TXT with exact multipliers)
         print("\n3. Populating Vehicle Properties...")
