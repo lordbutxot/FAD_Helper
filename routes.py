@@ -1274,8 +1274,8 @@ def init_routes(app):
     @app.route('/list/builder')
     @login_required
     def list_builder():
-        my_units = Unit.query.filter_by(user_id=current_user.id).order_by(Unit.faction, Unit.name).all()
-        public_units = Unit.query.filter_by(is_public=True).order_by(Unit.faction, Unit.name).all()
+        my_units = Unit.query.filter_by(user_id=current_user.id).order_by(Unit.faction_id, Unit.name).all()
+        public_units = Unit.query.filter_by(is_public=True).order_by(Unit.faction_id, Unit.name).all()
         return render_template('list_builder.html', my_units=my_units, public_units=public_units)
     
     @app.route('/list/save', methods=['POST'])
@@ -1348,8 +1348,8 @@ def init_routes(app):
             flash('You can only edit your own lists', 'danger')
             return redirect(url_for('dashboard'))
         
-        my_units = Unit.query.filter_by(user_id=current_user.id).order_by(Unit.faction, Unit.name).all()
-        public_units = Unit.query.filter_by(is_public=True).order_by(Unit.faction, Unit.name).all()
+        my_units = Unit.query.filter_by(user_id=current_user.id).order_by(Unit.faction_id, Unit.name).all()
+        public_units = Unit.query.filter_by(is_public=True).order_by(Unit.faction_id, Unit.name).all()
         
         return render_template('edit_list.html', army_list=army_list, my_units=my_units, public_units=public_units)
     
